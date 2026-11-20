@@ -1,0 +1,18 @@
+schema: spec-driven
+
+context: |
+  FrameAutopsy: Windows desktop tool that explains and fixes in-game stutters and proves its fixes
+  (observe, diagnose, act, prove). Rust workspace (edition 2021). unsafe and asm confined to fa-asm,
+  fa-win and fa-sync; every other crate forbids unsafe. Elevated headless collector + non-elevated egui UI.
+  Never interacts with game processes. Conventions: CLAUDE.md. Origin specs: specifications.md.
+
+rules:
+  proposal:
+    - Every change states its effect on compliance.toml and on the "never touch the game" boundary.
+    - Every change touching fa-asm, fa-win or fa-sync lists the modules of docs/asm-unsafe-catalog.md it adds or changes.
+  design:
+    - asm and unsafe modules follow the earn-its-place rule (reference, parity test, recorded comparison, runtime fallback).
+    - Inputs crossing into the elevated collector are validated against a whitelist.
+  tasks:
+    - Each task group ends with the gate (scripts/gate.ps1).
+    - Each new unsafe or asm block has an explanation checkpoint in French, approved by the user before merge.

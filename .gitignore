@@ -1,0 +1,49 @@
+# Rust / Cargo (Cargo.lock stays committed: the workspace ships binaries)
+/target
+**/*.rs.bk
+
+# Traces, recordings and crash dumps: never committed (hundreds of MB per minute)
+*.etl
+*.jfr
+*.dmp
+
+# Runtime data (the product writes to %ProgramData% / %LOCALAPPDATA%; these catch local copies)
+/data/
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite
+*.sqlite3
+*.log
+
+# Stutter Lab temporary files (lab/fixtures/ stays versioned, 50 MB cap)
+lab/tmp/
+
+# Personal files: never published (public repo)
+profile.md
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+
+# graphify: local knowledge graph (rebuild with `graphify update .`)
+graphify-out/
+*.graphify-bak
+
+# dynamic-orchestrator: local plugin rules and notes
+.orchestrator-rules.json
+ORCHESTRATOR_GUIDE.md
+
+# OS and IDE
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/

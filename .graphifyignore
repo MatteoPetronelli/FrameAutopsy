@@ -1,0 +1,13 @@
+# build output, graph output, traces and Lab data: noise in the graph
+target/
+graphify-out/
+lab/fixtures/
+lab/tmp/
+*.etl
+*.jfr
+# personal file, never indexed
+profile.md
+# Claude and OpenSpec tooling, not the product
+.claude/
+.agents/
+CLAUDE.md
