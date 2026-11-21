@@ -38,7 +38,7 @@ Intel Core i5-11400H (Tiger Lake-H): 6 identical cores / 12 threads, one LLC; SS
 absent by CPUID on 2026-11-21 (7.0 ECX[5] = 0, 0x80000001 ECX[29] = 0). Invariant TSC and `rdtscp` present; CPUID
 `0x15` reports a 38.4 MHz crystal with ratio 140/2, i.e. a nominal 2 688 000 000 Hz (to be checked against the QPC
 calibration, lot 2); leaf `0x16` returns zeros. `__cpuid` is an `unsafe` function in Rust 1.92. A module whose only
-win would be on hardware absent from this machine is not built (D1: it could never be proven).
+win would be on hardware absent from this machine is not built (D1: it could never be proven). Memory latency measured 2026-11-21 (`fa probe curve`, CPU 2, 4 KiB pages, AC, quiet system, 3 runs): L1 about 1.25 ns up to 48 KiB, L2 about 3.5 ns up to about 1 MiB, then 10 to 25 ns around 1.5 to 3 MiB, and RAM at 100 to 110 ns from 4 to 6 MiB on, although the topology reports a 12 MiB L3. The curve is noisier when a background build runs. Cause of the early rise not established (candidates: TLB reach with 4 KiB pages, L3 shared with the iGPU or partitioned); large pages would separate the TLB effect but are not available (WIN-09).
 
 ## 4. Ledger
 

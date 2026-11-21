@@ -35,7 +35,7 @@ checkpoint in French (template: `docs/asm-unsafe-catalog.md` section 7), merged 
 - [x] 4.4 Run `cargo bench -p fa-asm --bench pointer_chase_vs_read_volatile` (3 runs, median and spread, catalog section 2 protocol) and paste the coefficient of variation into the catalog; verify the ship-or-delete verdict is recorded.
 - [x] 4.5 Implement the cache curve (16 KiB to 256 MiB), plateau detection and comparison with `cpu-topology`; verify with a test on synthetic curves and a real run compared with the topology.
 - [ ] 4.6 French explanation checkpoint for ASM-03 (if kept) and WIN-09, then "compris".
-- [ ] 4.7 Gate: `powershell -File scripts/gate.ps1` is green.
+- [x] 4.7 Gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 5. Memory bandwidth
 
