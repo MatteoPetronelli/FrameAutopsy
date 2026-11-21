@@ -22,28 +22,34 @@ This is the only calibration step of lot 3. The keep/remove decision on the freq
 
 The probe keeps its own core busy while it samples, so this phase needs no extra load.
 
-1. In HWiNFO, reset the min/max/avg counters (the clock icon at the bottom of the Sensors window).
+1. In HWiNFO, restart the statistics: close the Sensors window and open it again (the Min / Max / Avg columns restart from zero when it opens), then start step 2 within a few seconds. If your version shows a reset button in the bottom toolbar of the Sensors window, it does the same.
 2. In a terminal (not elevated is fine), run:
 
    ```powershell
-   target\release\fa.exe probe freq --seconds 60 --cpu 4 | Tee-Object probe_one_core.csv
+   target\release\fa.exe probe freq --seconds 60 --cpu 4
    ```
 
-3. While it runs, look at HWiNFO: exactly one core's Effective Clock sits near the probe value. That row is the one
+3. When it ends, select the terminal output and copy it into the chat (no file needed).
+4. While it runs, look at HWiNFO: exactly one core's Effective Clock sits near the probe value. That row is the one
    to read. Write its **Avg** column when the 60 s end.
-4. In `probe_one_core.csv` compute the mean of `probe_ghz` and of `pdh_ghz` (the last column) over the 60 lines.
+5. Claude computes the means of `probe_ghz` and `pdh_ghz` from the copied lines.
 
 ## Step B: all cores busy
 
-1. Reset the HWiNFO counters again.
+1. Restart the HWiNFO statistics again (close and reopen the Sensors window).
 2. Run:
 
    ```powershell
-   target\release\fa.exe probe freq --seconds 60 --cpu 4 --load-all | Tee-Object probe_all_cores.csv
+   target\release\fa.exe probe freq --seconds 60 --cpu 4 --load-all
    ```
 
-   (`--load-all` spins one of our own threads on every other logical CPU: it is a plain compute loop, nothing else.)
-3. Read the **Avg** of the same HWiNFO core row, and again the means of `probe_ghz` and `pdh_ghz`.
+   (`--load-all` spins one of our own threads on one logical CPU of every *other* physical core: a plain compute loop,
+   nothing else. The SMT sibling of CPU 4, which is CPU 5, stays idle on purpose: see the note below.)
+3. Read the **Avg** of the same HWiNFO core row, and copy the terminal output into the chat.
+
+**Note (measured 2026-11-21):** if the SMT sibling of the probed CPU is busy (`--load-smt`), the probe reads about 9 %
+low (3.71 GHz while PDH says 4.08), because the sibling takes issue slots from the add chain. With the sibling idle the
+probe and PDH agree within 0.2 %. Do not use `--load-smt` for the HWiNFO comparison.
 
 ## Results to give Claude
 

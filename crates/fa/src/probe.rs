@@ -10,8 +10,11 @@ use std::time::Duration;
 pub struct FreqArgs {
     pub seconds: u64,
     pub cpu: u32,
-    /// Spin one of our own threads on every other logical CPU, so the whole package is under steady load.
+    /// Spin one of our own threads on one logical CPU of every other physical core: the whole package is loaded, the
+    /// SMT sibling of the probed CPU stays idle.
     pub load_all: bool,
+    /// Same, but on every other logical CPU, siblings included (the probe shares its core with a busy thread).
+    pub load_smt: bool,
 }
 
 pub fn parse(rest: &[String]) -> Option<FreqArgs> {
@@ -19,6 +22,7 @@ pub fn parse(rest: &[String]) -> Option<FreqArgs> {
         seconds: 60,
         cpu: 2,
         load_all: false,
+        load_smt: false,
     };
     let mut it = rest.iter();
     while let Some(flag) = it.next() {
@@ -28,18 +32,33 @@ pub fn parse(rest: &[String]) -> Option<FreqArgs> {
             }
             "--cpu" => a.cpu = it.next()?.parse().ok().filter(|c| *c < 64)?,
             "--load-all" => a.load_all = true,
+            "--load-smt" => a.load_smt = true,
             _ => return None,
         }
     }
     Some(a)
 }
 
-pub fn run_freq(a: &FreqArgs, cpus: u32) -> std::io::Result<()> {
+pub fn run_freq(a: &FreqArgs, cpus: &[fa_win::topology::LogicalCpu]) -> std::io::Result<()> {
     let hz = Clock::new().hz();
     let stop = Arc::new(AtomicBool::new(false));
     let mut loads = Vec::new();
-    if a.load_all {
-        for cpu in (0..cpus).filter(|c| *c != a.cpu) {
+    let targets: Vec<u32> = if a.load_smt {
+        cpus.iter()
+            .map(|c| c.index)
+            .filter(|c| *c != a.cpu)
+            .collect()
+    } else if a.load_all {
+        let core_of = |i: u32| cpus.iter().find(|x| x.index == i).map(|x| x.core);
+        fa_probe::bandwidth::physical_core_cpus(cpus)
+            .into_iter()
+            .filter(|c| core_of(*c) != core_of(a.cpu))
+            .collect()
+    } else {
+        Vec::new()
+    };
+    {
+        for cpu in targets {
             let stop = Arc::clone(&stop);
             loads.push(std::thread::spawn(move || {
                 let _pin = pin_current_thread(cpu);
