@@ -125,3 +125,5 @@ Before an item moves from **U** to **A** (or a **B** item is confirmed) for a ga
 | Date | Game | Game version | FrameAutopsy commit | Items tested | Matches | Result | Notes |
 |---|---|---|---|---|---|---|---|
 | – | – | – | – | – | – | – | – |
+
+**User check, 2026-11-21:** the user checked the Riot developer support site and Discord and reports that everything is good and confirmed for this personal project (no written text provided, so the matrix is unchanged; the DevRel message was not sent).
