@@ -5,7 +5,7 @@
 
 [games.lol]
 name = "League of Legends"
-# image name taken from the lot 1 specification; confirm on the user machine (lot 5)
+# image name confirmed by the user on his machine, 2026-11-21
 detect = ["League of Legends.exe"]
 [games.lol.anti_cheat]
 label = "Riot Vanguard"
@@ -83,7 +83,7 @@ note = "not applicable (JVM argument proposal (text applied by the user)); forbi
 
 [games.valorant]
 name = "VALORANT"
-# image name taken from the lot 1 specification; confirm on the user machine (lot 5)
+# image name confirmed by the user on his machine, 2026-11-21
 detect = ["VALORANT-Win64-Shipping.exe"]
 [games.valorant.anti_cheat]
 label = "Riot Vanguard"
@@ -161,7 +161,7 @@ note = "not applicable (JVM argument proposal (text applied by the user)); forbi
 
 [games.fortnite]
 name = "Fortnite"
-# image name unconfirmed: to be read from a real process on the user machine (lot 5)
+# image name confirmed by the user on his machine, 2026-11-21
 detect = ["FortniteClient-Win64-Shipping.exe"]
 [games.fortnite.anti_cheat]
 label = "Easy Anti-Cheat and BattlEye"
@@ -239,7 +239,7 @@ note = "not applicable (JVM argument proposal (text applied by the user)); forbi
 
 [games.overwatch2]
 name = "Overwatch 2"
-# image name taken from the lot 1 specification; confirm on the user machine (lot 5)
+# image name confirmed by the user on his machine, 2026-11-21
 detect = ["Overwatch.exe"]
 [games.overwatch2.anti_cheat]
 label = "Blizzard anti-cheat (component not named in official texts)"

@@ -8,5 +8,5 @@ publish.workspace = true
 criterion = "0.8.2"
 
 [[bench]]
-name = "harness_vs_reference"
+name = "tsc_vs_intrinsics"
 harness = false

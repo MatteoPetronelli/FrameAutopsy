@@ -96,7 +96,7 @@ single French checkpoint for the asm block (task 6.2) and adds none per `unsafe`
 - [asm and intrinsics tie] -> expected and acceptable; the reference ships, the asm is deleted, numbers are kept.
 - [CPUID `0x15` missing or ECX = 0 on the target] -> the QPC calibration path is then the main path and is tested on its own.
 - [QPC calibration noise on a loaded laptop] -> median of 5 runs, run at idle, thresholds marked `(calibrate)`.
-- [10 µs / 1 µs thresholds too tight on battery or in a VM] -> thresholds are `(calibrate)`; a recalibration is logged
+- [100 µs / 1 µs thresholds too tight on battery or in a VM] -> thresholds are `(calibrate)`; a recalibration is logged
   in `docs/decisions.md` §5, never silently loosened.
 - [Hybrid and dual-CCD paths unvalidated on real hardware] -> synthetic fixtures only, as the spec states; real
   validation waits for another machine.

@@ -108,4 +108,4 @@
 
 | Date | Lot | Valeur | Avant | Après | Mesure |
 |---|---|---|---|---|---|
-| – | – | – | – | – | – |
+| 2026-11-21 | 2 | Écart TSC/QPC sur 10 s (`tsc-clock`) | < 10 µs | < 100 µs | Fréquence CPUID `0x15` = 2 688 000 000 Hz (nominale). 3 runs sur secteur, i5-11400H : 45,8 / 45,8 / 45,0 µs (4,58 / 4,58 / 4,50 ppm), écart systématique : le TSC réel tourne environ 4,6 ppm plus vite que la valeur nominale. Une calibration QPC courte (5 × 200 ms) est trop bruitée pour corriger (1,7 ppm trouvés). Décision de Matteo (option A) : garder CPUID comme source et relâcher le seuil ; 4,6 ppm est négligeable pour des frametimes de quelques ms. |

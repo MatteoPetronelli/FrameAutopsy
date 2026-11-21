@@ -175,7 +175,7 @@ ici depuis le lot 3), maths d'horloge pures dans `fa-core::clock`. Commande de d
 
 **Invariants** : règle « se mérite » (ASM-01 dans le catalogue) ; checkpoint d'explication pour chaque bloc asm.
 
-**Fin du lot** : écart TSC/QPC < 10 µs sur 10 s ; écart entre cœurs < 1 µs ; bench ASM-01 noté avec un verdict.
+**Fin du lot** : écart TSC/QPC < 100 µs sur 10 s (recalibré depuis 10 µs au lot 2) ; écart entre cœurs < 1 µs ; bench ASM-01 noté avec un verdict.
 
 **Ce que tu apprends** : syntaxe de `asm!` (opérandes, clobbers, `options`), `rdtsc` contre `rdtscp`, rôle de
 `lfence`, CPUID, TSC invariant, pourquoi QPC (10 MHz) ne suffit pas.

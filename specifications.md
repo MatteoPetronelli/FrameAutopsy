@@ -311,7 +311,7 @@ SHALL be re-estimated every 60 s and its drift recorded.
 
 ##### Scenario: Ten-second accuracy
 - **WHEN** a 10 s interval is measured with both TSC and QPC
-- **THEN** the elapsed times differ by less than 10 µs (calibrate)
+- **THEN** the elapsed times differ by less than 100 µs (calibrate; recalibrated from 10 µs in lot 2, see `docs/decisions.md` §5)
 
 ##### Scenario: Cross-core consistency
 - **WHEN** a test thread pinned successively to every logical CPU reads the TSC

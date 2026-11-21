@@ -36,7 +36,7 @@
 
 - [x] 5.1 Implement `fa clock` (non-elevated): invariance, frequency and source, TSC vs QPC gap, per-core skew, topology; verify it runs without admin and prints every field.
 - [x] 5.2 Pinned-thread cross-core test (uses the 4.5 guard; measured 2026-11-21: worst backward step 0 ticks over 3 600 hops, limit 2 688 ticks = 1 us): readings monotonic and skew < 1 µs (calibrate); verify on the target and record the value.
-- [ ] 5.3 (NOT MET, pending user decision: three runs measured 4.58, 4.58 and 4.50 ppm = 45.8, 45.8 and 45.0 us with the CPUID 0x15 frequency of 2.688 GHz) 10 s TSC vs QPC test: gap < 10 µs (calibrate); verify on the target and record the value.
+- [x] 5.3 10 s TSC vs QPC test: gap < 100 us (calibrate, recalibrated from 10 us by the user, option A, logged in `docs/decisions.md` section 5); measured 2026-11-21 with the CPUID frequency: 45.8, 45.8 and 45.0 us (about 4.6 ppm). Run on demand: `cargo test -p fa-win ten_second -- --ignored --nocapture`.
 - [ ] 5.4 Run the gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 6. ASM-01 asm version and explanation checkpoint (before the bench)
