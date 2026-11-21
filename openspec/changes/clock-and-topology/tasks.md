@@ -2,17 +2,17 @@
 
 ## 1. Catalog line and skeleton
 
-- [ ] 1.1 Re-read and, if needed, complete the ASM-01 line in `docs/asm-unsafe-catalog.md` BEFORE any code; verify it lists reference, metric, parity test, fallback and failure mode, and that the WIN-07 (pinning, lot 2) and WIN-11 (QPC) lines exist.
-- [ ] 1.2 Confirm AVX-512, WAITPKG and MWAITX status by CPUID on the target and note it in catalog §3; verify the printed flags match the note.
-- [ ] 1.3 Create the `fa-asm::tsc` module skeleton with the `now()` / `now_serialized()` signatures and the `FA_FORCE_SCALAR` switch; verify `cargo build -p fa-asm` passes.
-- [ ] 1.4 Run the gate: `powershell -File scripts/gate.ps1` is green.
+- [x] 1.1 Re-read and, if needed, complete the ASM-01 line in `docs/asm-unsafe-catalog.md` BEFORE any code; verify it lists reference, metric, parity test, fallback and failure mode, and that the WIN-07 (pinning, lot 2) and WIN-11 (QPC) lines exist.
+- [x] 1.2 Confirm AVX-512, WAITPKG and MWAITX status by CPUID on the target and note it in catalog §3; verify the printed flags match the note.
+- [x] 1.3 Create the `fa-asm::tsc` module skeleton with the `now()` / `now_serialized()` signatures and the `FA_FORCE_SCALAR` switch; verify `cargo build -p fa-asm` passes.
+- [x] 1.4 Run the gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 2. Intrinsics reference version
 
-- [ ] 2.1 Implement `now()` and `now_serialized()` with `_mm_lfence` + `_rdtsc` / `__rdtscp`, each `unsafe` block carrying `// SAFETY:`; verify clippy (`undocumented_unsafe_blocks`) is clean.
-- [ ] 2.2 Add CPUID invariant-TSC detection (`0x80000007:EDX[8]`) with QPC fallback mode; verify a unit test covers both branches (flag injected).
-- [ ] 2.3 Add tests: monotonic reads and the same-tick-within-overhead parity helper; verify `cargo test -p fa-asm` passes.
-- [ ] 2.4 Run the gate: `powershell -File scripts/gate.ps1` is green.
+- [x] 2.1 Implement `now()` and `now_serialized()` with `_mm_lfence` + `_rdtsc` / `__rdtscp`, each `unsafe` block carrying `// SAFETY:`; verify clippy (`undocumented_unsafe_blocks`) is clean.
+- [x] 2.2 Add CPUID invariant-TSC detection (`0x80000007:EDX[8]`) with QPC fallback mode; verify a unit test covers both branches (flag injected).
+- [x] 2.3 Add tests: monotonic reads and the same-tick-within-overhead parity helper; verify `cargo test -p fa-asm` passes.
+- [x] 2.4 Run the gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 3. Frequency, conversions, QPC mapping
 

@@ -34,7 +34,10 @@ every line that remains is load-bearing and proven.
 ## 3. Target machine
 
 Intel Core i5-11400H (Tiger Lake-H): 6 identical cores / 12 threads, one LLC; SSE4.2, AVX2, FMA, **AVX-512**
-(F/VL/BW/DQ — confirm with CPUID at lot 2); **no WAITPKG** (to confirm), **no MWAITX** (AMD only). A module whose only
+(AVX-512F confirmed by CPUID on 2026-11-21; VL/BW/DQ not checked); **no WAITPKG** and **no MWAITX**, both confirmed
+absent by CPUID on 2026-11-21 (7.0 ECX[5] = 0, 0x80000001 ECX[29] = 0). Invariant TSC and `rdtscp` present; CPUID
+`0x15` reports a 38.4 MHz crystal with ratio 140/2, i.e. a nominal 2 688 000 000 Hz (to be checked against the QPC
+calibration, lot 2); leaf `0x16` returns zeros. `__cpuid` is an `unsafe` function in Rust 1.92. A module whose only
 win would be on hardware absent from this machine is not built (D1: it could never be proven).
 
 ## 4. Ledger
