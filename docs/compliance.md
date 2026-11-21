@@ -33,19 +33,33 @@
 | Mojang (Minecraft Java) | [Minecraft EULA](https://www.minecraft.net/en-us/eula) | Mods allowed (not sold, no substantial Mojang code); distributing modified clients/servers is not. JVM arguments and system monitoring not mentioned (full text to read in lot 1). |
 | Windows (context) | [KASLR leaks restriction](https://windows-internals.com/kaslr-leaks-restriction/) | From Windows 11 24H2, several APIs return kernel addresses only with `SeDebugPrivilege` → spike at the start of lot 11. |
 
-**Not yet verified (lot 1):** full EULA texts (Riot ToS, Epic Fortnite EULA, Battle.net EULA and Blizzard support
-article on third-party software, Minecraft EULA and usage guidelines); Riot developer policies for local API use; the
-date Vanguard became mandatory for League of Legends; which anti-cheats Fortnite runs (EAC, and possibly BattlEye);
-the name of Overwatch 2's client anti-cheat component.
+### 2.1 Official texts read in lot 1 (2026-11-21)
+
+None of these texts names ETW, PDH/WMI/NVML, process priority, CPU Sets, power plans, the standby list or non-injected
+overlays: every observer and action item is "not addressed" by every publisher. Read results, not legal advice.
+
+| Publisher | Texts read (date shown on the page) | Facts used |
+|---|---|---|
+| Epic (Fortnite) | [Terms of Service](https://legal.epicgames.com/epicgames/tos) (2026-09-10; the Fortnite EULA URLs redirect here); [Community Rules](https://legal.epicgames.com/epicgames/community-rules) (2026-02-26); [EAC player FAQ](https://www.easy.ac/support/articles); Epic help pages on EAC and BattlEye; [BattlEye FAQ](https://www.battleye.com/support/faq/) | ToS §4 bans cheats ("unfair advantages"), tampering with Gameplay Integrity Tools, and says Epic will not reveal what its tools detect. EAC "blocks software that interacts with games in ways that look identical to cheating techniques", possibly overlays and monitoring tools; blocking, not a ban. BattlEye FAQ: non-cheat overlays "generally supported". **Fortnite runs both EAC and BattlEye** (Epic help pages). Not read: legacy EULA PDF, EOS anti-cheat docs. |
+| Blizzard (Overwatch 2) | Battle.net EULA (2024-03-21, [US](https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement), [EMEA](https://www.blizzard.com/en-gb/legal/08b946df-660a-40e4-a072-1fbde65173b1/blizzard-end-user-license-agreement)); [Anti-cheating Agreement](https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement) (2016-02-03); [Defense Matrix](https://overwatch.blizzard.com/en-us/news/24173281/) (2025-01-30) | EULA §1.C.vi bans software that "intercepts, collects, reads, or mines information generated or stored by the Platform"; §4 allows monitoring of out-of-process programs. The Anti-cheating Agreement says it scans the process list and "which processes have a handle to the Blizzard games process". **The client anti-cheat component is not named in any official text.** **Not read (login wall): In-Game Code of Conduct and Blizzard support articles on third-party software.** |
+| Mojang (Minecraft Java) | [EULA](https://www.minecraft.net/en-us/eula) and [Usage Guidelines](https://www.minecraft.net/en-us/usage-guidelines) (no date on the pages); [Microsoft Services Agreement](https://www.microsoft.com/en-us/servicesagreement) (effective 2026-09-30, partly keyword-scanned); [Xbox Community Standards](https://www.xbox.com/en-US/legal/community-standards) §7 (2024-05) | EULA: "You may develop tools, plug-ins and services as long as they do not seem official or approved by us"; usage guidelines: "If something isn't covered ... that probably means we don't want you to do it". No text about system monitoring, JVM files, JVM arguments or overlays. **No official text found on client anti-cheat.** |
+| Riot (LoL, VALORANT) | [Terms of Service](https://www.riotgames.com/en/terms-of-service) (2024-12-01); [Developer General Policies](https://developer.riotgames.com/policies/general) (2025-05-29); [LoL docs](https://developer.riotgames.com/docs/lol) and [VALORANT docs](https://developer.riotgames.com/docs/valorant) (no date); [Third Party Applications](https://support.riotgames.com/en-us/riot/events/third-party-applications) (2025-02-10); [Vanguard FAQ for third-party apps](https://www.riotgames.com/en/DevRel/vanguard-faq) (2024-04-01) | **Registration clause: "If your product serves players, you must register it with us regardless of whether or not your product uses official documented APIs."** ToS §7.1(11) bans "unauthorized third party programs" that interact with the services, undefined. LoL game policy approves only overlays with "static data that is available prior to the game"; VALORANT lists real-time overlays and "apps ... designed for personal use only" as unapproved. VALORANT documents no local client API. |
+
+Vanguard mandatory for League of Legends: **patch 14.9, 2024-04-30** ("You will be unable to queue for or play League
+until Vanguard is installed and active"; live in the Philippines with 14.8 on 2024-04-16). No official page confirms the
+exact worldwide enforcement day.
+
+**Open points:** Riot DevRel should be asked whether registration applies to FrameAutopsy and whether kernel stack
+walks count as "game memory access" (S7, 2026-10-06). Blizzard's Code of Conduct and support articles remain unread.
 
 ## 3. Anti-cheat per game
 
 | Game | Anti-cheat | Level | Notes |
 |---|---|---|---|
-| League of Legends | Riot Vanguard (to confirm the LoL rollout date from an official source) | kernel, boot-time | memory access blocked for unknown apps since 2026-10-06 |
+| League of Legends | Riot Vanguard (mandatory since patch 14.9, 2024-04-30) | kernel, boot-time | memory access blocked for unknown apps since 2026-10-06 |
 | VALORANT | Riot Vanguard | kernel, boot-time | no official local game-data API |
-| Fortnite | Easy Anti-Cheat (BattlEye to confirm) | kernel | – |
-| Overwatch 2 | Blizzard anti-cheat (component name to confirm) | to confirm | – |
+| Fortnite | Easy Anti-Cheat **and** BattlEye (Epic help pages, 2026-11-21) | kernel | – |
+| Overwatch 2 | Blizzard anti-cheat (component not named in official texts) | not stated | – |
 | Minecraft Java | none on the client | – | servers may run plugin anti-cheats; servers out of scope |
 
 ## 4. Enablement semantics (Claude's call, see `specifications.md` › compliance-matrix)
