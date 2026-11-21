@@ -6,9 +6,9 @@ triggered by a stutter) → act (reversible actions on *other* processes and the
 A/B blocks, exact sign-flip test on 1 % lows). Rust workspace (edition 2021), elevated headless collector + non-elevated
 egui UI. Target games: LoL, VALORANT, Fortnite, Overwatch 2, Minecraft Java (client); any other game is observe-only.
 
-**Status (2026-11-21): lot 0 archived and pushed; lot 1 `compliance-matrix` coded on the local branch
-`lot-1/compliance-matrix`** (matrix, `TargetProcess`, `OpenProcess` source test, tos-guard skill; gate green), pending the
-user's go to merge. Riot Developer Portal registration question is with DevRel (`docs/compliance.md` 2.1). Next: lot 2
+**Status (2026-11-21): lots 0 and 1 done, merged into `main` and archived** (workspace, gate, counting allocator,
+compliance matrix, `TargetProcess`, `OpenProcess` source test). Product registered on the Riot Developer Portal as a
+personal project (`docs/compliance.md` 2.1); Riot technical questions (stack walks) wait for lot 11. Next: lot 2
 `clock-and-topology` (prompt in `roadmap.md`).
 
 ## Working agreement
