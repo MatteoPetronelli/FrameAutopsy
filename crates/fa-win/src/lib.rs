@@ -6,4 +6,5 @@
 pub mod clock;
 pub mod pdh;
 pub mod thread;
+pub mod timer;
 pub mod topology;

@@ -85,3 +85,44 @@ pub fn run_freq(a: &FreqArgs, cpus: u32) -> std::io::Result<()> {
     }
     result
 }
+
+/// `--cpu N` and `--other N` flags; `None` when something else is passed.
+fn cpu_flags(rest: &[String], default_cpu: u32, default_other: u32) -> Option<(u32, u32)> {
+    let (mut cpu, mut other) = (default_cpu, default_other);
+    let mut it = rest.iter();
+    while let Some(flag) = it.next() {
+        let v: u32 = it.next()?.parse().ok().filter(|c| *c < 64)?;
+        match flag.as_str() {
+            "--cpu" => cpu = v,
+            "--other" => other = v,
+            _ => return None,
+        }
+    }
+    (cpu != other).then_some((cpu, other))
+}
+
+pub fn run_wake(rest: &[String]) -> Option<std::io::Result<()>> {
+    let (cpu, _) = cpu_flags(rest, 2, 3)?;
+    Some(fa_probe::wake::run(cpu, Duration::from_millis(1), 2000).map(|s| match s {
+        Some(s) => println!(
+            "wake-up lateness on CPU {cpu}, {} waits of 1 ms: p50 {:.1} us, p99 {:.1} us, max {:.1} us",
+            s.n, s.p50_us, s.p99_us, s.max_us
+        ),
+        None => println!("no samples"),
+    }))
+}
+
+pub fn run_domain(rest: &[String]) -> Option<std::io::Result<()>> {
+    let (a, b) = cpu_flags(rest, 2, 4)?;
+    let hz = Clock::new().hz();
+    Some(
+        fa_probe::domain::check(a, b, hz, Duration::from_secs(1), 5).map(|r| {
+            println!(
+                "core {a}: {:.3} GHz with core {b} idle, {:.3} GHz with core {b} loaded -> {:?}",
+                r.idle_hz / 1e9,
+                r.loaded_hz / 1e9,
+                r.verdict
+            )
+        }),
+    )
+}

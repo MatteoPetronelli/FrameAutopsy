@@ -9,7 +9,9 @@ use std::process::ExitCode;
 use std::time::Duration;
 
 const USAGE: &str = "usage: fa clock [--seconds N]   (TSC vs QPC interval, default 2 s)
-       fa probe freq [--seconds N] [--cpu N] [--load-all]   (frequency probe next to PDH, CSV)";
+       fa probe freq [--seconds N] [--cpu N] [--load-all]   (frequency probe next to PDH, CSV)
+       fa probe wake [--cpu N]   (timer wake-up lateness, 1 ms x 2000)
+       fa probe domain [--cpu A] [--other B]   (does core A follow the load of core B?)";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -36,7 +38,24 @@ fn main() -> ExitCode {
                 None => usage(),
             }
         }
+        Some("probe") if args.get(1).map(String::as_str) == Some("wake") => {
+            run_or_fail(|| probe::run_wake(&args[2..]))
+        }
+        Some("probe") if args.get(1).map(String::as_str) == Some("domain") => {
+            run_or_fail(|| probe::run_domain(&args[2..]))
+        }
         _ => usage(),
+    }
+}
+
+fn run_or_fail(f: impl FnOnce() -> Option<std::io::Result<()>>) -> ExitCode {
+    match f() {
+        None => usage(),
+        Some(Ok(())) => ExitCode::SUCCESS,
+        Some(Err(e)) => {
+            eprintln!("fa probe: {e}");
+            ExitCode::FAILURE
+        }
     }
 }
 
