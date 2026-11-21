@@ -6,8 +6,8 @@ triggered by a stutter) → act (reversible actions on *other* processes and the
 A/B blocks, exact sign-flip test on 1 % lows). Rust workspace (edition 2021), elevated headless collector + non-elevated
 egui UI. Target games: LoL, VALORANT, Fortnite, Overwatch 2, Minecraft Java (client); any other game is observe-only.
 
-**Status (2026-11-20): pre-code.** Only docs, OpenSpec and the Claude setup exist. Next step: lot 0 `bootstrap-workspace`
-(prompt in `roadmap.md`). No `Cargo.toml` yet.
+**Status (2026-11-21): lot 0 `bootstrap-workspace` in progress.** Workspace, four skeleton crates, gate and counting
+allocator exist; changes for lots 0 to 4 are created. Next: lot 1 `compliance-matrix` (prompt in `roadmap.md`).
 
 ## Working agreement
 - Talk to the user in **French**. Code, identifiers, commits, OpenSpec artifacts and technical docs in **English**.
@@ -47,9 +47,8 @@ Dependencies point to `fa-core`/`fa-sync`/`fa-asm`/`fa-win`; graph in `docs/arch
 ```powershell
 openspec list                     # verified 2026-11-20: no active changes yet
 openspec validate --all           # validate changes and specs
-graphify hook status              # git hooks installed (graph not built yet, see below)
-# Created in lot 0, NOT runnable yet:
-powershell -File scripts/gate.ps1 # fmt --check -> clippy -D warnings -> test --workspace -> miri (fa-sync, lot 5+) -> fa lab score (lot 10+)
+graphify hook status              # git hooks installed
+powershell -File scripts/gate.ps1 # headers -> fmt --check -> clippy -D warnings -> test -> miri (lot 5+) -> fa lab score (lot 10+) -> graphify
 cargo bench -p fa-asm --bench <module>_vs_<reference>   # when a lot touches a kernel; paste result in the catalog
 cargo sweep --time 14             # disk hygiene (cargo-sweep)
 ```
@@ -132,7 +131,7 @@ Dev commands that need an **elevated terminal** (ETW requires admin): `fa captur
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
-**Not built yet** (2026-11-20, docs only): lot 0 builds it with `graphify update .` once code exists. `graphify-out/` is
+**Built** (2026-11-21, `graphify update .` runs in the gate). `graphify-out/` is
 gitignored (local graph); the git hooks rebuild it after each commit. The search/read guard hooks live in
 `.claude/settings.local.json` (machine-specific path, not committed).
 

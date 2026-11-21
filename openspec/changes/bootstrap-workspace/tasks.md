@@ -58,7 +58,7 @@ Gate = `powershell -File scripts/gate.ps1`. Skills to load: `rust-cargo`, `ponyt
 - [x] 4.4 Add `criterion` as dev-dependency of `fa-asm` and `fa-sync` with `[[bench]] harness = false` and one trivial
   bench named `<module>_vs_<reference>` that prints reference and candidate side by side. Verify
   `cargo bench -p fa-sync --no-run` and `cargo bench -p fa-asm --no-run` both link.
-- [ ] 4.5 **Explanation checkpoint (French)**: explain SYNC-00 to the user using catalog section 7 (ce que ca fait,
+- [x] 4.5 **Explanation checkpoint (French)**: explain SYNC-00 to the user using catalog section 7 (ce que ca fait,
   pourquoi c'est correct, ce qui le casserait, comment on le verifie): why delegating to `System` preserves the layout
   contract, why the allocator must not allocate, why a per-thread counter needs no atomics. Do not merge the group until the
   user answers "compris". Verify the user's "compris" is in the session.
@@ -67,21 +67,21 @@ Gate = `powershell -File scripts/gate.ps1`. Skills to load: `rust-cargo`, `ponyt
 
 ## 5. Documentation, skill and OpenSpec changes 0 to 4
 
-- [ ] 5.1 Write the short `README.md` (purpose, build, gate, `cargo sweep --time 14`, link to `CLAUDE.md`). Verify the
+- [x] 5.1 Write the short `README.md` (purpose, build, gate, `cargo sweep --time 14`, link to `CLAUDE.md`). Verify the
   documented commands run as written.
-- [ ] 5.2 Create the project skill `.claude/skills/frameautopsy-invariants/SKILL.md` (unsafe confinement,
+- [x] 5.2 Create the project skill `.claude/skills/frameautopsy-invariants/SKILL.md` (unsafe confinement,
   earn-its-place, zero allocation, gate), modelled on `riftmind-invariants` without copying private content. Verify
   the frontmatter parses and the skill is listed.
-- [ ] 5.3 Update `CLAUDE.md` status (lot 0 done, `Cargo.toml` exists, gate now runnable). Verify the "NOT runnable yet"
+- [x] 5.3 Update `CLAUDE.md` status (lot 0 done, `Cargo.toml` exists, gate now runnable). Verify the "NOT runnable yet"
   note is replaced by a runnable command.
-- [ ] 5.4 Verify `openspec list` shows `bootstrap-workspace`, `compliance-matrix`, `clock-and-topology`,
+- [x] 5.4 Verify `openspec list` shows `bootstrap-workspace`, `compliance-matrix`, `clock-and-topology`,
   `driverless-probes`, `health-check`, and `openspec validate --all --strict` passes.
-- [ ] 5.5 Build the Graphify graph (`graphify update .`) and confirm `graphify-out/` is ignored by git. Run the gate
+- [x] 5.5 Build the Graphify graph (`graphify update .`) and confirm `graphify-out/` is ignored by git. Run the gate
   (`powershell -File scripts/gate.ps1`) and confirm green.
 
 ## 6. Integration check (lot done criteria)
 
-- [ ] 6.1 Gate green (`powershell -File scripts/gate.ps1`, exit 0), `git status --short` shows neither `target/` nor
+- [x] 6.1 Gate green (`powershell -File scripts/gate.ps1`, exit 0), `git status --short` shows neither `target/` nor
   `profile.md`, `openspec list` shows changes 0 to 4, and the workspace contains only the four skeleton crates
   (verifies "Lot 0 workspace").
 
