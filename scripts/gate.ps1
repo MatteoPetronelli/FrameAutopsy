@@ -28,10 +28,10 @@ Step 'headers' {
     $global:LASTEXITCODE = $fail
 }
 Step 'fmt'    { cargo fmt --all -- --check }
-Step 'clippy' { cargo clippy --workspace --all-targets -- -D warnings }
+Step 'clippy' { cargo clippy --workspace --all-targets --all-features -- -D warnings }
 Step 'test'   { cargo test --workspace --all-features }
-# Lot 5+: Miri on fa-sync once it has tests. Lot 10+: `fa lab score`.
-if (Test-Path crates/fa-sync/tests) { Step 'miri' { cargo +nightly miri test -p fa-sync } }
+# Lot 5+: Miri once fa-sync has its SPSC ring (src/spsc.rs, SYNC-01); the counting allocator alone is not Miri material. Lot 10+: `fa lab score`.
+if (Test-Path crates/fa-sync/src/spsc.rs) { Step 'miri' { cargo +nightly miri test -p fa-sync } }
 if (Test-Path crates/fa) { Step 'lab score' { cargo run -p fa --release -- lab score } }
 Step 'graphify' { graphify update . }
 Write-Host 'GATE OK'

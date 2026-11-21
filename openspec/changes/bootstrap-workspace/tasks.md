@@ -45,24 +45,24 @@ Gate = `powershell -File scripts/gate.ps1`. Skills to load: `rust-cargo`, `ponyt
 
 ## 4. Counting allocator and bench harness (`fa-sync`, SYNC-00)
 
-- [ ] 4.1 Re-read the SYNC-00 line of `docs/asm-unsafe-catalog.md` (written before the code) and confirm it matches
+- [x] 4.1 Re-read the SYNC-00 line of `docs/asm-unsafe-catalog.md` (written before the code) and confirm it matches
   what is built; fix the catalog line first if not. Verify the line exists with verdict "needed".
-- [ ] 4.2 Implement `CountingAlloc` (`unsafe impl GlobalAlloc`, delegating to `System`, relaxed atomic counters, no
-  allocation inside the allocator) behind the `test-support` feature, with a safe API (`count_allocs`,
+- [x] 4.2 Implement `CountingAlloc` (`unsafe impl GlobalAlloc`, delegating to `System`, per-thread `Cell` counter (const-initialised `thread_local!`, so parallel tests do not
+  disturb each other), no allocation inside the allocator) behind the `test-support` feature, with a safe API (`count_allocs`,
   `assert_no_alloc`). One `unsafe` operation per block, each with an uppercase `// SAFETY:` comment. Verify the crate
   builds with and without `--features test-support` and Clippy passes with the three unsafe lints.
-- [ ] 4.3 Add the self-test in a dedicated integration-test binary with `#[global_allocator]`: a `Vec::push` past
+- [x] 4.3 Add the self-test in a dedicated integration-test binary with `#[global_allocator]`: a `Vec::push` past
   capacity is counted, a push into a pre-sized `Vec` counts zero. Verify the "Hidden allocation" scenario with
   `cargo test -p fa-sync --features test-support`, and mutation-check by making the counter not increment on `alloc`
   (the test must fail), then restore.
-- [ ] 4.4 Add `criterion` as dev-dependency of `fa-asm` and `fa-sync` with `[[bench]] harness = false` and one trivial
+- [x] 4.4 Add `criterion` as dev-dependency of `fa-asm` and `fa-sync` with `[[bench]] harness = false` and one trivial
   bench named `<module>_vs_<reference>` that prints reference and candidate side by side. Verify
   `cargo bench -p fa-sync --no-run` and `cargo bench -p fa-asm --no-run` both link.
 - [ ] 4.5 **Explanation checkpoint (French)**: explain SYNC-00 to the user using catalog section 7 (ce que ca fait,
   pourquoi c'est correct, ce qui le casserait, comment on le verifie): why delegating to `System` preserves the layout
-  contract, why the allocator must not allocate, why `Relaxed` is enough for counters. Do not merge the group until the
+  contract, why the allocator must not allocate, why a per-thread counter needs no atomics. Do not merge the group until the
   user answers "compris". Verify the user's "compris" is in the session.
-- [ ] 4.6 Run the gate (`powershell -File scripts/gate.ps1`) and confirm green, with the `test-support` tests included
+- [x] 4.6 Run the gate (`powershell -File scripts/gate.ps1`) and confirm green, with the `test-support` tests included
   (wire the feature into the gate's test step if it is not enabled by default).
 
 ## 5. Documentation, skill and OpenSpec changes 0 to 4

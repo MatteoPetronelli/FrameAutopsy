@@ -59,7 +59,7 @@ win would be on hardware absent from this machine is not built (D1: it could nev
 
 | Id | Module | Lot | Tier | Reference | Metric | Verification | What would break it | Result | Verdict |
 |---|---|---|---|---|---|---|---|---|---|
-| SYNC-00 | counting global allocator (`test-support` feature, `unsafe impl GlobalAlloc`) | 0 | unsafe (test only) | none (needed by the zero-allocation tests) | n/a | self-test: a known allocation is counted | n/a | counting in the allocator itself allocating | – | needed |
+| SYNC-00 | counting global allocator (`test-support` feature, `unsafe impl GlobalAlloc`) | 0 | unsafe (test only) | none (needed by the zero-allocation tests) | n/a | self-test: a known allocation is counted (per-thread `Cell` counter) | n/a | counting in the allocator itself allocating | – | needed |
 | SYNC-01 | SPSC ring (padding, Acquire/Release, `MaybeUninit`) | 5 | unsafe-sync | `rtrb` | throughput and latency, 32-byte records | Miri two-thread stress; criterion | Relaxed where Acquire is needed → stale reads; missing padding → false sharing | – | pending |
 | SYNC-02 | cross-process seqlock over a fixed-layout mapping (relaxed atomic 64-bit words + Acquire/Release fences; no volatile) | 7 | unsafe-sync | none exists for cross-process fixed layouts (justification) | correctness (no torn read), reader retry rate | Miri in-process; cross-process test with checksums | forming `&T` into shared memory (UB); volatile instead of atomics (data race); missing fences | – | pending |
 | SYNC-03 | shared-region reader for hsperfdata (relaxed atomic copies) | 15 | unsafe-sync | plain file reads (`std::fs`) at 10 Hz | sampling cost; consistency | comparison test against file reads | same as SYNC-02 | – | pending (likely loses → file reads) |

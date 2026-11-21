@@ -3,3 +3,10 @@ name = "fa-asm"
 edition.workspace = true
 version.workspace = true
 publish.workspace = true
+
+[dev-dependencies]
+criterion = "0.8.2"
+
+[[bench]]
+name = "harness_vs_reference"
+harness = false
