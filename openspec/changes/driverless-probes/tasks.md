@@ -5,10 +5,10 @@ checkpoint in French (template: `docs/asm-unsafe-catalog.md` section 7), merged 
 
 ## 1. Catalog lines and CPU features
 
-- [ ] 1.1 Fill the catalog lines for ASM-02, ASM-03, ASM-04, the WIN-07 timers part and add WIN-08 (PDH reader) and WIN-09 (large pages) before any code; verify the lines exist in `docs/asm-unsafe-catalog.md`.
-- [ ] 1.2 Create crate `fa-probe` (`#![forbid(unsafe_code)]`) and register it in the workspace; verify `cargo build -p fa-probe`.
-- [ ] 1.3 Confirm by CPUID that WAITPKG and MWAITX are absent on the target machine and record it in the catalog; verify with a test that reads the feature bits and the recorded note.
-- [ ] 1.4 Gate: `powershell -File scripts/gate.ps1` is green.
+- [x] 1.1 Fill the catalog lines for ASM-02, ASM-03, ASM-04, the WIN-07 timers part and add WIN-08 (PDH reader) and WIN-09 (large pages) before any code; verify the lines exist in `docs/asm-unsafe-catalog.md`.
+- [x] 1.2 Create crate `fa-probe` (`#![forbid(unsafe_code)]`) and register it in the workspace; verify `cargo build -p fa-probe`.
+- [x] 1.3 Confirm by CPUID that WAITPKG and MWAITX are absent on the target machine and record it in the catalog; verify with a test that reads the feature bits and the recorded note.
+- [x] 1.4 Gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 2. Frequency probe and PDH comparison (first, before other probes)
 

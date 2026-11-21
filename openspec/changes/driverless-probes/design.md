@@ -49,8 +49,8 @@ could never be validated here. CPUID is checked once in this lot to confirm and 
 per-process since Windows 10 2004: the result describes our own process only. The timer call is `fa-win`
 (WIN-07, timers part; pinning is already provided by lot 2).
 
-**D6. Orchestration in `fa-probe` (safe).** Pin the probe thread (with the lot 2 `fa-win::thread` guard) on the chosen logical CPU (`SetThreadSelectedCpuSets`,
-fallback `SetThreadAffinityMask`, own thread only), warm up, sample, reject preempted samples (above 1.5x median),
+**D6. Orchestration in `fa-probe` (safe).** Pin the probe thread (with the lot 2 `fa-win::thread` guard) on the chosen logical CPU (lot 2 uses `SetThreadAffinityMask`
+on the current thread, one processor group; CPU Sets only if a lot needs them), warm up, sample, reject preempted samples (above 1.5x median),
 report median and spread, timestamps in TSC ticks. Probes run in the non-elevated `fa` process, so no input crosses
 into the elevated collector in this lot.
 

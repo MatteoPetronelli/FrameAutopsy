@@ -10,6 +10,16 @@ pub fn cpuid_count(leaf: u32, sub: u32) -> [u32; 4] {
     [r.eax, r.ebx, r.ecx, r.edx]
 }
 
+/// WAITPKG (`tpause`/`umwait`): CPUID `7.0:ECX[5]`.
+pub fn has_waitpkg() -> bool {
+    cpuid_count(0, 0)[0] >= 7 && cpuid_count(7, 0)[2] >> 5 & 1 == 1
+}
+
+/// MWAITX (`monitorx`/`mwaitx`, AMD): CPUID `0x80000001:ECX[29]`.
+pub fn has_mwaitx() -> bool {
+    cpuid_count(0x8000_0000, 0)[0] >= 0x8000_0001 && cpuid_count(0x8000_0001, 0)[2] >> 29 & 1 == 1
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -19,5 +29,11 @@ mod tests {
         let [max, b, c, d] = cpuid_count(0, 0);
         assert!(max >= 1);
         assert_ne!(b | c | d, 0);
+    }
+
+    /// Target machine (i5-11400H), checked 2026-11-21: neither feature, so ASM-05 stays dropped (catalog).
+    #[test]
+    fn the_target_cpu_has_neither_waitpkg_nor_mwaitx() {
+        assert!(!has_waitpkg() && !has_mwaitx());
     }
 }

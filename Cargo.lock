@@ -319,6 +319,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fa-probe"
+version = "0.0.0"
+dependencies = [
+ "fa-core",
+]
+
+[[package]]
 name = "fa-sync"
 version = "0.0.0"
 dependencies = [
