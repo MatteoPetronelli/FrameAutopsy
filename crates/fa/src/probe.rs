@@ -156,3 +156,31 @@ fn curve(cpu: u32) -> std::io::Result<()> {
     }
     Ok(())
 }
+
+pub fn run_bw(rest: &[String]) -> Option<std::io::Result<()>> {
+    use fa_probe::bandwidth::{physical_core_cpus, run, Mode};
+    let kernel = match rest {
+        [] => fa_probe::bandwidth::best_kernel(),
+        [f, k] if f == "--kernel" => match k.as_str() {
+            "avx2" => fa_probe::bandwidth::Kernel::Avx2,
+            "sse2" => fa_probe::bandwidth::Kernel::Sse2,
+            "scalar" => fa_probe::bandwidth::Kernel::Scalar,
+            _ => return None,
+        },
+        _ => return None,
+    };
+    Some((|| {
+        let topo = fa_win::topology::read().map_err(std::io::Error::other)?;
+        let cores = physical_core_cpus(&topo.cpus);
+        println!("kernel {kernel:?}, 64 MiB per thread, GB/s (copy counts read + write)");
+        println!("threads,read,write,copy");
+        for n in 1..=cores.len() {
+            let mut row = format!("{n}");
+            for mode in [Mode::Read, Mode::Write, Mode::Copy] {
+                row += &format!(",{:.1}", run(&cores[..n], mode, kernel, 64 << 20, 8)?);
+            }
+            println!("{row}");
+        }
+        Ok(())
+    })())
+}

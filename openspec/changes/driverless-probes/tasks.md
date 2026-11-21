@@ -34,17 +34,17 @@ checkpoint in French (template: `docs/asm-unsafe-catalog.md` section 7), merged 
 - [x] 4.3 Implement the Rust `read_volatile` chain (reference) and ASM-03 in `fa-asm` with fallback; verify the parity test (same final pointer, ns/load within 2 %) passes.
 - [x] 4.4 Run `cargo bench -p fa-asm --bench pointer_chase_vs_read_volatile` (3 runs, median and spread, catalog section 2 protocol) and paste the coefficient of variation into the catalog; verify the ship-or-delete verdict is recorded.
 - [x] 4.5 Implement the cache curve (16 KiB to 256 MiB), plateau detection and comparison with `cpu-topology`; verify with a test on synthetic curves and a real run compared with the topology.
-- [ ] 4.6 French explanation checkpoint for ASM-03 (if kept) and WIN-09, then "compris".
+- [x] 4.6 French explanation checkpoint for ASM-03 (if kept) and WIN-09, then "compris".
 - [x] 4.7 Gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 5. Memory bandwidth
 
-- [ ] 5.1 Write the intrinsics reference (AVX2 loads, `_mm256_stream_si256`, copy) with SSE2 and scalar fallbacks; verify the parity tests (same bytes, same checksum).
-- [ ] 5.2 Implement ASM-04 in `fa-asm` (AVX2 loads, `vmovntdq` plus `sfence`, copy); verify the parity test against the reference.
-- [ ] 5.3 Implement multi-threaded orchestration across physical cores in `fa-probe`; verify with a test of the aggregation logic and a real run showing scaling then saturation.
-- [ ] 5.4 Run `cargo bench -p fa-asm --bench bandwidth_vs_intrinsics` and paste GB/s into the catalog; verify the verdict (kept only with a win of 5 % or more, otherwise module deleted and numbers kept).
-- [ ] 5.5 French explanation checkpoint for ASM-04 (if kept), then "compris".
-- [ ] 5.6 Gate: `powershell -File scripts/gate.ps1` is green.
+- [x] 5.1 Write the intrinsics reference (AVX2 loads, `_mm256_stream_si256`, copy) with SSE2 and scalar fallbacks; verify the parity tests (same bytes, same checksum).
+- [x] 5.2 Implement ASM-04 in `fa-asm` (AVX2 loads, `vmovntdq` plus `sfence`, copy); verify the parity test against the reference.
+- [x] 5.3 Implement multi-threaded orchestration across physical cores in `fa-probe`; verify with a test of the aggregation logic and a real run showing scaling then saturation.
+- [x] 5.4 Run `cargo bench -p fa-asm --bench bandwidth_vs_intrinsics` and paste GB/s into the catalog; verify the verdict (kept only with a win of 5 % or more, otherwise module deleted and numbers kept).
+- [x] 5.5 French explanation checkpoint for ASM-04 (if kept), then "compris".
+- [x] 5.6 Gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 6. CLI, calibration and close
 

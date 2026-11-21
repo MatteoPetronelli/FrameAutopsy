@@ -90,6 +90,15 @@ impl PageBuf {
     }
 }
 
+impl PageBuf {
+    /// The same memory as 64-bit words (`usize` is 64 bits on x86_64; the bandwidth kernels take `u64`).
+    pub fn as_mut_u64(&mut self) -> &mut [u64] {
+        // SAFETY: same region and exclusivity as `as_mut_slice`; `u64` has the alignment of the page-aligned base and
+        // the byte length is a multiple of 8.
+        unsafe { std::slice::from_raw_parts_mut(self.ptr.cast::<u64>(), self.words) }
+    }
+}
+
 impl Drop for PageBuf {
     fn drop(&mut self) {
         // SAFETY: `ptr` came from `VirtualAlloc`, is released exactly once, here; size 0 is required with MEM_RELEASE.
