@@ -54,6 +54,12 @@ Personal API key; FrameAutopsy uses no Riot API, so neither fits. The question i
 `RIOT_DEVREL_MESSAGE.md`, local). **Blizzard:** the user confirmed in a logged-in session that the support texts add
 nothing beyond the Anti-cheating Agreement and the EULA already read.
 
+**Registration done (2026-11-21):** the product was registered on the Riot Developer Portal as a personal project; the
+Portal answered "Your application has been created and is approved!" after an automatic check of the description. This
+is a registration status, not an endorsement: it must never be presented as approval by Riot (developer policy: do not
+"refer to your project to be in a partnership or approved by Riot"). It answers no technical question (ETW, stack
+walks): the matrix is unchanged, Riot games stay baseline-only.
+
 **Open points:** Riot DevRel should be asked whether registration applies to FrameAutopsy and whether kernel stack
 walks count as "game memory access" (S7, 2026-10-06). Blizzard's Code of Conduct and support articles remain unread.
 
