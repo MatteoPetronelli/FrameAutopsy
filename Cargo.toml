@@ -13,3 +13,7 @@ debug = "line-tables-only"
 
 [profile.dev.package."*"]
 debug = false
+
+# Kernels and their references are timed in tests: unoptimized code would measure the debug build, not the kernel.
+[profile.dev.package.fa-asm]
+opt-level = 3

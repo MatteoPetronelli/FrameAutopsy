@@ -12,9 +12,9 @@ checkpoint in French (template: `docs/asm-unsafe-catalog.md` section 7), merged 
 
 ## 2. Frequency probe and PDH comparison (first, before other probes)
 
-- [ ] 2.1 Write the Rust `black_box` reference chain and the PDH reader (`fa-win`, WIN-08, English counter names); verify with a test that PDH returns a plausible value on this machine.
-- [ ] 2.2 Implement ASM-02 in `fa-asm` (dependent `add` chain of about 50 us, TSC-bracketed) with scalar fallback and `FA_FORCE_SCALAR=1`; verify the parity test (result within 3 % of the reference) passes.
-- [ ] 2.3 Implement `fa-probe` frequency orchestration: pin on own thread (WIN-07), reject samples above 1.5x median; verify with a unit test on synthetic samples including preempted ones.
+- [x] 2.1 Write the Rust `black_box` reference chain and the PDH reader (`fa-win`, WIN-08, English counter names); verify with a test that PDH returns a plausible value on this machine.
+- [x] 2.2 Implement ASM-02 in `fa-asm` (dependent `add` chain of about 50 us, TSC-bracketed) with scalar fallback and `FA_FORCE_SCALAR=1`; verify the parity test (result within 3 % of the reference) passes.
+- [x] 2.3 Implement `fa-probe` frequency orchestration: pin on own thread (WIN-07), reject samples above 1.5x median; verify with a unit test on synthetic samples including preempted ones.
 - [ ] 2.4 Run the probe and PDH together for 60 s under steady load and export both curves; show them to the user before writing any other probe; verify the user accepted the curves and the measured agreement is recorded in the catalog.
 - [ ] 2.5 French explanation checkpoint for ASM-02, then "compris" from the user; verify the approval is noted in the catalog line.
 - [ ] 2.6 Gate: `powershell -File scripts/gate.ps1` is green.

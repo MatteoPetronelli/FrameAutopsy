@@ -298,6 +298,7 @@ name = "fa"
 version = "0.0.0"
 dependencies = [
  "fa-core",
+ "fa-probe",
  "fa-win",
 ]
 
@@ -322,7 +323,9 @@ dependencies = [
 name = "fa-probe"
 version = "0.0.0"
 dependencies = [
+ "fa-asm",
  "fa-core",
+ "fa-win",
 ]
 
 [[package]]

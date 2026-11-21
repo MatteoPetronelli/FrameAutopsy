@@ -1,12 +1,15 @@
 //! `fa`: FrameAutopsy command line. Non-elevated; only read-only commands exist so far.
 #![forbid(unsafe_code)]
 
+mod probe;
+
 use fa_core::clock::Timebase;
 use fa_win::{clock, topology};
 use std::process::ExitCode;
 use std::time::Duration;
 
-const USAGE: &str = "usage: fa clock [--seconds N]   (TSC vs QPC interval, default 2 s)";
+const USAGE: &str = "usage: fa clock [--seconds N]   (TSC vs QPC interval, default 2 s)
+       fa probe freq [--seconds N] [--cpu N] [--load-all]   (frequency probe next to PDH, CSV)";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -18,6 +21,21 @@ fn main() -> ExitCode {
             }
             None => usage(),
         },
+        Some("probe") if args.get(1).map(String::as_str) == Some("freq") => {
+            match probe::parse(&args[2..]) {
+                Some(a) => {
+                    let cpus = topology::read().map(|t| t.cpus.len() as u32).unwrap_or(1);
+                    match probe::run_freq(&a, cpus) {
+                        Ok(()) => ExitCode::SUCCESS,
+                        Err(e) => {
+                            eprintln!("fa probe freq: {e}");
+                            ExitCode::FAILURE
+                        }
+                    }
+                }
+                None => usage(),
+            }
+        }
         _ => usage(),
     }
 }

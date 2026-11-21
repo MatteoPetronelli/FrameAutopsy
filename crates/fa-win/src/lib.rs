@@ -4,5 +4,6 @@
 #![deny(clippy::multiple_unsafe_ops_per_block)]
 
 pub mod clock;
+pub mod pdh;
 pub mod thread;
 pub mod topology;
