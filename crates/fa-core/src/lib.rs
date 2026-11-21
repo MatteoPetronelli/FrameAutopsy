@@ -2,3 +2,5 @@
 #![forbid(unsafe_code)]
 
 pub mod matrix;
+
+pub mod target;

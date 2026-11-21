@@ -20,10 +20,10 @@
 
 ## 3. TargetProcess guard (`fa-core`)
 
-- [ ] 3.1 Implement `TargetProcess::try_new(pid, image_name, creation_time, &Matrix)` with the refusal list from the design (verify: tests refuse the 5 games, the listed anti-cheats, the 9 critical processes, own binaries and own PID)
-- [ ] 3.2 Cover the truncated-name case: `VALORANT-Win64-` and any 15-byte name refused; empty, path-bearing and case-variant names handled (verify: "Truncated name" and "Governor aims at the game" scenarios as tests)
-- [ ] 3.3 Verify the guard tests by mutation: remove one critical name, one anti-cheat name, change the 15-byte rule, make the comparison case-sensitive; each must fail a test, then restore (verify: mutation log, tree restored)
-- [ ] 3.4 Gate: `powershell -File scripts/gate.ps1`
+- [x] 3.1 Implement `TargetProcess::try_new(pid, image_name, creation_time, &Matrix)` with the refusal list from the design (verify: tests refuse the 5 games, the listed anti-cheats, the 9 critical processes, own binaries and own PID)
+- [x] 3.2 Cover the truncated-name case: `VALORANT-Win64-` and any 15-byte name refused; empty, path-bearing and case-variant names handled (verify: "Truncated name" and "Governor aims at the game" scenarios as tests)
+- [x] 3.3 Verify the guard tests by mutation: remove one critical name, one anti-cheat name, change the 15-byte rule, make the comparison case-sensitive; each must fail a test, then restore (verify: mutation log, tree restored)
+- [x] 3.4 Gate: `powershell -File scripts/gate.ps1`
 
 ## 4. OpenProcess source test
 
