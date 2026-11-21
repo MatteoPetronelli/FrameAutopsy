@@ -102,7 +102,7 @@ fn cpu_flags(rest: &[String], default_cpu: u32, default_other: u32) -> Option<(u
 }
 
 pub fn run_wake(rest: &[String]) -> Option<std::io::Result<()>> {
-    let (cpu, _) = cpu_flags(rest, 2, 3)?;
+    let (cpu, _) = cpu_flags(rest, 2, u32::MAX)?;
     Some(fa_probe::wake::run(cpu, Duration::from_millis(1), 2000).map(|s| match s {
         Some(s) => println!(
             "wake-up lateness on CPU {cpu}, {} waits of 1 ms: p50 {:.1} us, p99 {:.1} us, max {:.1} us",
@@ -128,7 +128,7 @@ pub fn run_domain(rest: &[String]) -> Option<std::io::Result<()>> {
 }
 
 pub fn run_curve(rest: &[String]) -> Option<std::io::Result<()>> {
-    let (cpu, _) = cpu_flags(rest, 2, 3)?;
+    let (cpu, _) = cpu_flags(rest, 2, u32::MAX)?;
     Some(curve(cpu))
 }
 
@@ -183,4 +183,38 @@ pub fn run_bw(rest: &[String]) -> Option<std::io::Result<()>> {
         }
         Ok(())
     })())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn v(a: &[&str]) -> Vec<String> {
+        a.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn freq_flags_are_parsed_and_bad_ones_refused() {
+        let a = parse(&v(&["--seconds", "30", "--cpu", "5", "--load-all"])).unwrap();
+        assert_eq!((a.seconds, a.cpu, a.load_all), (30, 5, true));
+        let d = parse(&[]).unwrap();
+        assert_eq!((d.seconds, d.cpu, d.load_all), (60, 2, false));
+        assert!(parse(&v(&["--seconds", "0"])).is_none());
+        assert!(parse(&v(&["--seconds", "99999"])).is_none());
+        assert!(parse(&v(&["--cpu", "64"])).is_none());
+        assert!(parse(&v(&["--cpu"])).is_none());
+        assert!(parse(&v(&["--nope"])).is_none());
+    }
+
+    #[test]
+    fn cpu_flags_refuse_the_same_core_twice_and_unknown_flags() {
+        assert_eq!(cpu_flags(&[], 2, 4), Some((2, 4)));
+        assert_eq!(
+            cpu_flags(&v(&["--cpu", "7", "--other", "1"]), 2, 4),
+            Some((7, 1))
+        );
+        assert_eq!(cpu_flags(&v(&["--cpu", "3", "--other", "3"]), 2, 4), None);
+        assert_eq!(cpu_flags(&v(&["--cpu", "3"]), 2, 3), None); // default other == cpu
+        assert_eq!(cpu_flags(&v(&["--x", "1"]), 2, 4), None);
+    }
 }
