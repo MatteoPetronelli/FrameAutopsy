@@ -48,3 +48,6 @@ Desktop.ini
 .DS_Store
 .vscode/
 .idea/
+
+# proptest seeds from mutation runs are not kept
+proptest-regressions/

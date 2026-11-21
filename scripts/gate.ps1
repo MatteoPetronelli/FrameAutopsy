@@ -30,8 +30,9 @@ Step 'headers' {
 Step 'fmt'    { cargo fmt --all -- --check }
 Step 'clippy' { cargo clippy --workspace --all-targets --all-features -- -D warnings }
 Step 'test'   { cargo test --workspace --all-features }
+# `fa lab score` runs once the Lab scorer (crates/fa/src/lab.rs) exists, lot 10+.
 # Lot 5+: Miri once fa-sync has its SPSC ring (src/spsc.rs, SYNC-01); the counting allocator alone is not Miri material. Lot 10+: `fa lab score`.
 if (Test-Path crates/fa-sync/src/spsc.rs) { Step 'miri' { cargo +nightly miri test -p fa-sync } }
-if (Test-Path crates/fa) { Step 'lab score' { cargo run -p fa --release -- lab score } }
+if (Test-Path crates/fa/src/lab.rs) { Step 'lab score' { cargo run -p fa --release -- lab score } }
 Step 'graphify' { graphify update . }
 Write-Host 'GATE OK'
