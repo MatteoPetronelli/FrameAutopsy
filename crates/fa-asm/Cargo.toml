@@ -6,7 +6,3 @@ publish.workspace = true
 
 [dev-dependencies]
 criterion = "0.8.2"
-
-[[bench]]
-name = "tsc_vs_intrinsics"
-harness = false

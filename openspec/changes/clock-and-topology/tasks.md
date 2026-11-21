@@ -37,20 +37,20 @@
 - [x] 5.1 Implement `fa clock` (non-elevated): invariance, frequency and source, TSC vs QPC gap, per-core skew, topology; verify it runs without admin and prints every field.
 - [x] 5.2 Pinned-thread cross-core test (uses the 4.5 guard; measured 2026-11-21: worst backward step 0 ticks over 3 600 hops, limit 2 688 ticks = 1 us): readings monotonic and skew < 1 µs (calibrate); verify on the target and record the value.
 - [x] 5.3 10 s TSC vs QPC test: gap < 100 us (calibrate, recalibrated from 10 us by the user, option A, logged in `docs/decisions.md` section 5); measured 2026-11-21 with the CPUID frequency: 45.8, 45.8 and 45.0 us (about 4.6 ppm). Run on demand: `cargo test -p fa-win ten_second -- --ignored --nocapture`.
-- [ ] 5.4 Run the gate: `powershell -File scripts/gate.ps1` is green.
+- [x] 5.4 Run the gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 6. ASM-01 asm version and explanation checkpoint (before the bench)
 
 - [x] 6.1 Write the `asm!` version of `now()` / `now_serialized()` (Intel syntax, precise `options`, documented clobbers) with `// SAFETY:`; verify the parity test against the intrinsics version passes and `FA_FORCE_SCALAR=1` selects the reference.
-- [ ] 6.2 French explanation checkpoint (catalog §7 template: ce que ça fait, pourquoi c'est correct, ce qui le casserait, comment on le vérifie), covering every asm line incl. `lfence`, `rdtsc` vs `rdtscp` and the EDX:EAX/ECX clobbers; verify the user answers "compris" BEFORE the bench is run.
+- [x] 6.2 French explanation checkpoint (catalog §7 template: ce que ça fait, pourquoi c'est correct, ce qui le casserait, comment on le vérifie), covering every asm line incl. `lfence`, `rdtsc` vs `rdtscp` and the EDX:EAX/ECX clobbers; verify the user answers "compris" BEFORE the bench is run.
 - [x] 6.3 Run the gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 7. ASM-01 bench and verdict
 
-- [ ] 7.1 Add `cargo bench -p fa-asm --bench tsc_vs_intrinsics` (overhead in cycles, jitter stdev) following catalog §2 (AC power, pinned core, 3 runs, median and spread, `FA_FORCE_SCALAR=1` run); verify results are produced.
-- [ ] 7.2 Record numbers, date, commit and verdict (win only if > 5 % and above the spread, else tie or loss) in the ASM-01 row; verify the row status is no longer `pending`.
-- [ ] 7.3 If asm lost or tied, delete the asm module and keep the intrinsics reference; verify build and tests still pass and the catalog keeps the numbers.
-- [ ] 7.4 Run the gate: `powershell -File scripts/gate.ps1` is green, then `openspec validate clock-and-topology --strict`.
+- [x] 7.1 Add `cargo bench -p fa-asm --bench tsc_vs_intrinsics` (overhead in cycles, jitter stdev) following catalog §2 (AC power, pinned core, 3 runs, median and spread, `FA_FORCE_SCALAR=1` run); verify results are produced.
+- [x] 7.2 Record numbers, date, commit and verdict (win only if > 5 % and above the spread, else tie or loss) in the ASM-01 row; verify the row status is no longer `pending`.
+- [x] 7.3 (asm tied: median gain under 5 % and inside the spread; module and bench deleted, numbers in the catalog, code in commit ad13944) If asm lost or tied, delete the asm module and keep the intrinsics reference; verify build and tests still pass and the catalog keeps the numbers.
+- [x] 7.4 Run the gate: `powershell -File scripts/gate.ps1` is green, then `openspec validate clock-and-topology --strict`.
 
 ## Workflow follow-up
 
