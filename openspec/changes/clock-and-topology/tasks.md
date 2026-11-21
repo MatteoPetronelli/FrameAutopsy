@@ -41,9 +41,9 @@
 
 ## 6. ASM-01 asm version and explanation checkpoint (before the bench)
 
-- [ ] 6.1 Write the `asm!` version of `now()` / `now_serialized()` (Intel syntax, precise `options`, documented clobbers) with `// SAFETY:`; verify the parity test against the intrinsics version passes and `FA_FORCE_SCALAR=1` selects the reference.
+- [x] 6.1 Write the `asm!` version of `now()` / `now_serialized()` (Intel syntax, precise `options`, documented clobbers) with `// SAFETY:`; verify the parity test against the intrinsics version passes and `FA_FORCE_SCALAR=1` selects the reference.
 - [ ] 6.2 French explanation checkpoint (catalog §7 template: ce que ça fait, pourquoi c'est correct, ce qui le casserait, comment on le vérifie), covering every asm line incl. `lfence`, `rdtsc` vs `rdtscp` and the EDX:EAX/ECX clobbers; verify the user answers "compris" BEFORE the bench is run.
-- [ ] 6.3 Run the gate: `powershell -File scripts/gate.ps1` is green.
+- [x] 6.3 Run the gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 7. ASM-01 bench and verdict
 
