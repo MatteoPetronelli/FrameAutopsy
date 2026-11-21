@@ -49,6 +49,11 @@ Vanguard mandatory for League of Legends: **patch 14.9, 2024-04-30** ("You will 
 until Vanguard is installed and active"; live in the Philippines with 14.8 on 2024-04-16). No official page confirms the
 exact worldwide enforcement day.
 
+**Riot Developer Portal (checked by the user, 2026-11-21):** "Register Product" only offers a Production API key or a
+Personal API key; FrameAutopsy uses no Riot API, so neither fits. The question is sent to DevRel (draft in
+`RIOT_DEVREL_MESSAGE.md`, local). **Blizzard:** the user confirmed in a logged-in session that the support texts add
+nothing beyond the Anti-cheating Agreement and the EULA already read.
+
 **Open points:** Riot DevRel should be asked whether registration applies to FrameAutopsy and whether kernel stack
 walks count as "game memory access" (S7, 2026-10-06). Blizzard's Code of Conduct and support articles remain unread.
 
