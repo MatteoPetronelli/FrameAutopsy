@@ -27,9 +27,9 @@
 
 ## 4. OpenProcess source test
 
-- [ ] 4.1 Add the integration test scanning `crates/**/*.rs` (comments and strings stripped) for `OpenProcess` and sibling openers outside `fa-win::process::open_target` (verify: passes on the current tree)
-- [ ] 4.2 Verify by mutation: temporarily add an `OpenProcess` call in another crate and in `fa-win` outside `open_target`; the test must fail, then remove it (verify: tree restored, no `OpenProcess` left)
-- [ ] 4.3 Gate: `powershell -File scripts/gate.ps1`
+- [x] 4.1 Add the integration test scanning `crates/**/*.rs` (comments and strings stripped) for `OpenProcess` and sibling openers outside `fa-win::process::open_target` (verify: passes on the current tree)
+- [x] 4.2 Verify by mutation: temporarily add an `OpenProcess` call in another crate and in `fa-win` outside `open_target`; the test must fail, then remove it (verify: tree restored, no `OpenProcess` left)
+- [x] 4.3 Gate: `powershell -File scripts/gate.ps1`
 
 ## 5. Skill and documentation
 
