@@ -33,9 +33,9 @@
 
 ## 5. Skill and documentation
 
-- [ ] 5.1 Create `.claude/skills/frameautopsy-tos-guard/SKILL.md` (checklist, PASS/BLOCK output, `gray`/`unverified` means ask the user) (verify: run it on a sample diff enabling an `unverified` action and get BLOCK, then on a baseline-observer diff and get PASS)
-- [ ] 5.2 Finalise `docs/compliance.md` (remove DRAFT status, link `compliance.toml`) and update the status lines in `CLAUDE.md` if they mention this lot as pending (verify: no cell without a verdict and a dated source; `git diff` limited to these docs)
-- [ ] 5.3 Gate: `powershell -File scripts/gate.ps1`, `graphify update .`, `openspec validate compliance-matrix --strict`
+- [x] 5.1 Create `.claude/skills/frameautopsy-tos-guard/SKILL.md` (checklist, PASS/BLOCK output, `gray`/`unverified` means ask the user) (verify: run it on a sample diff enabling an `unverified` action and get BLOCK, then on a baseline-observer diff and get PASS)
+- [x] 5.2 Finalise `docs/compliance.md` (remove DRAFT status, link `compliance.toml`) and update the status lines in `CLAUDE.md` if they mention this lot as pending (verify: no cell without a verdict and a dated source; `git diff` limited to these docs)
+- [x] 5.3 Gate: `powershell -File scripts/gate.ps1`, `graphify update .`, `openspec validate compliance-matrix --strict`
 
 ## Workflow follow-up
 

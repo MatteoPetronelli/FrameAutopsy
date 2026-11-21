@@ -1,9 +1,9 @@
-# FrameAutopsy — Compliance (DRAFT)
+# FrameAutopsy — Compliance
 
-> **Status: draft from the 2026-11-20 brainstorming.** Sources below were consulted on 2026-11-20. Lot 1
-> (`compliance-matrix`) completes the reading of the full official texts and turns this document into
-> `compliance.toml`. Only the user can run the anti-cheat tests (section 6); no verdict becomes `allowed` without a
-> source and, for games with an anti-cheat, a clean test record.
+> **Status (2026-11-21): verdicts approved by the user in lot 1.** The machine-readable matrix is
+> [`compliance.toml`](../compliance.toml) (verdict, sources, date per cell); this document holds the reasoning and
+> sources. Only the user can run the anti-cheat tests (section 6); no verdict becomes `allowed` without a source and,
+> for games with an anti-cheat, a clean test record.
 >
 > Verdicts: **allowed** · **gray** · **forbidden** · **unverified**. Never infer a rule from memory.
 

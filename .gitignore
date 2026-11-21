@@ -22,6 +22,7 @@ lab/tmp/
 
 # Personal files: never published (public repo)
 profile.md
+RIOT_DEVREL_MESSAGE.md
 CLAUDE.local.md
 .claude/settings.local.json
 
