@@ -3,4 +3,5 @@
 
 pub mod domain;
 pub mod freq;
+pub mod mem;
 pub mod wake;

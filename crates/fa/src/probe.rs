@@ -126,3 +126,33 @@ pub fn run_domain(rest: &[String]) -> Option<std::io::Result<()>> {
         }),
     )
 }
+
+pub fn run_curve(rest: &[String]) -> Option<std::io::Result<()>> {
+    let (cpu, _) = cpu_flags(rest, 2, 3)?;
+    Some(curve(cpu))
+}
+
+fn curve(cpu: u32) -> std::io::Result<()> {
+    let c = fa_probe::mem::cache_curve(cpu, true)?;
+    println!("size_kib,ns_per_load,pages");
+    for l in &c {
+        println!("{},{:.3},{:?}", l.bytes >> 10, l.ns_per_load, l.page);
+    }
+    let pts: Vec<(usize, f64)> = c.iter().map(|l| (l.bytes, l.ns_per_load)).collect();
+    let steps = fa_probe::mem::detect_steps(&pts);
+    let topo = fa_win::topology::read().map_err(std::io::Error::other)?;
+    for k in fa_probe::mem::compare_with_topology(&steps, &topo.caches) {
+        println!(
+            "L{}: topology {} KiB, detected {:?} KiB -> {}",
+            k.level,
+            k.topology_bytes >> 10,
+            k.detected_bytes.map(|b| b >> 10),
+            if k.agrees {
+                "agrees"
+            } else {
+                "MISMATCH (reported, not fatal)"
+            }
+        );
+    }
+    Ok(())
+}

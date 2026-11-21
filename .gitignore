@@ -1,5 +1,6 @@
 # Rust / Cargo (Cargo.lock stays committed: the workspace ships binaries)
 /target
+**/target/
 **/*.rs.bk
 
 # Traces, recordings and crash dumps: never committed (hundreds of MB per minute)
