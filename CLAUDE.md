@@ -15,6 +15,8 @@ allocator exist; changes for lots 0 to 4 are created. Next: lot 1 `compliance-ma
 - **Spec first**: one OpenSpec change per lot, validated by the user before any application code. The user directs and
   reviews everything; explain what you do and why, briefly, and explain low-level reasoning when touching unsafe/asm.
 - Conventional Commits (`feat(scope): ...`), small and frequent, one branch per lot; the gate must be green to move on.
+- **Publishing**: lot branches stay local and are never pushed. Merge the local branch into `main` (after the user's
+  go), then push `main` to `origin`. No remote branch, no PR unless the user asks.
 - Say when a lead is risky, a gain uncertain, or a fact unverified. Never infer a game rule from memory.
 
 ## Source documents (read before acting)
