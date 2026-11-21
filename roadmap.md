@@ -170,7 +170,8 @@ Termine d'abord les lectures officielles listées dans docs/compliance.md et mon
 **Contenu** : `fa-asm::tsc` (`rdtsc`/`rdtscp` + `lfence`, asm en concurrence avec les intrinsics), détection du TSC
 invariant, fréquence par CPUID `0x15` ou calibration contre QPC, conversion entière, correspondance QPC↔TSC.
 `fa-win::topology` (`GetSystemCpuSetInformation`, `GetLogicalProcessorInformationEx`), test de recoupement CPUID.
-Commande de dev `fa clock`.
+`fa-win::clock` (QPC, calibration, type `Clock`, WIN-11), `fa-win::thread` (épinglage du thread courant, WIN-07, déplacé
+ici depuis le lot 3), maths d'horloge pures dans `fa-core::clock`. Commande de dev `fa clock`.
 
 **Invariants** : règle « se mérite » (ASM-01 dans le catalogue) ; checkpoint d'explication pour chaque bloc asm.
 
@@ -193,7 +194,7 @@ Lot 2 de roadmap.md (change clock-and-topology). Charge rust-cargo et ponytail.
 
 **Contenu** : `fa-asm` : chaîne d'`add` dépendants (ASM-02), parcours de pointeurs (ASM-03), bande passante non
 temporelle (ASM-04) ; sonde de latence de réveil par timer haute résolution (sans asm : `tpause`/`mwaitx` sont écartés,
-ton i5-11400H n'a ni WAITPKG ni MWAITX, à confirmer par CPUID). Orchestration dans `fa-probe` (épinglage, rejet des
+ton i5-11400H n'a ni WAITPKG ni MWAITX, à confirmer par CPUID). Orchestration dans `fa-probe` (épinglage via `fa-win::thread` du lot 2, rejet des
 mesures préemptées). Lecture du compteur PDH `% Processor Performance` comme référence de la sonde de fréquence.
 Vérification du domaine d'horloge (sonde sur un cœur pendant qu'un autre est chargé). Procédure de calibration
 manuelle contre HWiNFO, hors jeu. Sondes hors jeu seulement : l'échantillonnage en jeu arrive au lot 8.

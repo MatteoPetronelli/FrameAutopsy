@@ -17,6 +17,9 @@ of the project (ASM-01), which must earn their place against an intrinsics refer
 - `fa-win::topology`: logical CPU -> physical core -> LLC domain -> efficiency class model built from
   `GetSystemCpuSetInformation` and `GetLogicalProcessorInformationEx`; CPUID cross-check as a test only; synthetic
   buffers for hybrid and dual-CCD cases.
+- `fa-win::clock`: QPC read and frequency (WIN-11) and the `Clock` type (calibration, degraded mode, QPC<->TSC map);
+  pure tick/ns conversion and map math in `fa-core::clock`.
+- `fa-win::thread`: own-thread pinning with an RAII guard (WIN-07, moved here from lot 3).
 - Dev command `fa clock` (non-elevated) printing invariance, frequency, TSC/QPC gap and topology.
 - Catalog: ASM-01 line confirmed before the code, bench verdict recorded at the end of the lot.
 
@@ -36,8 +39,8 @@ None.
 - Effect on `compliance.toml` and the "never touch the game" boundary: none. The change reads the TSC, CPUID and
   system topology from our own threads; it opens no handle on any process, adds no data source and no action, and
   needs no matrix row.
-- Catalog modules (`docs/asm-unsafe-catalog.md`): ASM-01 (`fa-asm::tsc`, asm-candidate, status pending -> verdict) and
-  `fa-win::topology` (safe model over FFI; a WIN-xx ledger line is added if the buffer walking needs `unsafe`).
-- Code: `fa-asm`, `fa-win`, `fa-core` (clock and topology types), `fa` (`fa clock`); `lab/fixtures/` synthetic buffers.
+- Catalog modules (`docs/asm-unsafe-catalog.md`): ASM-01 (`fa-asm::tsc`, asm-candidate, status pending -> verdict);
+  WIN-03 (`fa-win::topology`), WIN-07 (pinning part, `fa-win::thread`) and WIN-11 (QPC, `fa-win::clock`) in `fa-win`.
+- Code: `fa-asm`, `fa-win` (now depends on `fa-asm` and `fa-core`, see `docs/architecture.md` section 2), `fa-core` (clock math), `fa` (`fa clock`); `lab/fixtures/` synthetic buffers.
 - Dependencies: none beyond what lot 0 already provides (`windows`/`windows-sys`, `criterion` as dev-dependency).
 - Consumed later by lot 3 (probes), lot 5 (ETW raw TSC timestamps), lot 12 (CPU Sets).

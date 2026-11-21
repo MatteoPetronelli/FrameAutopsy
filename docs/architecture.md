@@ -19,10 +19,10 @@
 | Crate | `unsafe` | Responsibility | Born in lot |
 |---|---|---|---|
 | `fa-asm` | yes | asm and SIMD kernels: TSC reads, probes, cycle burn, cache flush, Stream VByte, cross-correlation, selection, PRNG | 0 |
-| `fa-win` | yes | Windows FFI: ETW, process and power APIs, topology, shared memory, named pipes and DACLs, D3D11, Direct2D/DirectComposition | 0 |
+| `fa-win` | yes | Windows FFI: ETW, process and power APIs, topology, clock (QPC, TSC calibration), own-thread pinning, shared memory, named pipes and DACLs, D3D11, Direct2D/DirectComposition | 0 |
 | `fa-sync` | yes | SPSC ring, cross-process seqlock (atomics only), shared-region reader (only if it earns its place), counting test allocator (`test-support` feature) | 0 |
-| `fa-core` | no | window ring, stutter trigger, TOML rule engine, allocation-free FSM, compliance matrix and `TargetProcess` | 0 |
-| `fa-probe` | no | probe orchestration, pinning, preemption rejection, health check verdicts | 3 |
+| `fa-core` | no | window ring, stutter trigger, TOML rule engine, allocation-free FSM, compliance matrix and `TargetProcess`, pure clock math (tick conversion, QPC-TSC map) | 0 |
+| `fa-probe` | no | probe orchestration (uses `fa-win` pinning), preemption rejection, health check verdicts | 3 |
 | `fa-capture` | no | decoding of borrowed ETW records into typed `Copy` events, frame extraction (PresentMon algorithm) | 5 |
 | `fa-storage` | no | SQLite WAL, MessagePack, zstd, retention | 8 |
 | `fa-attrib` | no | `.pdata` (`goblin`) and PDB (`pdb`) resolution, symbol cache, **only crate that reaches the internet** (opt-in); used by the non-elevated `fa-ui` and `fa` only | 11 |
@@ -47,6 +47,8 @@ graph TD
     SYNC[fa-sync]
   end
   CORE[fa-core] --> SYNC
+  WIN --> ASM
+  WIN --> CORE
   PROBE[fa-probe] --> ASM
   PROBE --> WIN
   PROBE --> CORE

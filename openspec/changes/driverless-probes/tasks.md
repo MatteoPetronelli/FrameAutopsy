@@ -5,7 +5,7 @@ checkpoint in French (template: `docs/asm-unsafe-catalog.md` section 7), merged 
 
 ## 1. Catalog lines and CPU features
 
-- [ ] 1.1 Fill the catalog lines for ASM-02, ASM-03, ASM-04, WIN-07 and add WIN-08 (PDH reader) and WIN-09 (large pages) before any code; verify the lines exist in `docs/asm-unsafe-catalog.md`.
+- [ ] 1.1 Fill the catalog lines for ASM-02, ASM-03, ASM-04, the WIN-07 timers part and add WIN-08 (PDH reader) and WIN-09 (large pages) before any code; verify the lines exist in `docs/asm-unsafe-catalog.md`.
 - [ ] 1.2 Create crate `fa-probe` (`#![forbid(unsafe_code)]`) and register it in the workspace; verify `cargo build -p fa-probe`.
 - [ ] 1.3 Confirm by CPUID that WAITPKG and MWAITX are absent on the target machine and record it in the catalog; verify with a test that reads the feature bits and the recorded note.
 - [ ] 1.4 Gate: `powershell -File scripts/gate.ps1` is green.
@@ -21,10 +21,10 @@ checkpoint in French (template: `docs/asm-unsafe-catalog.md` section 7), merged 
 
 ## 3. Pinning, clock domain, wake-up latency
 
-- [ ] 3.1 Implement thread pinning and the high-resolution waitable timer in `fa-win` (WIN-07) with RAII wrappers; verify in a test that a pinned thread runs on the requested CPU.
+- [ ] 3.1 Implement the high-resolution waitable timer in `fa-win` (WIN-07, timers part) with an RAII wrapper; reuse the lot 2 pinning guard; verify in a test that a timer wait wakes within a plausible bound and that the probe thread is pinned on the requested CPU.
 - [ ] 3.2 Implement the wake-up latency probe in `fa-probe` (no asm), p50/p99/max in us; verify with a test on a synthetic delay distribution and a real run with plausible values.
 - [ ] 3.3 Implement the clock-domain check (probe on core A while a load runs on core B) and record the domain type of the machine in the catalog; verify with a test of the decision logic on synthetic data and the recorded result.
-- [ ] 3.4 French explanation checkpoint for the new unsafe blocks of WIN-07, then "compris".
+- [ ] 3.4 French explanation checkpoint for the new unsafe blocks of the WIN-07 timers, then "compris".
 - [ ] 3.5 Gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 4. Memory latency and cache curve

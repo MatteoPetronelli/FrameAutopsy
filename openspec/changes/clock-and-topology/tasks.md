@@ -2,7 +2,7 @@
 
 ## 1. Catalog line and skeleton
 
-- [ ] 1.1 Re-read and, if needed, complete the ASM-01 line in `docs/asm-unsafe-catalog.md` BEFORE any code; verify it lists reference, metric, parity test, fallback and failure mode.
+- [ ] 1.1 Re-read and, if needed, complete the ASM-01 line in `docs/asm-unsafe-catalog.md` BEFORE any code; verify it lists reference, metric, parity test, fallback and failure mode, and that the WIN-07 (pinning, lot 2) and WIN-11 (QPC) lines exist.
 - [ ] 1.2 Confirm AVX-512, WAITPKG and MWAITX status by CPUID on the target and note it in catalog §3; verify the printed flags match the note.
 - [ ] 1.3 Create the `fa-asm::tsc` module skeleton with the `now()` / `now_serialized()` signatures and the `FA_FORCE_SCALAR` switch; verify `cargo build -p fa-asm` passes.
 - [ ] 1.4 Run the gate: `powershell -File scripts/gate.ps1` is green.
@@ -16,6 +16,7 @@
 
 ## 3. Frequency, conversions, QPC mapping
 
+- [ ] 3.0 Implement the QPC read and frequency in `fa-win::clock` (WIN-11) and add the `fa-win` -> `fa-asm`/`fa-core` dependencies (D-12); verify `cargo build --workspace` and that `fa-core` still has no `fa-win` dependency (`cargo tree -p fa-core`).
 - [ ] 3.1 Implement TSC frequency from CPUID `0x15` (non-zero ratio) and QPC calibration (5 runs >= 200 ms, median); verify tests cover both paths and the CPUID/calibration gap is logged.
 - [ ] 3.2 Implement u128 integer tick-to-ns conversion; verify a property test against a reference, including boundary values.
 - [ ] 3.3 Implement the QPC<->TSC mapping (offset, scale), 60 s re-estimation and recorded drift; verify a test with an injected fake clock checks re-estimation and drift value.
@@ -28,12 +29,13 @@
 - [ ] 4.2 Add synthetic fixtures (hybrid P+E, dual-CCD) under `lab/fixtures/`; verify E-cores get a lower efficiency class and two LLC domains are reported.
 - [ ] 4.3 Add the real-API test on the target; verify 6 cores, 12 threads, one LLC.
 - [ ] 4.4 Add the CPUID cross-check test (`0x0B`/`0x1F`, `0x1A`, `0x8000001E`, `0x04`/`0x8000001D`) logging mismatches; verify it runs and skips leaves absent on the vendor.
-- [ ] 4.5 Run the gate: `powershell -File scripts/gate.ps1` is green.
+- [ ] 4.5 Implement own-thread pinning in `fa-win::thread` (WIN-07, D-11) with an RAII guard; verify a pinned thread reports the requested CPU (`GetCurrentProcessorNumber`), the mask is restored on drop, and the `no_open_process` source test stays green.
+- [ ] 4.6 Run the gate: `powershell -File scripts/gate.ps1` is green.
 
 ## 5. Dev command and accuracy criteria
 
 - [ ] 5.1 Implement `fa clock` (non-elevated): invariance, frequency and source, TSC vs QPC gap, per-core skew, topology; verify it runs without admin and prints every field.
-- [ ] 5.2 Pinned-thread cross-core test: readings monotonic and skew < 1 µs (calibrate); verify on the target and record the value.
+- [ ] 5.2 Pinned-thread cross-core test (uses the 4.5 guard): readings monotonic and skew < 1 µs (calibrate); verify on the target and record the value.
 - [ ] 5.3 10 s TSC vs QPC test: gap < 10 µs (calibrate); verify on the target and record the value.
 - [ ] 5.4 Run the gate: `powershell -File scripts/gate.ps1` is green.
 

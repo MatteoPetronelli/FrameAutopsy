@@ -42,6 +42,9 @@
 | GPU : NVML pour NVIDIA d'abord ; les autres fabricants via les événements ETW DxgKrnl, communs à tous. | Ta machine est NVIDIA ; les sondes CPU couvrent Intel et AMD. |
 | Rétention de 30 jours et 2 Go, aucune télémétrie, export à la demande. | Valeurs du handoff conservées. |
 | Seuils chiffrés (déclencheur, verdicts, budgets) marqués « (calibrate) ». | Points de départ, recalibrés par le Lab et tes sessions. |
+| Horloge (lot 2) : maths pures dans `fa-core::clock`, lectures TSC dans `fa-asm::tsc`, QPC et type `Clock` dans `fa-win::clock` (qui dépend de `fa-asm` et `fa-core`). | `fa-core` ne peut pas dépendre de `fa-win` (cycle via `TargetProcess`) ; pas de crate `fa-clock` pour quelques centaines de lignes. |
+| Épinglage du thread courant (WIN-07) créé au lot 2 au lieu du lot 3. | Décision de Matteo (2026-11-21) : base commune pour les tests d'horloge et les sondes. |
+| Checkpoint d'explication : base théorique, pas un checkpoint par groupe `unsafe` ; un seul pour l'asm au lot 2. | Décision de Matteo (2026-11-21). |
 
 ## 3. Corrections apportées pendant le brainstorming
 

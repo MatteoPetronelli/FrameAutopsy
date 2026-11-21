@@ -11,7 +11,8 @@ requirements.
 ## Goals / Non-Goals
 
 **Goals:**
-- One `Clock` type: `now()` ticks, tick-to-ns, QPC-to-TSC mapping, degraded QPC mode, usable from any crate.
+- One `Clock` type: `now()` ticks, tick-to-ns, QPC-to-TSC mapping, degraded QPC mode, usable from any crate that may
+  depend on `fa-win` (layout in D-12).
 - ASM-01 follows earn-its-place with a recorded verdict, whichever way it goes.
 - A topology model usable by lots 3 and 12 without touching raw Windows structures.
 
@@ -73,6 +74,22 @@ whitelist applies here.
 **D-10 Cross-core skew test.** A test thread pinned successively (affinity on our own thread only) to each logical CPU
 reads the TSC with `now_serialized()`; monotonicity and skew < 1 µs are checked, with samples preempted between reads
 rejected.
+
+**D-11 Own-thread pinning (WIN-07, moved from lot 3).** `fa-win::thread::pin_current_thread(logical_cpu) ->
+PinGuard`: `SetThreadAffinityMask` on the current-thread pseudo-handle (`GetCurrentThread`), mask restored when the
+guard drops. It touches only our own thread, opens no handle (no `OpenThread`, the source test stays green) and
+changes no other process. Limit: a single processor group (at most 64 logical CPUs), enough for the target; a
+`shortcut:` comment marks it. Lot 3 reuses it and adds only the timers.
+
+**D-12 Crate layout for the clock (Claude's call).** `fa-core` cannot depend on `fa-win` (`fa-win` will depend on
+`fa-core` for `TargetProcess`), so: pure math (u128 tick-to-ns, median, QPC<->TSC map from injected readings) in
+`fa-core::clock`; TSC and CPUID reads in `fa-asm::tsc`; QPC read and the `Clock` type that ties them together in
+`fa-win::clock`, which now depends on `fa-asm` and `fa-core`. `docs/architecture.md` section 2 is updated. Rejected: a
+new `fa-clock` crate (a fifth crate for a few hundred lines) and putting `Clock` in `fa-probe` (lots 5 and 8 need it
+without probes).
+
+**User decision (2026-11-21): explanation checkpoints.** The rule is a theoretical baseline: this lot keeps the
+single French checkpoint for the asm block (task 6.2) and adds none per `unsafe` group.
 
 ## Risks / Trade-offs
 

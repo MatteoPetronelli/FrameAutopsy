@@ -74,7 +74,8 @@ win would be on hardware absent from this machine is not built (D1: it could nev
 | WIN-04 | shared memory and named pipes with DACLs (SDDL) | 7 | – | security descriptors are the trust boundary |
 | WIN-05 | D3D11 render loop for the Lab | 6 | `windows` crate COM | COM calls are unsafe by nature |
 | WIN-06 | Direct2D + DirectComposition overlay window | 16 | `windows` crate | same |
-| WIN-07 | high-resolution waitable timers, thread pinning | 3 | – | small |
+| WIN-07 | thread pinning (own thread only: `SetThreadAffinityMask` on the current-thread pseudo-handle, RAII guard that restores the mask); high-resolution waitable timers | 2 (pinning), 3 (timers) | – | small; pinning moved to lot 2 (user decision 2026-11-21) so the clock tests and the probes share one base |
+| WIN-11 | QPC read and frequency (`QueryPerformanceCounter`, `QueryPerformanceFrequency`) for `fa-win::clock` | 2 | – | small |
 | — | WMI, NVML, PDH, scheduled task | 3–7 | `wmi`, `nvml-wrapper`, PDH via `windows`, `schtasks.exe` + XML | safe crates or a process call: **no unsafe written** |
 
 ## 5. Rejected, with reasons

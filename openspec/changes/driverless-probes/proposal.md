@@ -19,7 +19,7 @@ topology.
   - ASM-02: effective frequency probe (chain of dependent `add`, asm-mandatory because the compiler folds such a chain);
   - ASM-03: pointer chase for memory latency (asm-candidate vs Rust `read_volatile` chain);
   - ASM-04: bandwidth kernels, AVX2 loads, `vmovntdq` non-temporal stores, copy (asm-candidate vs intrinsics).
-- New `fa-win` pieces: high-resolution waitable timer and thread pinning (WIN-07); large-page allocation (WIN-09) and
+- New `fa-win` pieces: high-resolution waitable timer (WIN-07 timers part; pinning already exists from lot 2); large-page allocation (WIN-09) and
   PDH reader (WIN-08), both new catalog lines added before their code (see design D7, D8).
 - New safe crate `fa-probe` (`#![forbid(unsafe_code)]`): orchestration, pinning, rejection of preempted samples,
   cache curve, wake-up latency probe (no asm), PDH comparison, clock-domain check.
@@ -40,7 +40,7 @@ topology.
 - **Compliance**: no change to `compliance.toml`. Probes run only in our own threads and off-game only; they open no
   handle on a game process and read no game data. In-game sampling is out of scope (lot 8, `incident-store`). The
   "never touch the game" boundary is unchanged.
-- **Catalog modules** (`docs/asm-unsafe-catalog.md`): ASM-02, ASM-03, ASM-04 (`fa-asm`); WIN-07 (`fa-win`); new lines
+- **Catalog modules** (`docs/asm-unsafe-catalog.md`): ASM-02, ASM-03, ASM-04 (`fa-asm`); WIN-07 timers part (`fa-win`, pinning done in lot 2); new lines
   WIN-08 (PDH) and WIN-09 (large pages). Results and verdicts are filled at the end of the lot.
 - **Crates**: new `fa-probe` (safe); touches `fa-asm` and `fa-win`; `fa` gains a `probe` subcommand.
 - **Dependencies**: no new crate expected beyond `windows`/`windows-sys` features (PDH, memory, threading) and
