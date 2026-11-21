@@ -1,0 +1,9 @@
+[package]
+name = "fa"
+edition.workspace = true
+version.workspace = true
+publish.workspace = true
+
+[dependencies]
+fa-core = { version = "0.0.0", path = "../fa-core" }
+fa-win = { version = "0.0.0", path = "../fa-win" }

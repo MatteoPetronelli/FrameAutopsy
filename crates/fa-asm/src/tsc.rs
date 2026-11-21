@@ -3,7 +3,8 @@
 //!
 //! CPU features are read once; `FA_FORCE_SCALAR=1` forces every fallback, here the reference read path.
 
-use core::arch::x86_64::{__cpuid, __rdtscp, _mm_lfence, _rdtsc};
+use crate::cpuid::cpuid_count;
+use core::arch::x86_64::{__rdtscp, _mm_lfence, _rdtsc};
 use std::sync::OnceLock;
 
 struct Features {
@@ -12,14 +13,11 @@ struct Features {
 }
 
 fn cpuid_edx(leaf: u32) -> u32 {
-    // SAFETY: CPUID exists on every x86_64 CPU and has no side effect; an unsupported leaf returns zeros or data of the
-    // highest basic leaf, never a fault.
-    unsafe { __cpuid(leaf) }.edx
+    cpuid_count(leaf, 0)[3]
 }
 
 fn max_extended_leaf() -> u32 {
-    // SAFETY: as for `cpuid_edx`.
-    unsafe { __cpuid(0x8000_0000) }.eax
+    cpuid_count(0x8000_0000, 0)[0]
 }
 
 /// `0x80000007:EDX[8]`.
@@ -41,6 +39,15 @@ fn features() -> &'static Features {
             rdtscp: max >= 0x8000_0001 && rdtscp_flag(cpuid_edx(0x8000_0001)),
         }
     })
+}
+
+/// CPUID leaf `0x15` as `(eax denominator, ebx numerator, ecx crystal Hz)`; `None` when the CPU lacks the leaf.
+pub fn cpuid_leaf_15() -> Option<(u32, u32, u32)> {
+    if cpuid_count(0, 0)[0] < 0x15 {
+        return None;
+    }
+    let [eax, ebx, ecx, _] = cpuid_count(0x15, 0);
+    Some((eax, ebx, ecx))
 }
 
 /// True when CPUID reports an invariant TSC (constant rate across P-states and sleep, same on all cores).

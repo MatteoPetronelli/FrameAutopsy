@@ -8,3 +8,6 @@ publish.workspace = true
 serde = { version = "1.0.229", features = ["derive"] }
 thiserror = "2.0.21"
 toml = "1.2.2"
+
+[dev-dependencies]
+proptest = "1.12.0"

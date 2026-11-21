@@ -1,0 +1,14 @@
+# Synthetic Intel hybrid: 4 P cores x2 threads (class 1) + 4 E cores (class 0), one LLC.
+# SYSTEM_CPU_SET_INFORMATION records, 32 bytes each: Size Type | Id Group Lpi Core Llc Numa Eff Flags | Reserved | Tag
+20 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 0: P core 0, efficiency class 1
+20 00 00 00 00 00 00 00 01 01 00 00 00 00 01 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 1: P core 0, efficiency class 1
+20 00 00 00 00 00 00 00 02 01 00 00 00 00 02 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 2: P core 1, efficiency class 1
+20 00 00 00 00 00 00 00 03 01 00 00 00 00 03 01 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 3: P core 1, efficiency class 1
+20 00 00 00 00 00 00 00 04 01 00 00 00 00 04 02 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 4: P core 2, efficiency class 1
+20 00 00 00 00 00 00 00 05 01 00 00 00 00 05 02 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 5: P core 2, efficiency class 1
+20 00 00 00 00 00 00 00 06 01 00 00 00 00 06 03 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 6: P core 3, efficiency class 1
+20 00 00 00 00 00 00 00 07 01 00 00 00 00 07 03 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 7: P core 3, efficiency class 1
+20 00 00 00 00 00 00 00 08 01 00 00 00 00 08 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 8: E core 4, efficiency class 0
+20 00 00 00 00 00 00 00 09 01 00 00 00 00 09 05 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 9: E core 5, efficiency class 0
+20 00 00 00 00 00 00 00 0a 01 00 00 00 00 0a 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 10: E core 6, efficiency class 0
+20 00 00 00 00 00 00 00 0b 01 00 00 00 00 0b 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 11: E core 7, efficiency class 0

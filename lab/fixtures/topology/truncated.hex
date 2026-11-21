@@ -1,0 +1,3 @@
+# Second record claims 32 bytes but only 12 are present.
+20 00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  # cpu 0 (valid)
+20 00 00 00 00 00 00 00 01 01 00 00  # cut short
