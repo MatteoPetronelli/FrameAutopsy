@@ -74,7 +74,11 @@ walks count as "game memory access" (S7, 2026-10-06). Blizzard's Code of Conduct
   information Task Manager shows. Classic kernel process events truncate names to 15 bytes and are not used for
   identification; the `TargetProcess` guard fails closed on a truncated name.
 
-## 5. Capability matrix (draft verdicts)
+## 5. Capability matrix (verdicts approved by the user, 2026-11-21)
+
+Approved in lot 1: baselines only for Riot (LoL, VALORANT) until the product is registered on the Riot Developer Portal and
+Riot DevRel has answered (section 2.1); Minecraft O7 and A8 `allowed` (EULA permits third-party tools that do not pose as
+official); A7 `unverified` everywhere except `fa-lab`. Baseline items stay unconfirmed until the lot 7 anti-cheat test.
 
 Legend: **B** = baseline-on (unverified until the lot 7 smoke test); **U** = unverified, off; **A** = allowed;
 **F** = forbidden; **n/a** = does not apply.
@@ -87,7 +91,7 @@ Legend: **B** = baseline-on (unverified until the lot 7 smoke test); **U** = unv
 | O4 | In-game driverless probes (own threads, non-game CPUs, ≤ 0.01 % duty) | B | B | B | B | B | A | B |
 | O5 | System counters: PDH, WMI, NVML, power status | B | B | B | B | B | A | B |
 | O6 | Game data source | U (Live Client Data API, official, loopback-only client, post-match only) | F (no official local API; unofficial client API excluded) | F | F | n/a | n/a | F |
-| O7 | JVM data: hsperfdata, JFR files | n/a | n/a | n/a | n/a | U (no client anti-cheat; low risk) | n/a | n/a |
+| O7 | JVM data: hsperfdata, JFR files | n/a | n/a | n/a | n/a | A (EULA allows third-party tools; read-only file reads) | n/a | n/a |
 | A1 | EcoQoS + below-normal priority of background processes | U | U | U | U | U | A | F |
 | A2 | CPU Sets keeping background processes off the game's CPUs | U | U | U | U | U | A | F |
 | A3 | Power overlay to best performance (AC) | U | U | U | U | U | A | F |
@@ -95,7 +99,7 @@ Legend: **B** = baseline-on (unverified until the lot 7 smoke test); **U** = unv
 | A5 | Standby-list purge (later) | U | U | U | U | U | A | F |
 | A6 | Timer resolution — **dropped**: per-process since Windows 10 2004, cannot affect a game from another process | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | A7 | Overlay window (separate, topmost, no injection) | U | U | U | U | U | A | F |
-| A8 | JVM argument proposal (text the user applies in CurseForge) | n/a | n/a | n/a | n/a | U | n/a | n/a |
+| A8 | JVM argument proposal (text the user applies in CurseForge) | n/a | n/a | n/a | n/a | A | n/a | n/a |
 
 ## 6. Anti-cheat test protocol (run by the user)
 

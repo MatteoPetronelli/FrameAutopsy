@@ -2,21 +2,21 @@
 
 ## 1. Official readings and verdicts (blocking: no code before user validation)
 
-- [ ] 1.1 Read in full the Epic Fortnite EULA and Easy Anti-Cheat pages; confirm which anti-cheats Fortnite runs; add URL and date to `docs/compliance.md` §2 (verify: no "to read in lot 1" left for Fortnite)
-- [ ] 1.2 Read in full the Battle.net EULA and Blizzard's third-party software support article; name Overwatch 2's anti-cheat component; update `docs/compliance.md` (verify: same for Overwatch 2)
-- [ ] 1.3 Read the Minecraft EULA in full and the usage guidelines; update `docs/compliance.md` (verify: same for Minecraft)
-- [ ] 1.4 Read the Riot ToS and developer policy for local API use; confirm the date Vanguard became mandatory for LoL; update `docs/compliance.md` (verify: same for Riot)
-- [ ] 1.5 Present to the user, in French, a verdict per cell (7 columns; items O1 to O7, A1 to A5, A7, A8) with source and date, flagging every point that is `gray` or not settled by an official text; wait for explicit validation (verify: user approval in the conversation; `docs/compliance.md` §5 updated to the approved verdicts)
-- [ ] 1.6 Gate: `powershell -File scripts/gate.ps1` and `openspec validate compliance-matrix --strict`
+- [x] 1.1 Read in full the Epic Fortnite EULA and Easy Anti-Cheat pages; confirm which anti-cheats Fortnite runs; add URL and date to `docs/compliance.md` §2 (verify: no "to read in lot 1" left for Fortnite)
+- [x] 1.2 Read in full the Battle.net EULA and Blizzard's third-party software support article; name Overwatch 2's anti-cheat component; update `docs/compliance.md` (verify: same for Overwatch 2)
+- [x] 1.3 Read the Minecraft EULA in full and the usage guidelines; update `docs/compliance.md` (verify: same for Minecraft)
+- [x] 1.4 Read the Riot ToS and developer policy for local API use; confirm the date Vanguard became mandatory for LoL; update `docs/compliance.md` (verify: same for Riot)
+- [x] 1.5 Present to the user, in French, a verdict per cell (7 columns; items O1 to O7, A1 to A5, A7, A8) with source and date, flagging every point that is `gray` or not settled by an official text; wait for explicit validation (verify: user approval in the conversation; `docs/compliance.md` §5 updated to the approved verdicts)
+- [x] 1.6 Gate: `powershell -File scripts/gate.ps1` and `openspec validate compliance-matrix --strict`
 
 ## 2. Matrix file and loader (`fa-core`)
 
-- [ ] 2.1 Create `compliance.toml` from the approved verdicts (7 columns, source URLs, dates, anti-cheat names, detection rules; not-applicable cells as `forbidden` with a note) (verify: the file parses in 2.2)
-- [ ] 2.2 Implement `Matrix` with `include_str!`, `deny_unknown_fields`, typed `GameId`/`Item`/`Verdict` and `Matrix::enabled`; add `serde` and `toml` (verify: unit tests for the four verdicts, baseline vs non-baseline items, the `unknown` column)
-- [ ] 2.3 Implement the disable-only override loader (size cap, strict schema, fail closed) (verify: test for the "override tries to enable an action" scenario naming the item, plus unknown game, unknown item and oversize file)
-- [ ] 2.4 Add matrix tests: entry for every game and item, `allowed` needs a source URL and a date, no action enabled without an entry (verify: tests pass on the real `compliance.toml`)
-- [ ] 2.5 Verify the matrix tests by mutation (skill `mutation-verified-testing`): invert the verdict check, let an override enable, drop the source/date check, widen the baseline set; each must turn a test red, then restore (verify: mutation log in the commit or PR notes, tree restored)
-- [ ] 2.6 Gate: `powershell -File scripts/gate.ps1`
+- [x] 2.1 Create `compliance.toml` from the approved verdicts (7 columns, source URLs, dates, anti-cheat names, detection rules; not-applicable cells as `forbidden` with a note) (verify: the file parses in 2.2)
+- [x] 2.2 Implement `Matrix` with `include_str!`, `deny_unknown_fields`, typed `GameId`/`Item`/`Verdict` and `Matrix::enabled`; add `serde` and `toml` (verify: unit tests for the four verdicts, baseline vs non-baseline items, the `unknown` column)
+- [x] 2.3 Implement the disable-only override loader (size cap, strict schema, fail closed) (verify: test for the "override tries to enable an action" scenario naming the item, plus unknown game, unknown item and oversize file)
+- [x] 2.4 Add matrix tests: entry for every game and item, `allowed` needs a source URL and a date, no action enabled without an entry (verify: tests pass on the real `compliance.toml`)
+- [x] 2.5 Verify the matrix tests by mutation (skill `mutation-verified-testing`): invert the verdict check, let an override enable, drop the source/date check, widen the baseline set; each must turn a test red, then restore (verify: mutation log in the commit or PR notes, tree restored)
+- [x] 2.6 Gate: `powershell -File scripts/gate.ps1`
 
 ## 3. TargetProcess guard (`fa-core`)
 

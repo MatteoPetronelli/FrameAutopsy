@@ -1,0 +1,539 @@
+# FrameAutopsy compliance matrix. Verdicts approved by the user on 2026-11-21 (docs/compliance.md section 5).
+# Semantics: baseline observers (O1 O2 O4 O5) run unless `forbidden`; every other item only when `allowed`.
+# A "baseline" cell is written `unverified` until the lot 7 anti-cheat test. Not-applicable cells are `forbidden` (fail-safe).
+# A6 (timer resolution) was dropped and is absent. A user override may only set `forbidden`.
+
+[games.lol]
+name = "League of Legends"
+# image name taken from the lot 1 specification; confirm on the user machine (lot 5)
+detect = ["League of Legends.exe"]
+[games.lol.anti_cheat]
+label = "Riot Vanguard"
+processes = ["vgc.exe", "vgtray.exe"]
+[games.lol.items.O1]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test; Riot developer policy asks products serving players to register (docs/compliance.md 2.1)"
+[games.lol.items.O2]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.lol.items.O3]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "unverified: no official text addresses ETW kernel stack walks (driver attribution)"
+[games.lol.items.O4]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.lol.items.O5]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.lol.items.O6]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "Live Client Data API, post-match only; blocked until the product is registered with Riot and the user decides"
+[games.lol.items.O7]
+verdict = "forbidden"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "not applicable (JVM data (hsperfdata, JFR files)); forbidden is the fail-safe value"
+[games.lol.items.A1]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "unverified: no official text addresses EcoQoS + below-normal priority of background processes"
+[games.lol.items.A2]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "unverified: no official text addresses CPU Sets keeping background processes off the game CPUs"
+[games.lol.items.A3]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "unverified: no official text addresses power overlay to best performance (AC)"
+[games.lol.items.A4]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "unverified: no official text addresses I/O and memory priority of background processes"
+[games.lol.items.A5]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "unverified: no official text addresses standby-list purge"
+[games.lol.items.A7]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "unverified: no official text addresses overlay window (separate, topmost, no injection)"
+[games.lol.items.A8]
+verdict = "forbidden"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/lol"]
+date = "2026-11-21"
+note = "not applicable (JVM argument proposal (text applied by the user)); forbidden is the fail-safe value"
+
+[games.valorant]
+name = "VALORANT"
+# image name taken from the lot 1 specification; confirm on the user machine (lot 5)
+detect = ["VALORANT-Win64-Shipping.exe"]
+[games.valorant.anti_cheat]
+label = "Riot Vanguard"
+processes = ["vgc.exe", "vgtray.exe"]
+[games.valorant.items.O1]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test; Riot developer policy asks products serving players to register (docs/compliance.md 2.1)"
+[games.valorant.items.O2]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.valorant.items.O3]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "unverified: no official text addresses ETW kernel stack walks (driver attribution)"
+[games.valorant.items.O4]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.valorant.items.O5]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.valorant.items.O6]
+verdict = "forbidden"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "no official local game-data API"
+[games.valorant.items.O7]
+verdict = "forbidden"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "not applicable (JVM data (hsperfdata, JFR files)); forbidden is the fail-safe value"
+[games.valorant.items.A1]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "unverified: no official text addresses EcoQoS + below-normal priority of background processes"
+[games.valorant.items.A2]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "unverified: no official text addresses CPU Sets keeping background processes off the game CPUs"
+[games.valorant.items.A3]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "unverified: no official text addresses power overlay to best performance (AC)"
+[games.valorant.items.A4]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "unverified: no official text addresses I/O and memory priority of background processes"
+[games.valorant.items.A5]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "unverified: no official text addresses standby-list purge"
+[games.valorant.items.A7]
+verdict = "unverified"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "unverified: no official text addresses overlay window (separate, topmost, no injection)"
+[games.valorant.items.A8]
+verdict = "forbidden"
+sources = ["https://www.riotgames.com/en/terms-of-service", "https://developer.riotgames.com/policies/general", "https://developer.riotgames.com/docs/valorant"]
+date = "2026-11-21"
+note = "not applicable (JVM argument proposal (text applied by the user)); forbidden is the fail-safe value"
+
+[games.fortnite]
+name = "Fortnite"
+# image name unconfirmed: to be read from a real process on the user machine (lot 5)
+detect = ["FortniteClient-Win64-Shipping.exe"]
+[games.fortnite.anti_cheat]
+label = "Easy Anti-Cheat and BattlEye"
+processes = ["EasyAntiCheat.exe", "EasyAntiCheat_EOS.exe", "BEService.exe"]
+[games.fortnite.items.O1]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.fortnite.items.O2]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.fortnite.items.O3]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "unverified: no official text addresses ETW kernel stack walks (driver attribution)"
+[games.fortnite.items.O4]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.fortnite.items.O5]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.fortnite.items.O6]
+verdict = "forbidden"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "forbidden: game data source"
+[games.fortnite.items.O7]
+verdict = "forbidden"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "not applicable (JVM data (hsperfdata, JFR files)); forbidden is the fail-safe value"
+[games.fortnite.items.A1]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "unverified: no official text addresses EcoQoS + below-normal priority of background processes"
+[games.fortnite.items.A2]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "unverified: no official text addresses CPU Sets keeping background processes off the game CPUs"
+[games.fortnite.items.A3]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "unverified: no official text addresses power overlay to best performance (AC)"
+[games.fortnite.items.A4]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "unverified: no official text addresses I/O and memory priority of background processes"
+[games.fortnite.items.A5]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "unverified: no official text addresses standby-list purge"
+[games.fortnite.items.A7]
+verdict = "unverified"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "unverified: no official text addresses overlay window (separate, topmost, no injection)"
+[games.fortnite.items.A8]
+verdict = "forbidden"
+sources = ["https://legal.epicgames.com/epicgames/tos", "https://www.easy.ac/support/articles", "https://www.battleye.com/support/faq/"]
+date = "2026-11-21"
+note = "not applicable (JVM argument proposal (text applied by the user)); forbidden is the fail-safe value"
+
+[games.overwatch2]
+name = "Overwatch 2"
+# image name taken from the lot 1 specification; confirm on the user machine (lot 5)
+detect = ["Overwatch.exe"]
+[games.overwatch2.anti_cheat]
+label = "Blizzard anti-cheat (component not named in official texts)"
+processes = []
+[games.overwatch2.items.O1]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.overwatch2.items.O2]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.overwatch2.items.O3]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "unverified: no official text addresses ETW kernel stack walks (driver attribution)"
+[games.overwatch2.items.O4]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.overwatch2.items.O5]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.overwatch2.items.O6]
+verdict = "forbidden"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "forbidden: game data source"
+[games.overwatch2.items.O7]
+verdict = "forbidden"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "not applicable (JVM data (hsperfdata, JFR files)); forbidden is the fail-safe value"
+[games.overwatch2.items.A1]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "unverified: no official text addresses EcoQoS + below-normal priority of background processes"
+[games.overwatch2.items.A2]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "unverified: no official text addresses CPU Sets keeping background processes off the game CPUs"
+[games.overwatch2.items.A3]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "unverified: no official text addresses power overlay to best performance (AC)"
+[games.overwatch2.items.A4]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "unverified: no official text addresses I/O and memory priority of background processes"
+[games.overwatch2.items.A5]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "unverified: no official text addresses standby-list purge"
+[games.overwatch2.items.A7]
+verdict = "unverified"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "unverified: no official text addresses overlay window (separate, topmost, no injection)"
+[games.overwatch2.items.A8]
+verdict = "forbidden"
+sources = ["https://www.blizzard.com/en-us/legal/fba4d00f-c7e4-4883-b8b9-1b4500a402ea/blizzard-end-user-license-agreement", "https://www.blizzard.com/en-gb/legal/cd5930c0-2784-420c-a23d-1e0d6ff8599b/anti-cheating-agreement"]
+date = "2026-11-21"
+note = "not applicable (JVM argument proposal (text applied by the user)); forbidden is the fail-safe value"
+
+[games.minecraft-java]
+name = "Minecraft Java Edition"
+detect = []
+window_title_prefix = "Minecraft"
+[games.minecraft-java.items.O1]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.minecraft-java.items.O2]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.minecraft-java.items.O3]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "unverified: no official text addresses ETW kernel stack walks (driver attribution)"
+[games.minecraft-java.items.O4]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.minecraft-java.items.O5]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.minecraft-java.items.O6]
+verdict = "forbidden"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "not applicable (game data source); forbidden is the fail-safe value"
+[games.minecraft-java.items.O7]
+verdict = "allowed"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "EULA allows third-party tools that do not pose as official; JVM data (hsperfdata, JFR files)"
+[games.minecraft-java.items.A1]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "unverified: no official text addresses EcoQoS + below-normal priority of background processes"
+[games.minecraft-java.items.A2]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "unverified: no official text addresses CPU Sets keeping background processes off the game CPUs"
+[games.minecraft-java.items.A3]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "unverified: no official text addresses power overlay to best performance (AC)"
+[games.minecraft-java.items.A4]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "unverified: no official text addresses I/O and memory priority of background processes"
+[games.minecraft-java.items.A5]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "unverified: no official text addresses standby-list purge"
+[games.minecraft-java.items.A7]
+verdict = "unverified"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "unverified: no official text addresses overlay window (separate, topmost, no injection)"
+[games.minecraft-java.items.A8]
+verdict = "allowed"
+sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]
+date = "2026-11-21"
+note = "EULA allows third-party tools that do not pose as official; JVM argument proposal (text applied by the user)"
+
+[games.fa-lab]
+name = "FrameAutopsy Stutter Lab"
+detect = []
+[games.fa-lab.items.O1]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.O2]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.O3]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.O4]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.O5]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.O6]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "not applicable (game data source); forbidden is the fail-safe value"
+[games.fa-lab.items.O7]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "not applicable (JVM data (hsperfdata, JFR files)); forbidden is the fail-safe value"
+[games.fa-lab.items.A1]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.A2]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.A3]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.A4]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.A5]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.A7]
+verdict = "allowed"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "the Lab runs on itself; allowed by ownership"
+[games.fa-lab.items.A8]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "not applicable (JVM argument proposal (text applied by the user)); forbidden is the fail-safe value"
+
+[games.unknown]
+name = "Unknown game"
+detect = []
+[games.unknown.items.O1]
+verdict = "unverified"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.unknown.items.O2]
+verdict = "unverified"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.unknown.items.O3]
+verdict = "unverified"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "unverified: no official text addresses ETW kernel stack walks (driver attribution)"
+[games.unknown.items.O4]
+verdict = "unverified"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.unknown.items.O5]
+verdict = "unverified"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "baseline observer, unconfirmed until the lot 7 anti-cheat test"
+[games.unknown.items.O6]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "forbidden: game data source"
+[games.unknown.items.O7]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "not applicable (JVM data (hsperfdata, JFR files)); forbidden is the fail-safe value"
+[games.unknown.items.A1]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "forbidden: EcoQoS + below-normal priority of background processes"
+[games.unknown.items.A2]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "forbidden: CPU Sets keeping background processes off the game CPUs"
+[games.unknown.items.A3]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "forbidden: power overlay to best performance (AC)"
+[games.unknown.items.A4]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "forbidden: I/O and memory priority of background processes"
+[games.unknown.items.A5]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "forbidden: standby-list purge"
+[games.unknown.items.A7]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "forbidden: overlay window (separate, topmost, no injection)"
+[games.unknown.items.A8]
+verdict = "forbidden"
+sources = ["https://github.com/MatteoPetronelli/FrameAutopsy"]
+date = "2026-11-21"
+note = "not applicable (JVM argument proposal (text applied by the user)); forbidden is the fail-safe value"
