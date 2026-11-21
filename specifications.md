@@ -77,6 +77,10 @@ files and `profile.md`.
 #### Requirement: Graphify configuration
 `.graphifyignore` SHALL exclude `target/`, `graphify-out/` and the data directories, mirroring RiftMind's setup.
 
+##### Scenario: Ignore list
+- **WHEN** `.graphifyignore` is read
+- **THEN** it lists `target/`, `graphify-out/` and the data directories
+
 #### Requirement: Allocation test harness
 `fa-sync` SHALL provide, behind a `test-support` feature, a counting global allocator (RiftMind pattern) so any crate
 can assert in its tests that a code path performs zero heap allocations. It lives in `fa-sync` because
@@ -89,6 +93,10 @@ can assert in its tests that a code path performs zero heap allocations. It live
 #### Requirement: Benchmark harness
 `fa-asm` and `fa-sync` SHALL use `criterion` benches named `<module>_vs_<reference>`; each bench prints the reference
 and the candidate side by side.
+
+##### Scenario: Bench naming
+- **WHEN** a criterion bench of `fa-asm` or `fa-sync` is added
+- **THEN** it is named `<module>_vs_<reference>` and prints the reference
 
 ---
 
@@ -121,6 +129,10 @@ comment that states the invariant making it sound.
 The public API of the three unsafe crates SHALL be safe. An exported `unsafe fn` is allowed only with a `# Safety`
 doc section and a written reason in `docs/asm-unsafe-catalog.md`.
 
+##### Scenario: Exported unsafe fn
+- **WHEN** an `unsafe fn` is exported by `fa-asm`, `fa-win` or `fa-sync`
+- **THEN** it has a `# Safety` doc section and a written reason in `docs/asm-unsafe-catalog.md`
+
 #### Requirement: Earn-its-place rule
 Every asm or unsafe module SHALL have (a) a reference implementation, (b) a parity test against it, (c) a recorded
 comparison on its declared metric (criterion bench or comparative test) in `docs/asm-unsafe-catalog.md`, and (d) a
@@ -150,18 +162,34 @@ Assembly SHALL use `core::arch::asm!` with Intel syntax and precise options (`no
 only when true). `global_asm!` SHALL be used only when a whole function is required, and then with
 `.seh_proc`/`.seh_endproc` unwind directives.
 
+##### Scenario: Asm syntax
+- **WHEN** assembly is added to an unsafe crate
+- **THEN** it uses `core::arch::asm!` with Intel syntax, or `global_asm!` with `.seh_proc`/`.seh_endproc` only when a whole function is required
+
 #### Requirement: No unwinding across FFI
 Every `extern "system"` callback SHALL wrap its body in `std::panic::catch_unwind`; a caught panic stops the related
 session and is recorded.
+
+##### Scenario: Callback panic
+- **WHEN** an `extern "system"` callback panics
+- **THEN** `std::panic::catch_unwind` catches it, the related session stops and the panic is recorded
 
 #### Requirement: Miri coverage
 `fa-sync` tests SHALL pass under `cargo +nightly miri test -p fa-sync`, with iteration counts reduced under
 `cfg(miri)`.
 
+##### Scenario: Miri run
+- **WHEN** `cargo +nightly miri test -p fa-sync` is run
+- **THEN** the `fa-sync` tests pass, with iteration counts reduced under `cfg(miri)`
+
 #### Requirement: Explanation checkpoint
 Each change that adds or modifies an `unsafe` or asm block SHALL include, in its `tasks.md`, a checkpoint where the
 block is explained to the user in French (what it does, why it is sound, what would break it). The block is merged only
 after the user confirms understanding.
+
+##### Scenario: Checkpoint in tasks
+- **WHEN** a change adds or modifies an `unsafe` or asm block
+- **THEN** its `tasks.md` has a checkpoint explaining the block to the user in French, and the block is merged only after the user confirms understanding
 
 ---
 
@@ -205,6 +233,10 @@ per game.)
 A test SHALL fail if any action is enabled for a game without a matrix entry, or if an entry marked `allowed` lacks a
 source URL and a date.
 
+##### Scenario: Matrix entry check
+- **WHEN** an action is enabled for a game without a matrix entry, or an entry marked `allowed` lacks a source URL and a date
+- **THEN** the test fails
+
 #### Requirement: TargetProcess guard
 The governor SHALL act only through `TargetProcess`, constructible only by `TargetProcess::try_new(pid, image_name,
 creation_time, &Matrix)`. Construction SHALL fail for matrix games, anti-cheat processes listed in the matrix (for
@@ -232,6 +264,10 @@ only a truncated or unknown name is available. A source test SHALL fail if `Open
 No game-state data SHALL be displayed or signalled while a match is in progress, in any game. Only system metrics MAY
 be shown live. Game-event correlation appears only in post-match reports.
 
+##### Scenario: Match in progress
+- **WHEN** a match is in progress
+- **THEN** no game-state data is displayed or signalled, only system metrics MAY be shown live, and game-event correlation appears only in post-match reports
+
 ---
 
 ## tsc-clock
@@ -248,14 +284,26 @@ Windows; probes need sub-microsecond precision over ~50 µs windows, so the TSC 
 The clock SHALL check CPUID `0x80000007:EDX[8]`. Without an invariant TSC it SHALL fall back to QPC as the timebase and
 the health check SHALL report it.
 
+##### Scenario: No invariant TSC
+- **WHEN** CPUID `0x80000007:EDX[8]` reports no invariant TSC
+- **THEN** the clock falls back to QPC as the timebase and the health check reports it
+
 #### Requirement: Read primitives
 `fa-asm` SHALL provide `now()` (`lfence; rdtsc; lfence`) and `now_serialized()` (`rdtscp; lfence`). Asm candidates
 compete with `_rdtsc`/`__rdtscp` + `_mm_lfence` intrinsics on overhead and jitter; the asm version ships only if it
 wins.
 
+##### Scenario: TSC reads
+- **WHEN** `fa-asm` is built
+- **THEN** it provides `now()` (`lfence; rdtsc; lfence`) and `now_serialized()` (`rdtscp; lfence`)
+
 #### Requirement: TSC frequency
 The TSC frequency SHALL come from CPUID `0x15` when its crystal ratio is non-zero, otherwise from a calibration against
 QPC: 5 runs of at least 200 ms, median kept. The value is stored in the health baseline.
+
+##### Scenario: Frequency source
+- **WHEN** the TSC frequency is determined
+- **THEN** it comes from CPUID `0x15` when its crystal ratio is non-zero, otherwise from a QPC calibration of 5 runs of at least 200 ms with the median kept, and is stored in the health baseline
 
 #### Requirement: Conversions
 Tick-to-nanosecond conversion SHALL use integer math (u128), without float drift. A QPC↔TSC mapping (offset and scale)
@@ -299,9 +347,17 @@ A test SHALL compare the API model with CPUID leaves (`0x0B`/`0x1F`, `0x1A`, `0x
 through `__cpuid_count` intrinsics and log mismatches. CPUID is not a runtime source (the API already exposes the
 information; the cross-check is a validation and learning device, documented as such).
 
+##### Scenario: Cross-check test
+- **WHEN** the topology cross-check test runs
+- **THEN** it compares the API model with the CPUID leaves read through `__cpuid_count` intrinsics and logs mismatches, and CPUID is not a runtime source
+
 #### Requirement: Synthetic topologies
 The hybrid and dual-CCD scenarios SHALL be tested with synthetic API buffers, because the target machine
 (i5-11400H: 6 identical cores, one LLC) has neither; real validation waits for another machine.
+
+##### Scenario: Hybrid and dual-CCD
+- **WHEN** the hybrid and dual-CCD scenarios are tested
+- **THEN** they use synthetic API buffers, not the target machine
 
 ---
 
@@ -319,6 +375,10 @@ threads only.
 #### Requirement: Pinned execution
 Each probe SHALL run on a FrameAutopsy thread pinned to the chosen logical CPU (`SetThreadSelectedCpuSets` or
 `SetThreadAffinityMask` on our own thread) and timestamp its result in TSC ticks.
+
+##### Scenario: Pinned probe
+- **WHEN** a probe runs
+- **THEN** it runs on a FrameAutopsy thread pinned to the chosen logical CPU and timestamps its result in TSC ticks
 
 #### Requirement: Effective frequency probe
 The probe SHALL execute an asm chain of dependent `add` instructions (1-cycle latency) sized to last about 50 µs and
@@ -344,26 +404,50 @@ on 4 KiB pages and on 2 MiB large pages when `SeLockMemoryPrivilege` is availabl
 per load. Reference: a Rust `read_volatile` chain; asm ships only if its measurements are more stable (lower
 coefficient of variation).
 
+##### Scenario: Pointer chase
+- **WHEN** the memory latency probe runs
+- **THEN** it pointer-chases a buffer of at least 4× the LLC size as a random cyclic permutation (Sattolo), on 4 KiB pages and on 2 MiB large pages when `SeLockMemoryPrivilege` is available, and reports ns per load
+
 #### Requirement: Memory bandwidth probe
 The probe SHALL measure read (AVX2 loads), write (non-temporal stores) and copy bandwidth, multi-threaded across
 physical cores, in GB/s. Reference: intrinsics.
 
+##### Scenario: Bandwidth modes
+- **WHEN** the memory bandwidth probe runs
+- **THEN** it measures read (AVX2 loads), write (non-temporal stores) and copy bandwidth, multi-threaded across physical cores, in GB/s
+
 #### Requirement: Cache curve
 The probe SHALL measure latency for working sets from 16 KiB to 256 MiB, detect plateaus as L1/L2/L3 sizes, and
 compare them with `cpu-topology`.
+
+##### Scenario: Working-set sweep
+- **WHEN** the cache curve probe runs
+- **THEN** it measures latency for working sets from 16 KiB to 256 MiB, detects plateaus as L1/L2/L3 sizes and compares them with `cpu-topology`
 
 #### Requirement: Wake-up latency probe
 The probe SHALL measure the lateness of a thread woken by a high-resolution waitable timer and report p50/p99/max in
 µs. (`tpause`/`umwait`/`mwaitx` waits were dropped: the target CPU has neither WAITPKG nor MWAITX, so they could
 never be validated.)
 
+##### Scenario: Timer lateness
+- **WHEN** the wake-up latency probe runs
+- **THEN** it measures the lateness of a thread woken by a high-resolution waitable timer and reports p50/p99/max in µs
+
 #### Requirement: Off-game only in this lot
-In lot 3 probes run off-game only. In-game sampling needs context switches and is specified in `incident-store`
+In lot 3 probes SHALL run off-game only. In-game sampling needs context switches and is specified in `incident-store`
 (lot 8).
+
+##### Scenario: Lot 3 probes
+- **WHEN** probes run in lot 3
+- **THEN** they run off-game only
 
 #### Requirement: Calibration record
 A documented manual procedure SHALL compare probe results with HWiNFO off-game; results are recorded in
 `docs/asm-unsafe-catalog.md`.
+
+##### Scenario: HWiNFO comparison
+- **WHEN** probe results are compared with HWiNFO off-game by the documented manual procedure
+- **THEN** the results are recorded in `docs/asm-unsafe-catalog.md`
 
 ---
 
@@ -381,6 +465,10 @@ interference) with no admin rights, no ETW and no game running. It becomes the b
 `fa check` SHALL run non-elevated in at most 90 s, print a French report and write JSON to
 `%LOCALAPPDATA%\FrameAutopsy\health\<timestamp>.json`. It SHALL change no system setting.
 
+##### Scenario: Check run
+- **WHEN** `fa check` runs
+- **THEN** it runs non-elevated in at most 90 s, prints a French report, writes JSON to `%LOCALAPPDATA%\FrameAutopsy\health\<timestamp>.json` and changes no system setting
+
 #### Requirement: Refuse during games
 `fa check` SHALL refuse to start while a matrix game process is running (Toolhelp snapshot by image name, no handle) and
 warn when on battery.
@@ -394,6 +482,10 @@ The report SHALL contain: CPU (model, topology, invariant TSC, TSC frequency, AV
 (idle per-core peak, then a 60 s all-core FMA load — ASM-06 — sampled every second); memory (latency, bandwidth, cache sizes, WMI
 `Win32_PhysicalMemory` modules and configured speed); scheduling (wake-up p50/p99/max); power (AC or battery, active
 scheme and overlay); GPU through NVML when present (name, P-state, power limit).
+
+##### Scenario: Report content
+- **WHEN** the report is produced
+- **THEN** it contains CPU, frequency, memory, scheduling, power, and GPU through NVML when present
 
 #### Requirement: Verdicts with evidence
 Each verdict SHALL state its evidence and confidence, and the report SHALL say plainly when nothing was found.
@@ -412,6 +504,10 @@ Starting rules (calibrate):
 
 #### Requirement: Baseline
 The latest health check run on AC power SHALL become the baseline for in-game comparisons and A/B covariates.
+
+##### Scenario: Latest AC run
+- **WHEN** a health check run on AC power completes
+- **THEN** the latest such run becomes the baseline for in-game comparisons and A/B covariates
 
 ---
 
