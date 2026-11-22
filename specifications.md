@@ -478,21 +478,33 @@ warn when on battery.
 - **THEN** `fa check` exits with a message asking to close the game first
 
 #### Requirement: Report sections
-The report SHALL contain: CPU (model, topology, invariant TSC, TSC frequency, AVX2/AVX-512/WAITPKG/MWAITX); frequency
-(idle per-core peak, then a 60 s all-core FMA load — ASM-06 — sampled every second); memory (latency, bandwidth, cache sizes, WMI
-`Win32_PhysicalMemory` modules and configured speed); scheduling (wake-up p50/p99/max); power (AC or battery, active
-scheme and overlay); GPU through NVML when present (name, P-state, power limit).
+The report SHALL contain the sections CPU, frequency, memory, scheduling, power and, when present, GPU. The frequency
+section SHALL show a single-core peak per core and then a 60 s FMA load (ASM-06) on one logical CPU of every other
+physical core, sampled every second on a core whose SMT sibling stays idle.
+
+##### Scenario: Section details
+- **WHEN** the report is produced
+- **THEN** CPU shows model, topology, invariant TSC, TSC frequency and AVX2/AVX-512/WAITPKG/MWAITX; memory shows latency, bandwidth, cache sizes and the WMI `Win32_PhysicalMemory` modules with configured speed; scheduling shows wake-up p50/p99/max; power shows AC or battery, active scheme and overlay; GPU (NVML) shows name, P-state and power limit
 
 ##### Scenario: Report content
 - **WHEN** the report is produced
 - **THEN** it contains CPU, frequency, memory, scheduling, power, and GPU through NVML when present
 
 #### Requirement: Verdicts with evidence
-Each verdict SHALL state its evidence and confidence, and the report SHALL say plainly when nothing was found.
-Starting rules (calibrate):
-- throttling: median frequency drops more than 10 % from the first 5 s → "bridage après X s, −Y %";
-- single-channel RAM likely: measured bandwidth under 60 % of the dual-channel theoretical value for the configured speed;
-- scheduling interference likely: wake-up p99 above 500 µs.
+Each verdict SHALL state its evidence and confidence, and the report SHALL say plainly when nothing was found. The
+starting rules (calibrate) are given by the rule scenarios below.
+
+##### Scenario: Throttling rule
+- **WHEN** the median frequency after the first 5 s drops more than 10 % below the first-5 s median
+- **THEN** the throttling verdict fires with "bridage après X s, −Y %"
+
+##### Scenario: Single-channel RAM rule
+- **WHEN** WMI shows one memory module
+- **THEN** the single-channel RAM verdict fires, with high confidence when the all-core read bandwidth is also under 60 % of the dual-channel theoretical value for the configured speed and medium otherwise; with more than one module it does not fire, and with an unknown module count the bandwidth alone fires it with low confidence
+
+##### Scenario: Scheduling rule
+- **WHEN** the wake-up p99 is above 5 ms (the idle target machine measures p50 about 0.5 ms and p99 2 to 3 ms, so 500 µs would fire on every run)
+- **THEN** the scheduling interference verdict fires
 
 ##### Scenario: Throttling laptop
 - **WHEN** the all-core load median falls from 4.2 GHz to 3.1 GHz after 25 s

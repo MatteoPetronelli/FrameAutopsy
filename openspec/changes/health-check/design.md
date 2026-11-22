@@ -28,16 +28,19 @@ WAITPKG or MWAITX.
 | Phase | Budget | Source |
 |---|---|---|
 | refusal checks (game, battery warning), CPU identification | under 1 s | Toolhelp snapshot, CPUID, lot 2 |
-| idle frequency (per-core peak) | 5 s | ASM-02 probe, lot 3 |
+| single-core peak, each core in turn (the probe keeps its core busy: a peak, not an idle reading) | 5 s | ASM-02 probe, lot 3 |
 | 60 s all-core load + 1 Hz frequency sampling | 60 s | ASM-06 + ASM-02 |
-| memory latency, bandwidth, cache sizes | 8 s | ASM-03, ASM-04 |
+| memory latency, bandwidth, cache sizes | 8 s, to be measured as a whole (task 6.2b) before it is frozen | ASM-03, ASM-04 |
 | scheduling wake-up p50/p99/max | 5 s | lot 3 timer probe |
 | WMI, NVML, power queries | about 3 s, overlapped with other phases | `wmi`, `nvml-wrapper`, `fa-win` |
 
 The sum leaves 8 to 10 s of margin. Memory and scheduling probes run after the load only if the hot CPU does not
 distort them; the order is compared once at implementation and the choice is logged in `docs/decisions.md` section 5.
-The sampler thread reads the per-core frequency once per second while one load thread runs on every other logical core
-(N-1 cores loaded plus the sampler's core, stated in the report); load threads never pre-empt the sampler.
+The sampler thread reads the frequency of its own core once per second while one load thread runs on one logical CPU of
+every OTHER physical core (the sampler's core and its SMT sibling are excluded; stated in the report). The sibling must
+stay idle: with it busy the ASM-02 probe reads about 9 % low (3.71 GHz against 4.08 on PDH, lot 3), which would make a
+healthy machine look throttled; with it idle probe and PDH agree within 0.2 %. The CPU choice is a pure function of the
+topology (`fa-probe::bandwidth::physical_core_cpus` plus the core of the sampler), unit tested on synthetic topologies.
 
 **D-2 ASM-06 FMA load (`fa-asm`).** The catalog line exists (`pending`) and is updated before the code. Reference:
 intrinsics. Candidate: `asm!` Intel syntax, 8 independent accumulator chains (`vfmadd231ps` on `ymm` for AVX2, `zmm`
@@ -58,9 +61,14 @@ rules, all `(calibrate)`:
 - throttling: median all-core frequency per second; fires when the median after the first 5 s drops more than 10 %
   below the first-5 s median. Text "bridage apres X s, -Y %", X being the first second where the 3 s moving median is
   under 90 %, with the curve. Confidence high when the drop is monotonic over 3 s or more, medium when it recovers.
-- single-channel RAM likely: measured bandwidth under 60 % of the dual-channel theoretical value for the configured
-  speed (speed x 8 B x 2). WMI module count is corroborating evidence (one module raises confidence to high).
-- scheduling interference likely: wake-up p99 above 500 us.
+- single-channel RAM likely: the WMI module count decides. One module fires the verdict (high confidence when the
+  all-core READ bandwidth is also under 60 % of the dual-channel theoretical value, speed x 8 B x 2; medium otherwise);
+  more than one module does not fire it. When WMI fails, the bandwidth alone fires it with low confidence. Why not
+  bandwidth first: lot 3 measured about 32 GB/s read and 26 to 30 GB/s write or copy, +-10 % between runs, which is
+  right at 60 % of 51.2 GB/s (DDR4-3200), so the bandwidth cannot decide alone. Read only: the least noisy mode.
+- scheduling interference likely: wake-up p99 above 5 ms. Lot 3 measured on the idle target machine a lateness p50 of
+  about 0.5 ms and a p99 of 2 to 3 ms (timer resolution), so the first draft of 500 us would have fired on every run.
+  5 ms is about twice the idle p99; it is a starting value, frozen at task 7.3 after real reports.
 Missing inputs (WMI failed, NVML absent) lower confidence or skip a line and say so; they never fire a verdict. Unit
 tests cover the two spec scenarios (4.2 to 3.1 GHz after 25 s gives "bridage apres 25 s, -26 %"; healthy desktop) from
 fixtures, and each threshold gets a mutation check (`mutation-verified-testing`).

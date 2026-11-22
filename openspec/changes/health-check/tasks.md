@@ -5,9 +5,9 @@ below ends with it, green.
 
 ## 1. Catalog and dependencies
 
-- [ ] 1.1 Update ASM-06 in `docs/asm-unsafe-catalog.md` (chain count, metric, reference) and add WIN-10 (Toolhelp snapshot, power reads) before any code; verify both lines are present with "pending".
-- [ ] 1.2 Add dependencies `wmi`, `nvml-wrapper`, `serde`, `serde_json` to the crates that use them and verify `cargo build --workspace` succeeds.
-- [ ] 1.3 Run the gate and verify it is green.
+- [x] 1.1 Update ASM-06 in `docs/asm-unsafe-catalog.md` (chain count, metric, reference) and add WIN-10 (Toolhelp snapshot, power reads) before any code; verify both lines are present with "pending".
+- [x] 1.2 Add dependencies `wmi`, `nvml-wrapper`, `serde`, `serde_json` to the crates that use them and verify `cargo build --workspace` succeeds.
+- [x] 1.3 Run the gate and verify it is green.
 
 ## 2. ASM-06 FMA power load (`fa-asm`)
 
@@ -35,7 +35,7 @@ below ends with it, green.
 ## 5. Verdicts and report (`fa-probe`)
 
 - [ ] 5.1 Implement the verdict rules (throttling, single-channel RAM likely, scheduling interference likely) with evidence and confidence; verify with fixture tests for "bridage apres 25 s, -26 %" and for the healthy desktop.
-- [ ] 5.2 Add mutation checks on each threshold (10 %, 60 %, 500 us) and the first-5 s window, and verify each mutant fails a test (`mutation-verified-testing`).
+- [ ] 5.2 Add mutation checks on each threshold (10 %, 60 %, 5 ms, one module against several) and the first-5 s window, and verify each mutant fails a test (`mutation-verified-testing`).
 - [ ] 5.3 Implement the `HealthReport` struct, the French text renderer (including the honest "nothing found" listing of checks) and the JSON writer; verify with golden-file tests for both outputs.
 - [ ] 5.4 Implement the AC baseline (`health\baseline.json`, atomic rename, never from a battery run) and the strict reader (size cap, `deny_unknown_fields`); verify with tests for AC, battery and an oversized or malformed file.
 - [ ] 5.5 Run the gate and verify it is green.
@@ -43,7 +43,9 @@ below ends with it, green.
 ## 6. `fa check` command (`fa`)
 
 - [ ] 6.1 Wire `fa check`: refusal when a matrix game is running (message asking to close it, exit non-zero), battery warning, phase sequencing under an 85 s deadline, Ctrl-C handling; verify with a test using a fake process list for `League of Legends.exe` and a manual run.
+- [ ] 6.1b Choose the load CPUs from the topology: one logical CPU per other physical core, never the sampler's core or its SMT sibling; verify with unit tests on synthetic topologies (SMT, non-SMT, hybrid fixture) and that the report states which CPUs were loaded.
 - [ ] 6.2 Verify `fa check` runs non-elevated, changes no setting (before/after power scheme and overlay compared), and finishes within 90 s (timed manual run and a test of the deadline logic).
+- [ ] 6.2b Time every phase on the laptop (the memory phase of 8 s has never been measured as a whole; the cache curve alone takes several seconds) and fix the budgets of D-1, shrinking the curve sweep if needed; verify the phases plus margin stay under 85 s.
 - [ ] 6.3 Document `fa check` usage and report format in the project docs and verify the documented command runs as written.
 - [ ] 6.4 Run the gate and verify it is green.
 
