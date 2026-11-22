@@ -1,4 +1,4 @@
-# Handoff: session starter (written 2026-11-22, after lot 4)
+# Handoff: session starter (written 2026-11-22, after lot 5)
 
 This file starts a **new Claude Code session** on FrameAutopsy. The original brief of the project (vision, compliance
 constraints, asm leads) is kept aside in `handoff-origin.md`: read it only for context or scope doubts.
@@ -7,87 +7,43 @@ The user speaks French (talk to them in French). Code, commits, OpenSpec artifac
 
 ## Your task
 
-**Initialise the OpenSpec changes of lots 5 to 9** under `openspec/changes/`, exactly as was done for lots 0 to 4 at the
-start of the project. Write **no application code**. When the five changes are written and valid, report to the user in
-French and wait: each change is validated by the user at the start of its own lot, before any code.
+**Start lot 6 `stutter-lab`.** Its OpenSpec change is already written and valid (`openspec/changes/stutter-lab/`); the
+other changes (`collector-service`, `incident-store`, `dashboard`) are written too. Read the change, show the user what
+it contains, **wait for their validation, and write no application code before it**. Then follow `tasks.md`
+(skill `openspec-batch-executor`). Before the first task, re-read the lot 5 facts below: several change the Lab's design.
 
-| Lot | Change id | Capabilities it introduces (sections of `specifications.md`) | Roadmap prompt |
-|---|---|---|---|
-| 5 | `etw-capture` | `etw-capture` **and** `lockfree-transport` (both are "Introduced by change `etw-capture`") | `roadmap.md`, "Lot 5" |
-| 6 | `stutter-lab` | `stutter-lab` | "Lot 6" |
-| 7 | `collector-service` | `collector-ipc` | "Lot 7" |
-| 8 | `incident-store` | `incident-store` | "Lot 8" |
-| 9 | `dashboard` | `dashboard` | "Lot 9" |
+Things the lot 6 change already says and you must not forget: `gate.ps1` runs `fa lab score` as soon as
+`crates/fa/src/lab.rs` exists (the scorer is lot 10), so the Lab lives in `crates/fa/src/lab/` and task 1.2 moves the
+gate trigger to `lab/score.rs`; the Lab refuses to run while a matrix game runs (`fa_probe::plan::running_games`);
+`cpu-burn` never loads the SMT sibling of a measured CPU; large pages are rejected (4 KiB everywhere).
 
-### Procedure (per change)
+## Current state (main, 2026-11-22, after lot 5)
 
-1. Check the OpenSpec command first (`openspec --help`, `openspec new change --help`); do not guess flags. Skill
-   `openspec-propose` describes the workflow. `openspec/config.yaml` holds the rules each artifact must follow.
-2. `openspec new change <id>` then write, in `openspec/changes/<id>/`:
-   - `proposal.md`: why, what changes, **effect on `compliance.toml` and on the "never touch the game" boundary**, the
-     catalog modules added or changed (`docs/asm-unsafe-catalog.md`), crates, dependencies, storage.
-   - `design.md`: context, goals / non-goals, numbered decisions (D-1...), risks. Each unsafe or asm module follows
-     the earn-its-place rule.
-   - `tasks.md`: numbered groups; each group ends with the gate (`powershell -File scripts/gate.ps1`); every task says
-     how it is verified ("verify ..."); an explanation-checkpoint task (French, user says "compris") for each new
-     unsafe or asm block.
-   - `specs/<capability>/spec.md`: copied from the matching section of `specifications.md`, headings raised one level,
-     under `## ADDED Requirements`, the "Introduced by" line dropped. Every requirement needs a `#### Scenario:`.
-3. `openspec validate <id> --strict` must pass. A requirement text over 500 characters makes `--strict` warn: keep the
-   requirement short and put the rules and examples in scenarios (this was done for lot 4).
-4. Work on a local branch (for example `plan/lots-5-9`), commit in small Conventional Commits, merge into `main` only
-   after the user's go, then push `main`. Lot branches are never pushed.
+Lots 0 to 5 are done. Lot 5 `etw-capture` is archived once merged (check `openspec list`). `openspec/changes/` holds
+`stutter-lab`, `collector-service`, `incident-store` and `dashboard`. The gate is green and includes Miri for `fa-sync`.
 
-### Cross-check each design against what lots 0 to 4 measured (this is the important part)
+Crates: `fa-core`, `fa-asm`, `fa-win` (adds `etw`: session and consumer, WIN-01), `fa-sync` (counting allocator and the
+SPSC ring `spsc`, SYNC-01), `fa-probe`, `fa-capture` (event view, decoders, hot and cold records, frame extraction,
+module map, process table; no unsafe), `fa` (CLI: `fa check`, `fa clock`, `fa probe ...`, `fa windows`, `fa capture`,
+`fa capture compare`). `fa capture` and the ETW examples of `fa-win` need an ELEVATED terminal.
 
-The lot 4 change was written before lot 3 produced its data, and three of its starting thresholds were wrong against
-the measurements. Do not repeat that. Before you finalise a design, read `docs/decisions.md` section 5,
-`docs/asm-unsafe-catalog.md` (results and verdicts) and section "Facts measured on the target machine" below, and
-correct every number, threshold or assumption that a measurement contradicts. List these corrections in your report.
-Say plainly when a lead is risky, a gain is uncertain, or a fact is unverified.
+### Facts measured in lot 5 (build 26300, 2026-11-22)
 
-Per-lot points to look at (not exhaustive):
-
-- **Lot 5 `etw-capture`.** The spike comes first: the target is Windows 11 build 26300 ("26H2"); do ETW kernel events give
-  kernel addresses to an admin session without `SeDebugPrivilege`? ETW needs an elevated terminal. `fa-sync::spsc`
-  (SYNC-01) must pass `cargo +nightly miri test -p fa-sync`, and **Miri is not installed** on the nightly toolchain
-  (`cargo +nightly miri --version` fails: `rustup +nightly component add miri` is a prerequisite; ask the user, it
-  changes their toolchain). Task `3.x`-style rule: no `OpenProcess`; process names come from
-  Microsoft-Windows-Kernel-Process (full names), never from classic kernel events (15-byte truncation). The hot
-  path is allocation-free, proven with the counting allocator (`fa-sync`, `test-support` feature).
-- **Lot 6 `stutter-lab`.** D3D11 and COM in unsafe (WIN-05). Dev commands run from an admin terminal. The Lab refuses
-  to run while a matrix game runs (reuse `fa_probe::plan::running_games`). ASM-06 (FMA load) exists already as the
-  intrinsics module `fa_asm::fma` (`fma::burn`); ASM-07 (`clflushopt`) is still to earn its place. `cpu-burn` should
-  not load the SMT sibling of a CPU that something else measures (see the SMT bias below).
-- **Lot 7 `collector-service`.** Trust boundary: use the `threat-modeling` skill and show the model to the user first.
-  `SYNC-02` seqlock under Miri. **The first anti-cheat test is run by the user only**; never run, trigger or simulate
-  one. `health\baseline.json` (written by `fa check`) is a user-writable input: the collector must read it with
-  `fa_probe::store::read_baseline` (size cap, strict schema).
-- **Lot 8 `incident-store`.** The SIMD-01 codec stays only if it beats "delta + zstd" on real snapshots: measure zstd
-  alone against delta+zstd first. In-game probe sampling (duty cycle at most 0.01 %) must pick CPUs without game hot
-  threads and, on this machine, **avoid probing a core whose SMT sibling is busy** (the frequency probe reads about
-  9 % low then).
-- **Lot 9 `dashboard`.** The UI never runs elevated and only reads; every action goes through the command channel;
-  text in French with decimal commas (`fa_probe::health::fr_num`).
-
-## Current state (main = `131984e`, 2026-11-22)
-
-Lots 0 to 4 are done, merged into `main`, archived under `openspec/changes/archive/`, and `main` is pushed to
-`origin`. `openspec/specs/` holds 7 specs: `workspace-hygiene`, `unsafe-policy`, `compliance-matrix`, `tsc-clock`,
-`cpu-topology`, `driverless-probes`, `health-check`. `openspec/changes/` is empty (only `archive/`). The gate is green,
-172 tests pass.
-
-Crates: `fa-core` (matrix, `TargetProcess`, clock math; no unsafe), `fa-asm` (CPUID, TSC, frequency chain, pointer chase,
-bandwidth, FMA load), `fa-win` (clock, topology, pinning, timers, PDH, large pages, process list, windows, power,
-console), `fa-sync` (counting allocator only so far), `fa-probe` (probes, verdicts, report, baseline; no unsafe), `fa`
-(CLI). `fa-capture`, `fa-storage` and later crates do not exist yet: each is created by the lot that first needs it.
-
-CLI (all non-elevated): `fa check` (about 70 s, refuses while a game runs; see `docs/fa-check.md`), `fa clock`,
-`fa probe freq|wake|domain|curve|bw`, `fa windows [--all]`.
-
-Earn-its-place verdicts so far: ASM-02 (frequency chain, asm mandatory) kept; ASM-01 (TSC reads), ASM-03 (pointer chase),
-ASM-04 (bandwidth) and ASM-06 (FMA load) **tied with the Rust/intrinsics reference, which ships and the asm was
-deleted** (4 ties out of 5 candidates: expect a tie unless a kernel is genuinely different from what LLVM emits).
+- ETW gives non-zero kernel addresses to an admin session without `SeDebugPrivilege`; one private system-logger session
+  takes the kernel flags and the manifest providers (DXGI, DxgKrnl with an event-id filter, Kernel-Process).
+- Opcodes (PerfInfo): 67 ISR, 68 DPC, 69 TimerDPC. Context switch (Thread class, op 36, version 5) has NO TDH schema;
+  only its first four fields are decoded. About 40 000 context switches and 50 000 events per second in normal use.
+- ETW delivery is batched: median delay 300 to 570 ms, up to about 1 s (flush timer). Timestamps are raw TSC and never
+  negative against `fa_asm::tsc::now()`.
+- The rundown at start and stop emits about 45 000 image and process records in an instant: the cold ring needs 65 536 slots.
+- Frametime parity with PresentMon 2.6.0: Opera 1 037 of 1 037 frames within 0.1 ms, Chrome 738 of 747 (the 9 differences
+  are PresentMon rows out of order). Modes seen: Composed Flip, Hardware Composed Independent Flip.
+- SYNC-01 beat `rtrb` (throughput +23 % to +71 %, latency tie), so `fa-sync::spsc` ships. WIN-01 was not compared with
+  `ferrisetw` (user decision, `docs/asm-unsafe-catalog.md`).
+- Not verified: hard page fault events (none seen), frames of OpenGL or Vulkan apps (Minecraft Java) through DxgKrnl
+  `Present_Info`, displayed time and present mode (not computed), thread to process attribution for context switches.
+- Git Bash eats backslashes in paths: use `D:/Matteo/...` with `fa capture --frames-csv`. PresentMon console:
+  `"/c/Program Files/Intel/PresentMon/PresentMonConsoleApplication/PresentMon-2.6.0-x64.exe"`.
 
 ### Facts measured on the target machine (i5-11400H, Windows 11 build 26300, AC power, performance mode, no overclock)
 
@@ -149,13 +105,3 @@ deleted** (4 ties out of 5 candidates: expect a tie unless a kernel is genuinely
 - `scripts/gate.ps1`: headers, fmt, clippy `-D warnings --all-features`, tests, Miri (once `crates/fa-sync/src/spsc.rs`
   exists), `fa lab score` (once `crates/fa/src/lab.rs` exists), graphify update.
 - `docs/decisions.md` section 5 logs every recalibrated `(calibrate)` value; user decisions D1 to D12 are never rewritten.
-
-## Definition of done for this task
-
-1. `openspec list` shows `etw-capture`, `stutter-lab`, `collector-service`, `incident-store`, `dashboard`, each valid under
-   `openspec validate <id> --strict`; `openspec validate --all` passes.
-2. The gate is green; everything committed on a local branch.
-3. A French report to the user: for each change, what it contains in a few lines, the corrections you made after
-   cross-checking with the measurements, the risks and unverified facts, and the questions that only the user can answer.
-4. No application code and no new crate written. Wait for the user's go before merging into `main`, and for their
-   validation of each change at the start of its lot.

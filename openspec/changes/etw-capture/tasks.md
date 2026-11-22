@@ -53,9 +53,9 @@ ETW steps need an elevated terminal, run by the user.
 
 ## 6. Close
 
-- [ ] 6.1 Check that WIN-01 and SYNC-01 each have reference, parity test, recorded comparison and runtime fallback or deletion; verify `openspec validate etw-capture --strict` passes.
-- [ ] 6.2 Update `docs/architecture.md` and `CLAUDE.md` status lines if the SPSC or consumer verdicts changed the plan; verify by reading the diff with the user.
-- [ ] 6.3 Run the gate and verify it is green.
+- [x] 6.1 Check that WIN-01 and SYNC-01 each have reference, parity test, recorded comparison and runtime fallback or deletion; verify `openspec validate etw-capture --strict` passes.
+- [x] 6.2 Update `docs/architecture.md` and `CLAUDE.md` status lines if the SPSC or consumer verdicts changed the plan; verify by reading the diff with the user.
+- [x] 6.3 Run the gate and verify it is green.
 
 ## Workflow follow-up
 
