@@ -41,13 +41,13 @@ use windows_sys::Win32::System::Diagnostics::Etw::{
     CONTROLTRACE_HANDLE, ENABLE_TRACE_PARAMETERS, ENABLE_TRACE_PARAMETERS_VERSION_2,
     EVENT_CONTROL_CODE_CAPTURE_STATE, EVENT_CONTROL_CODE_ENABLE_PROVIDER,
     EVENT_ENABLE_PROPERTY_IGNORE_KEYWORD_0, EVENT_FILTER_DESCRIPTOR, EVENT_FILTER_TYPE_EVENT_ID,
-    EVENT_HEADER_FLAG_32_BIT_HEADER, EVENT_RECORD, EVENT_TRACE_CONTROL_STOP,
-    EVENT_TRACE_FLAG_CSWITCH, EVENT_TRACE_FLAG_DISK_IO, EVENT_TRACE_FLAG_DPC,
-    EVENT_TRACE_FLAG_IMAGE_LOAD, EVENT_TRACE_FLAG_INTERRUPT, EVENT_TRACE_FLAG_MEMORY_HARD_FAULTS,
-    EVENT_TRACE_FLAG_PROCESS, EVENT_TRACE_FLAG_THREAD, EVENT_TRACE_LOGFILEW,
-    EVENT_TRACE_PROPERTIES, EVENT_TRACE_REAL_TIME_MODE, EVENT_TRACE_SYSTEM_LOGGER_MODE,
-    PROCESSTRACE_HANDLE, PROCESS_TRACE_MODE_EVENT_RECORD, PROCESS_TRACE_MODE_RAW_TIMESTAMP,
-    PROCESS_TRACE_MODE_REAL_TIME, WNODE_FLAG_TRACED_GUID,
+    EVENT_HEADER_FLAG_32_BIT_HEADER, EVENT_RECORD, EVENT_TRACE_CONTROL_QUERY,
+    EVENT_TRACE_CONTROL_STOP, EVENT_TRACE_FLAG_CSWITCH, EVENT_TRACE_FLAG_DISK_IO,
+    EVENT_TRACE_FLAG_DPC, EVENT_TRACE_FLAG_IMAGE_LOAD, EVENT_TRACE_FLAG_INTERRUPT,
+    EVENT_TRACE_FLAG_MEMORY_HARD_FAULTS, EVENT_TRACE_FLAG_PROCESS, EVENT_TRACE_FLAG_THREAD,
+    EVENT_TRACE_LOGFILEW, EVENT_TRACE_PROPERTIES, EVENT_TRACE_REAL_TIME_MODE,
+    EVENT_TRACE_SYSTEM_LOGGER_MODE, PROCESSTRACE_HANDLE, PROCESS_TRACE_MODE_EVENT_RECORD,
+    PROCESS_TRACE_MODE_RAW_TIMESTAMP, PROCESS_TRACE_MODE_REAL_TIME, WNODE_FLAG_TRACED_GUID,
 };
 
 /// Name of the session; a session of this name left behind by a crash is stopped at startup.
@@ -86,6 +86,14 @@ pub struct EventView<'a> {
     /// Written by a 32-bit process: pointers in `data` are 4 bytes.
     pub ptr32: bool,
     pub data: &'a [u8],
+}
+
+/// What ETW itself lost: events dropped by the kernel, and buffers it could not deliver in time.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Losses {
+    pub events_lost: u32,
+    pub log_buffers_lost: u32,
+    pub realtime_buffers_lost: u32,
 }
 
 /// Counters shared between the callback and the owner.
@@ -350,6 +358,31 @@ impl Session {
     /// Handler panics caught at the C boundary so far.
     pub fn handler_panics(&self) -> u64 {
         self.counters.panics.load(Ordering::Relaxed)
+    }
+
+    /// What ETW lost so far (a query of the running session).
+    pub fn losses(&self) -> io::Result<Losses> {
+        let mut buf = props_buf(self.timebase);
+        let ptr = buf.as_mut_ptr().cast::<EVENT_TRACE_PROPERTIES>();
+        // SAFETY: `ptr` points into `buf`, a valid EVENT_TRACE_PROPERTIES that outlives the call; `name` is NUL-terminated.
+        let rc = unsafe {
+            ControlTraceW(
+                self.control,
+                self.name.as_ptr(),
+                ptr,
+                EVENT_TRACE_CONTROL_QUERY,
+            )
+        };
+        if rc != 0 {
+            return Err(win_err("ControlTraceW(query)", rc));
+        }
+        // SAFETY: the call above filled the structure at `ptr`, which is aligned and fully initialised.
+        let p = unsafe { ptr.read() };
+        Ok(Losses {
+            events_lost: p.EventsLost,
+            log_buffers_lost: p.LogBuffersLost,
+            realtime_buffers_lost: p.RealTimeBuffersLost,
+        })
     }
 }
 

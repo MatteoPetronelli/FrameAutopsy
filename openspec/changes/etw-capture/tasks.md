@@ -39,13 +39,13 @@ ETW steps need an elevated terminal, run by the user.
 - [x] 4.4 Implement the module map (rundown + live image loads, address to module + offset) per the spike verdict; verify with synthetic loads and, if addresses are zeroed, that only names are kept and no address is resolved.
 - [x] 4.5 Implement Microsoft-Windows-Kernel-Process identification (PID, full image name); verify with a test that a 15-byte truncated name from a classic kernel event is never accepted as a name, and that `grep` finds no `OpenProcess` outside the allowed file (`no_open_process` green).
 - [x] 4.6 French explanation checkpoint for each new unsafe block of `fa-win::etw`; verify the user answered "compris".
-- [ ] 4.7 Compare with `ferrisetw` on the same synthetic stream (allocations per event, events/s, 3 runs); verify parity of decoded records and record the verdict in the catalog (hand-written for hot providers only with 0 allocations and throughput at least equal, else `ferrisetw` for non-hot providers).
-- [ ] 4.8 Run the gate and verify it is green.
+- [x] 4.7 Compare with `ferrisetw` on the same synthetic stream (allocations per event, events/s, 3 runs); verify parity of decoded records and record the verdict in the catalog (hand-written for hot providers only with 0 allocations and throughput at least equal, else `ferrisetw` for non-hot providers).
+- [x] 4.8 Run the gate and verify it is green.
 
 ## 5. Frames, losses, CLI and parity
 
-- [ ] 5.1 Implement frame extraction per process and swap chain following PresentMon (present start, displayed time, frametime, present mode); verify with synthetic present sequences including dropped and composed presents.
-- [ ] 5.2 Implement loss counters (lost buffers, lost events, unknown versions, ring drops); verify with a stalled-consumer test that drops grow while the callback still returns at once.
+- [x] 5.1 Implement frame extraction per process and swap chain following PresentMon (present start, displayed time, frametime, present mode); verify with synthetic present sequences including dropped and composed presents.
+- [x] 5.2 Implement loss counters (lost buffers, lost events, unknown versions, ring drops); verify with a stalled-consumer test that drops grow while the callback still returns at once.
 - [ ] 5.3 Add `fa capture --seconds N` (elevated terminal, refuses to start while a matrix game runs unless the user says otherwise); verify with a command test and a manual run by the user printing frames, counters and the timebase mode.
 - [ ] 5.4 Parity targets are Opera and Chrome (WebGL page or 60 fps video, user choice); ask the user to install PresentMon (unverified); verify PresentMon runs and both browsers present through DXGI.
 - [ ] 5.5 Run FrameAutopsy and PresentMon in parallel on that application and compare frametimes; verify at least 99 % of frames match within 0.1 ms (calibrate), report the present modes seen on this Optimus laptop, and record the result and any recalibration in `docs/decisions.md` section 5. If it cannot be met or no application exists, log it and move the criterion to lot 6.

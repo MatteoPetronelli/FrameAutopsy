@@ -360,8 +360,10 @@ name = "fa"
 version = "0.0.0"
 dependencies = [
  "fa-asm",
+ "fa-capture",
  "fa-core",
  "fa-probe",
+ "fa-sync",
  "fa-win",
 ]
 
