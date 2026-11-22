@@ -50,9 +50,9 @@ checkpoint in French (template: `docs/asm-unsafe-catalog.md` section 7), merged 
 
 - [x] 6.1 Add the `fa probe` subcommand (non-elevated, off-game only); verify with a command test and a manual run.
 - [x] 6.2 Write `docs/probe-calibration.md` (HWiNFO procedure, design D10); verify the user can follow it as written.
-- [ ] 6.3 User runs the calibration; record probe, PDH and HWiNFO results in `docs/asm-unsafe-catalog.md`; verify the ASM-02 accuracy is noted and the keep/remove decision is explicitly deferred to lot 10.
-- [ ] 6.4 Check that every probe has its reference, parity test and catalog result; verify `openspec validate driverless-probes --strict` passes.
-- [ ] 6.5 Gate: `powershell -File scripts/gate.ps1` is green.
+- [x] 6.3 (NOT DONE as written: HWiNFO crashes at launch on the target machine, user decision 2026-11-22 to close without it; ASM-02 accuracy recorded against PDH only) User runs the calibration; record probe, PDH and HWiNFO results in `docs/asm-unsafe-catalog.md`; verify the ASM-02 accuracy is noted and the keep/remove decision is explicitly deferred to lot 10.
+- [x] 6.4 Check that every probe has its reference, parity test and catalog result; verify `openspec validate driverless-probes --strict` passes.
+- [x] 6.5 Gate: `powershell -File scripts/gate.ps1` is green.
 
 ## Workflow follow-up
 
