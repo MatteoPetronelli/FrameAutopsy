@@ -47,9 +47,9 @@ ETW steps need an elevated terminal, run by the user.
 - [x] 5.1 Implement frame extraction per process and swap chain following PresentMon (present start, displayed time, frametime, present mode); verify with synthetic present sequences including dropped and composed presents.
 - [x] 5.2 Implement loss counters (lost buffers, lost events, unknown versions, ring drops); verify with a stalled-consumer test that drops grow while the callback still returns at once.
 - [x] 5.3 Add `fa capture --seconds N` (elevated terminal, refuses to start while a matrix game runs unless the user says otherwise); verify with a command test and a manual run by the user printing frames, counters and the timebase mode.
-- [ ] 5.4 Parity targets are Opera and Chrome (WebGL page or 60 fps video, user choice); ask the user to install PresentMon (unverified); verify PresentMon runs and both browsers present through DXGI.
-- [ ] 5.5 Run FrameAutopsy and PresentMon in parallel on that application and compare frametimes; verify at least 99 % of frames match within 0.1 ms (calibrate), report the present modes seen on this Optimus laptop, and record the result and any recalibration in `docs/decisions.md` section 5. If it cannot be met or no application exists, log it and move the criterion to lot 6.
-- [ ] 5.6 Run the gate and verify it is green.
+- [x] 5.4 Parity targets are Opera and Chrome (WebGL page or 60 fps video, user choice); ask the user to install PresentMon (unverified); verify PresentMon runs and both browsers present through DXGI.
+- [x] 5.5 Run FrameAutopsy and PresentMon in parallel on that application and compare frametimes; verify at least 99 % of frames match within 0.1 ms (calibrate), report the present modes seen on this Optimus laptop, and record the result and any recalibration in `docs/decisions.md` section 5. If it cannot be met or no application exists, log it and move the criterion to lot 6.
+- [x] 5.6 Run the gate and verify it is green.
 
 ## 6. Close
 
