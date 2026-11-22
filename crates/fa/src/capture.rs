@@ -136,7 +136,7 @@ fn run_inner(args: Args) -> io::Result<ExitCode> {
     }
 
     let (hot_p, hot_c) = ring(1 << 16);
-    let (cold_p, cold_c) = ring(1 << 12);
+    let (cold_p, cold_c) = ring(1 << 16);
     let mut capture = Capture::new(hot_p, cold_p);
     let stats = capture.shared_stats();
     let (tsc0, qpc0) = clock::read_pair();
