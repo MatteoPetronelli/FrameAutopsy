@@ -149,3 +149,14 @@ whether DWM-composed flip presents need the Win32k and Dwm-Core events for displ
 - Records: `HotRecord` is 32 bytes (present, DxgKrnl present, DPC/ISR, context switch, disk I/O); `ColdRecord` (process
   and image events, name inline in 62 UTF-8 bytes with a truncation flag) goes through its own smaller ring. A truncated
   name is never complete (`Name::complete()` is `None`), classic Process events are never decoded.
+
+### Session check on the target machine (`etw_check`, 2026-11-22, elevated)
+
+- A clean stop and restart works, and a session left running by a simulated crash is stopped by the next start
+  (orphan recovery); 0 handler panics. Rates: 13 to 26 thousand events per second in normal use with the DxgKrnl
+  event-id filter.
+- Timestamps are in the same timebase as `fa_asm::tsc::now()`: the delay between the kernel stamp and the callback is
+  never negative (minimum 2.9 to 8.5 ms) and never above 1.03 s. Bound recorded: **0 < delay <= 1.5 s**.
+- Delivery is batched: the median delay is 300 to 570 ms and the p99 about 1 s, because real-time buffers are handed
+  over when full or when the 1 s flush timer fires. This is fine for analysis (everything works on event timestamps)
+  but the live view of lot 9 shows data up to about 1 s old. Smaller buffers could lower it; not tried, unverified.
