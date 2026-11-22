@@ -10,6 +10,21 @@ pub fn cpuid_count(leaf: u32, sub: u32) -> [u32; 4] {
     [r.eax, r.ebx, r.ecx, r.edx]
 }
 
+/// The processor brand string (CPUID `0x80000002..=0x80000004`), trimmed; empty when the CPU does not report one.
+pub fn brand_string() -> String {
+    if cpuid_count(0x8000_0000, 0)[0] < 0x8000_0004 {
+        return String::new();
+    }
+    let mut bytes = Vec::with_capacity(48);
+    for leaf in 0x8000_0002..=0x8000_0004 {
+        for r in cpuid_count(leaf, 0) {
+            bytes.extend_from_slice(&r.to_le_bytes());
+        }
+    }
+    let end = bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len());
+    String::from_utf8_lossy(&bytes[..end]).trim().to_owned()
+}
+
 /// WAITPKG (`tpause`/`umwait`): CPUID `7.0:ECX[5]`.
 pub fn has_waitpkg() -> bool {
     cpuid_count(0, 0)[0] >= 7 && cpuid_count(7, 0)[2] >> 5 & 1 == 1
@@ -23,6 +38,12 @@ pub fn has_mwaitx() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_brand_string_names_the_target_cpu() {
+        let b = brand_string();
+        assert!(b.contains("i5-11400H"), "{b:?}"); // target machine, 2026-11-22
+    }
 
     #[test]
     fn leaf_zero_reports_a_vendor_and_a_max_leaf() {

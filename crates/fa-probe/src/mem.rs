@@ -80,13 +80,29 @@ pub fn curve_sizes() -> Vec<usize> {
 
 /// Measures the whole curve on `cpu` (pinned), allocating once for the largest set.
 pub fn cache_curve(cpu: u32, try_large: bool) -> io::Result<Vec<Latency>> {
+    cache_curve_with(cpu, try_large, 256 << 20, 3)
+}
+
+/// Same sweep limited to working sets up to `max_bytes`, with `runs` timed runs per point (`fa check` uses a shorter one).
+pub fn cache_curve_with(
+    cpu: u32,
+    try_large: bool,
+    max_bytes: usize,
+    runs: usize,
+) -> io::Result<Vec<Latency>> {
     let _pin = pin_current_thread(cpu)?;
     let clock = Clock::new();
-    let sizes = curve_sizes();
-    let mut buf = PageBuf::alloc(*sizes.last().unwrap(), try_large)?;
+    let sizes: Vec<usize> = curve_sizes()
+        .into_iter()
+        .filter(|s| *s <= max_bytes)
+        .collect();
+    let largest = *sizes
+        .last()
+        .ok_or_else(|| io::Error::other("empty sweep"))?;
+    let mut buf = PageBuf::alloc(largest, try_large)?;
     sizes
         .iter()
-        .map(|&s| measure(&mut buf, s, &clock, 3))
+        .map(|&s| measure(&mut buf, s, &clock, runs))
         .collect()
 }
 

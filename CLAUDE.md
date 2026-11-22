@@ -31,6 +31,7 @@ walks) wait for lot 11. Next: lot 4 `health-check` (prompt in `roadmap.md`).
 | `docs/architecture.md` | crates, binaries, trust boundaries, data flow, timebase, budgets, storage layout | any design work |
 | `docs/asm-unsafe-catalog.md` | "earn its place" ledger (ASM-xx, SIMD-xx, SYNC-xx, WIN-xx), bench protocol, checkpoint template | any unsafe/asm |
 | `docs/compliance.md` | forbidden list, sources, anti-cheats, capability matrix draft, anti-cheat test protocol | data sources, actions, UI, overlay |
+| `docs/fa-check.md` | `fa check` usage, phases, report, verdict thresholds, exit codes | touching the health check |
 | `docs/decisions.md` | user decisions D1–D12, Claude's calls, open questions, calibration log (§5) | before re-deciding anything |
 | `profile.md` | personal profile of the user: **local only, gitignored, never commit or quote publicly** | rarely |
 

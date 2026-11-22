@@ -359,6 +359,7 @@ dependencies = [
 name = "fa"
 version = "0.0.0"
 dependencies = [
+ "fa-asm",
  "fa-core",
  "fa-probe",
  "fa-win",

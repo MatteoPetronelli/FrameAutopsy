@@ -8,3 +8,4 @@ publish.workspace = true
 fa-core = { version = "0.0.0", path = "../fa-core" }
 fa-win = { version = "0.0.0", path = "../fa-win" }
 fa-probe = { version = "0.0.0", path = "../fa-probe" }
+fa-asm = { version = "0.0.0", path = "../fa-asm" }

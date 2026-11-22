@@ -28,13 +28,13 @@ WAITPKG or MWAITX.
 | Phase | Budget | Source |
 |---|---|---|
 | refusal checks (game, battery warning), CPU identification | under 1 s | Toolhelp snapshot, CPUID, lot 2 |
-| single-core peak, each core in turn (the probe keeps its core busy: a peak, not an idle reading) | 5 s | ASM-02 probe, lot 3 |
+| single-core peak, each core in turn (the probe keeps its core busy: a peak, not an idle reading) | 4 s (measured 3.7 s) | ASM-02 probe, lot 3 |
 | 60 s all-core load + 1 Hz frequency sampling | 60 s | ASM-06 + ASM-02 |
-| memory latency, bandwidth, cache sizes | 8 s, to be measured as a whole (task 6.2b) before it is frozen | ASM-03, ASM-04 |
-| scheduling wake-up p50/p99/max | 5 s | lot 3 timer probe |
+| memory latency, bandwidth, cache sizes | 6 s (measured 2.9 s with a sweep up to 64 MiB, 2 runs per point) | ASM-03, ASM-04 |
+| scheduling wake-up p50/p99/max | 4 s (measured 3.2 s) | lot 3 timer probe |
 | WMI, NVML, power queries | about 3 s, overlapped with other phases | `wmi`, `nvml-wrapper`, `fa-win` |
 
-The sum leaves 8 to 10 s of margin. Memory and scheduling probes run after the load only if the hot CPU does not
+Measured on 2026-11-22 (AC, performance mode): 3.7 + 2.9 + 3.2 + 60.7 s = 70.5 s in total, so about 15 s of margin under the 85 s deadline. Memory and scheduling probes run after the load only if the hot CPU does not
 distort them; the order is compared once at implementation and the choice is logged in `docs/decisions.md` section 5.
 The sampler thread reads the frequency of its own core once per second while one load thread runs on one logical CPU of
 every OTHER physical core (the sampler's core and its SMT sibling are excluded; stated in the report). The sibling must

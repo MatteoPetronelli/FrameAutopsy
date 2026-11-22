@@ -1,6 +1,7 @@
 //! `fa`: FrameAutopsy command line. Non-elevated; only read-only commands exist so far.
 #![forbid(unsafe_code)]
 
+mod check;
 mod probe;
 mod windows_cmd;
 
@@ -9,7 +10,8 @@ use fa_win::{clock, topology};
 use std::process::ExitCode;
 use std::time::Duration;
 
-const USAGE: &str = "usage: fa clock [--seconds N]   (TSC vs QPC interval, default 2 s)
+const USAGE: &str = "usage: fa check   (machine health check, about 75 s, no admin; refuses while a game runs)
+       fa clock [--seconds N]   (TSC vs QPC interval, default 2 s)
        fa probe freq [--seconds N] [--cpu N] [--load-all|--load-smt]   (frequency probe next to PDH, CSV)
        fa probe wake [--cpu N]   (timer wake-up lateness, 1 ms x 2000)
        fa probe domain [--cpu A] [--other B]   (does core A follow the load of core B?)
@@ -54,6 +56,7 @@ fn main() -> ExitCode {
         Some("probe") if args.get(1).map(String::as_str) == Some("bw") => {
             run_or_fail(|| probe::run_bw(&args[2..]))
         }
+        Some("check") if args.len() == 1 => check::run(),
         Some("windows") => run_or_fail(|| windows_cmd::parse(&args[1..]).map(windows_cmd::run)),
         _ => usage(),
     }

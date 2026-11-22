@@ -42,12 +42,12 @@ below ends with it, green.
 
 ## 6. `fa check` command (`fa`)
 
-- [ ] 6.1 Wire `fa check`: refusal when a matrix game is running (message asking to close it, exit non-zero), battery warning, phase sequencing under an 85 s deadline, Ctrl-C handling; verify with a test using a fake process list for `League of Legends.exe` and a manual run.
-- [ ] 6.1b Choose the load CPUs from the topology: one logical CPU per other physical core, never the sampler's core or its SMT sibling; verify with unit tests on synthetic topologies (SMT, non-SMT, hybrid fixture) and that the report states which CPUs were loaded.
-- [ ] 6.2 Verify `fa check` runs non-elevated, changes no setting (before/after power scheme and overlay compared), and finishes within 90 s (timed manual run and a test of the deadline logic).
-- [ ] 6.2b Time every phase on the laptop (the memory phase of 8 s has never been measured as a whole; the cache curve alone takes several seconds) and fix the budgets of D-1, shrinking the curve sweep if needed; verify the phases plus margin stay under 85 s.
-- [ ] 6.3 Document `fa check` usage and report format in the project docs and verify the documented command runs as written.
-- [ ] 6.4 Run the gate and verify it is green.
+- [x] 6.1 (refusal with a real game window still to be confirmed by the user) Wire `fa check`: refusal when a matrix game is running (message asking to close it, exit non-zero), battery warning, phase sequencing under an 85 s deadline, Ctrl-C handling; verify with a test using a fake process list for `League of Legends.exe` and a manual run.
+- [x] 6.1b Choose the load CPUs from the topology: one logical CPU per other physical core, never the sampler's core or its SMT sibling; verify with unit tests on synthetic topologies (SMT, non-SMT, hybrid fixture) and that the report states which CPUs were loaded.
+- [x] 6.2 Verify `fa check` runs non-elevated, changes no setting (before/after power scheme and overlay compared), and finishes within 90 s (timed manual run and a test of the deadline logic).
+- [x] 6.2b Time every phase on the laptop (the memory phase of 8 s has never been measured as a whole; the cache curve alone takes several seconds) and fix the budgets of D-1, shrinking the curve sweep if needed; verify the phases plus margin stay under 85 s.
+- [x] 6.3 Document `fa check` usage and report format in the project docs and verify the documented command runs as written.
+- [x] 6.4 Run the gate and verify it is green.
 
 ## 7. Real runs and threshold freeze
 
