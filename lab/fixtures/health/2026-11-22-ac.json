@@ -1,0 +1,319 @@
+{
+  "schema_version": 1,
+  "timestamp": "20261122T054332Z",
+  "cpu": {
+    "model": "11th Gen Intel(R) Core(TM) i5-11400H @ 2.70GHz",
+    "physical_cores": 6,
+    "logical_cpus": 12,
+    "invariant_tsc": true,
+    "tsc_hz": 2688000000,
+    "avx2": true,
+    "avx512": true,
+    "waitpkg": false,
+    "mwaitx": false
+  },
+  "frequency": {
+    "load_isa": "AVX-512",
+    "single_core_peak_ghz": [
+      [
+        0,
+        4.39
+      ],
+      [
+        2,
+        4.49
+      ],
+      [
+        4,
+        4.49
+      ],
+      [
+        6,
+        4.49
+      ],
+      [
+        8,
+        4.49
+      ],
+      [
+        10,
+        4.49
+      ]
+    ],
+    "sampler_cpu": 4,
+    "load_cpus": [
+      0,
+      2,
+      6,
+      8,
+      10
+    ],
+    "curve_ghz": [
+      4.0888348037724365,
+      4.0888348037724365,
+      4.088648221103387,
+      4.088772607657322,
+      4.088710413434335,
+      4.088772607657322,
+      4.088710413434335,
+      4.0888348037724365,
+      4.088710413434335,
+      4.0888348037724365,
+      4.088648221103387,
+      4.0888348037724365,
+      4.088772607657322,
+      4.088648221103387,
+      4.0888348037724365,
+      4.088648221103387,
+      4.036399675646455,
+      4.088337287826246,
+      4.088772607657322,
+      4.088710413434335,
+      4.0888348037724365,
+      4.088648221103387,
+      4.088772607657322,
+      4.0888348037724365,
+      4.088399470698283,
+      4.0888348037724365,
+      4.08846165546193,
+      4.088772607657322,
+      4.088523842117271,
+      4.088772607657322,
+      4.08846165546193,
+      4.088586030664396,
+      4.088212927756654,
+      4.088337287826246,
+      4.088399470698283,
+      4.088212927756654,
+      4.088275106845732,
+      4.087964230312984,
+      4.088026401837179,
+      3.9910320559457175,
+      4.088026401837179,
+      4.087902060679796,
+      3.9910320559457175,
+      3.9909727996199074,
+      4.024916147580259,
+      3.9910320559457175,
+      3.9907950411996143,
+      3.9897288231190537,
+      3.8890576847953473,
+      3.8897330149772085,
+      3.8894515989003042,
+      3.8896204436598314,
+      3.889507878858036,
+      3.8897330149772085,
+      3.8896204436598314,
+      3.889676728504037,
+      3.889845592810732,
+      3.7908810131580806,
+      3.890070768028481,
+      3.8159052837795633
+    ]
+  },
+  "memory": {
+    "page_size": "4 Kio",
+    "latency_curve": [
+      {
+        "kib": 16,
+        "ns_per_load": 1.161061
+      },
+      {
+        "kib": 24,
+        "ns_per_load": 1.134308
+      },
+      {
+        "kib": 32,
+        "ns_per_load": 1.116055
+      },
+      {
+        "kib": 48,
+        "ns_per_load": 1.287782
+      },
+      {
+        "kib": 64,
+        "ns_per_load": 3.471199
+      },
+      {
+        "kib": 96,
+        "ns_per_load": 3.526713
+      },
+      {
+        "kib": 128,
+        "ns_per_load": 3.470259
+      },
+      {
+        "kib": 192,
+        "ns_per_load": 3.451419
+      },
+      {
+        "kib": 256,
+        "ns_per_load": 3.452494
+      },
+      {
+        "kib": 384,
+        "ns_per_load": 3.909174
+      },
+      {
+        "kib": 512,
+        "ns_per_load": 4.244866
+      },
+      {
+        "kib": 768,
+        "ns_per_load": 4.538755
+      },
+      {
+        "kib": 1024,
+        "ns_per_load": 4.504658
+      },
+      {
+        "kib": 1536,
+        "ns_per_load": 10.690462
+      },
+      {
+        "kib": 2048,
+        "ns_per_load": 13.25167
+      },
+      {
+        "kib": 3072,
+        "ns_per_load": 13.95964
+      },
+      {
+        "kib": 4096,
+        "ns_per_load": 15.022627
+      },
+      {
+        "kib": 6144,
+        "ns_per_load": 46.26556
+      },
+      {
+        "kib": 8192,
+        "ns_per_load": 75.604098
+      },
+      {
+        "kib": 12288,
+        "ns_per_load": 87.902072
+      },
+      {
+        "kib": 16384,
+        "ns_per_load": 98.927743
+      },
+      {
+        "kib": 24576,
+        "ns_per_load": 93.332388
+      },
+      {
+        "kib": 32768,
+        "ns_per_load": 93.140022
+      },
+      {
+        "kib": 49152,
+        "ns_per_load": 94.562292
+      },
+      {
+        "kib": 65536,
+        "ns_per_load": 94.10343170166016
+      }
+    ],
+    "cache": [
+      {
+        "level": 1,
+        "topology_kib": 48,
+        "detected_kib": 32,
+        "agrees": true
+      },
+      {
+        "level": 2,
+        "topology_kib": 1280,
+        "detected_kib": 1024,
+        "agrees": true
+      },
+      {
+        "level": 3,
+        "topology_kib": 12288,
+        "detected_kib": 4096,
+        "agrees": false
+      }
+    ],
+    "bandwidth_threads": 6,
+    "read_gbs": 44.91297102893671,
+    "write_gbs": 34.05846607768923,
+    "copy_gbs": 37.69736274088228,
+    "modules": [
+      {
+        "capacity_bytes": 17179869184,
+        "configured_speed": 3200,
+        "rated_speed": 3200,
+        "bank": "BANK 0"
+      },
+      {
+        "capacity_bytes": 17179869184,
+        "configured_speed": 3200,
+        "rated_speed": 3200,
+        "bank": "BANK 0"
+      }
+    ],
+    "modules_error": null
+  },
+  "scheduling": {
+    "n": 2000,
+    "p50_us": 548.534,
+    "p99_us": 1289.091,
+    "max_us": 4086.944
+  },
+  "power": {
+    "source": "ac",
+    "scheme": "Consigliati da HP",
+    "overlay": "{00000000-0000-0000-0000-000000000000}"
+  },
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+    "performance_state": "P8",
+    "power_limit_watts": null
+  },
+  "verdicts": [
+    {
+      "id": "throttling",
+      "fired": false,
+      "confidence": "high",
+      "evidence": {
+        "baseline_ghz": 4.088772607657322,
+        "drop_percent": 6.673575423752887,
+        "on_battery": 0.0,
+        "threshold_percent": 10.0,
+        "worst_sustained_ghz": 3.8159052837795633
+      },
+      "text": "Pas de bridage : fréquence stable autour de 4.09 GHz (pire écart −7 %)."
+    },
+    {
+      "id": "single_channel_ram",
+      "fired": false,
+      "confidence": "medium",
+      "evidence": {
+        "dual_channel_theoretical_gbs": 51.2,
+        "modules": 2.0,
+        "read_gbs": 44.91297102893671,
+        "threshold_fraction": 0.6
+      },
+      "text": "Pas de signe de mémoire en simple canal : 2 modules détectés."
+    },
+    {
+      "id": "scheduling_interference",
+      "fired": false,
+      "confidence": "medium",
+      "evidence": {
+        "max_us": 4086.944,
+        "p50_us": 548.534,
+        "p99_us": 1289.091,
+        "threshold_p99_us": 5000.0
+      },
+      "text": "Ordonnancement normal : réveil p50 = 549 µs, p99 = 1.3 ms."
+    }
+  ],
+  "checks": [
+    "fréquence : pic mono-cœur de chaque cœur et courbe sous charge FMA",
+    "mémoire : latence, tailles de cache, débit, modules (WMI)",
+    "ordonnancement : latence de réveil d'un timer haute résolution",
+    "alimentation : source, plan, mode"
+  ]
+}

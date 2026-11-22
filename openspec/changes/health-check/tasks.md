@@ -51,8 +51,8 @@ below ends with it, green.
 
 ## 7. Real runs and threshold freeze
 
-- [ ] 7.1 Run `fa check` on the user's laptop on AC power and keep the French report and JSON; verify the run completed in 90 s or less.
-- [ ] 7.2 Run `fa check` on the user's laptop on battery and keep the report and JSON; verify the battery warning appeared and the baseline file was not overwritten.
+- [x] 7.1 Run `fa check` on the user's laptop on AC power and keep the French report and JSON; verify the run completed in 90 s or less.
+- [x] 7.2 Run `fa check` on the user's laptop on battery and keep the report and JSON; verify the battery warning appeared and the baseline file was not overwritten.
 - [ ] 7.3 Show both reports to the user BEFORE freezing any threshold; verify the user's feedback is recorded and apply the agreed threshold changes.
 - [ ] 7.4 Log the final thresholds, the phase order choice and the HWiNFO comparison result (if done) in `docs/decisions.md` section 5, and paste both reports in the PR description; verify the entries exist.
 - [ ] 7.5 Run `openspec validate health-check --strict` and the gate; verify both are green.
