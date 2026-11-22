@@ -54,7 +54,7 @@ example `vgc.exe`, `vgtray.exe`, `EasyAntiCheat.exe`, `EasyAntiCheat_EOS.exe`, `
 ### Requirement: No handle on game processes
 FrameAutopsy SHALL never call `OpenProcess` (or open any handle) on a matrix game's process. Games are detected by
 their full image name, from Microsoft-Windows-Kernel-Process ETW events (collector) or a Toolhelp snapshot (CLI), and
-Minecraft by window title through `EnumWindows`/`GetWindowThreadProcessId`. Classic kernel process events truncate the
+Minecraft by window class (a visible `GLFW30` window owned by `java.exe` or `javaw.exe`, the title varies per modpack) through `EnumWindows`/`GetWindowThreadProcessId`. Classic kernel process events truncate the
 image name to 15 bytes and SHALL NOT be used for identification. `TargetProcess` construction SHALL fail closed when
 only a truncated or unknown name is available. A source test SHALL fail if `OpenProcess` is called anywhere except
 `fa-win::process::open_target(&TargetProcess)`.

@@ -83,7 +83,7 @@ curve is printed as a text table, one line per 5 s.
 `Process32NextW`, returns full image names, and closes the snapshot handle with an RAII guard. It never calls
 `OpenProcess`. Names are compared with the matrix game list from `fa-core` by full-name, case-insensitive equality
 (never a prefix; the 15-byte truncation only affects classic kernel events). The source test that confines `OpenProcess`
-to `open_target` is extended to cover the new module. Minecraft is detected by window title (see Open Questions).
+to `open_target` is extended to cover the new module. Minecraft is detected by window class (see Decisions).
 Games outside the matrix are not refused.
 
 **D-6 WMI and NVML.** `wmi` queries `Win32_PhysicalMemory` (capacity, `ConfiguredClockSpeed`, `Speed`, bank label) on a

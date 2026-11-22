@@ -7,7 +7,7 @@
 
 1. **Closed loop**: observe → diagnose → act → prove (handoff §2).
 2. **Never touch the game**: no handle, no memory access, no injection, no hook. Games are detected by image name or
-   window title. All actions target other processes or system settings through `TargetProcess`.
+   window class (Minecraft). All actions target other processes or system settings through `TargetProcess`.
 3. **Unsafe and asm earn their place** and live in three crates, split by how they are verified.
 4. **One timebase**: TSC ticks everywhere (ETW in `ClientContext = 3` when the TSC is invariant).
 5. **Least privilege**: only the collector (and its watchdog) runs elevated in normal use; the UI never does; the CLI

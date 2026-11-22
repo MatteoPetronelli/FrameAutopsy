@@ -68,7 +68,7 @@ Dev commands that need an **elevated terminal** (ETW requires admin): `fa captur
   of game modules (module name only).
 - No game data shown or signalled during a match; game-event correlation only in post-match reports.
 - Games are identified by full image name (Microsoft-Windows-Kernel-Process ETW or Toolhelp snapshot), Minecraft by
-  window title. Classic kernel events truncate names to 15 bytes: `TargetProcess` fails closed on a truncated name.
+  window (class `GLFW30` owned by `java.exe`/`javaw.exe`; the title varies per modpack). Classic kernel events truncate names to 15 bytes: `TargetProcess` fails closed on a truncated name.
 - `compliance.toml` matrix: baseline observers (O1 O2 O4 O5) on unless `forbidden`; everything else (O3, O6, O7, actions,
   overlay) only when `allowed`; unknown games = baseline observers only. Overrides may only disable.
 - A `gray` or `unverified` point is **not implemented**: ask the user. Only the user runs anti-cheat tests.

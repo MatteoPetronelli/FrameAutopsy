@@ -112,7 +112,11 @@ pub struct Game {
     pub name: String,
     #[serde(default)]
     pub detect: Vec<String>,
-    pub window_title_prefix: Option<String>,
+    /// Image names of the processes whose windows identify the game (empty when the game has an image name).
+    #[serde(default)]
+    pub window_images: Vec<String>,
+    /// Window class of the game window, read on the user machine.
+    pub window_class: Option<String>,
     pub anti_cheat: Option<AntiCheat>,
     pub items: BTreeMap<Item, Cell>,
 }
@@ -190,7 +194,7 @@ impl Matrix {
 
     /// Games whose image name appears in `image_names`: full-name, case-insensitive equality, never a prefix (the
     /// 15-byte truncation only affects classic kernel events, not a Toolhelp snapshot). Minecraft has no image name
-    /// (`detect` is empty) and is found by window title, not here.
+    /// (`detect` is empty) and is found by [`Matrix::running_games_by_window`], not here.
     pub fn running_games(&self, image_names: &[String]) -> Vec<GameId> {
         GameId::ALL
             .into_iter()
@@ -199,6 +203,27 @@ impl Matrix {
                     .detect
                     .iter()
                     .any(|d| image_names.iter().any(|n| n.eq_ignore_ascii_case(d)))
+            })
+            .collect()
+    }
+
+    /// Games found through a window: `windows` are `(owner image name, window class)` pairs of the visible top-level
+    /// windows. A game matches when one window has one of its `window_images` (full name, case-insensitive) and exactly
+    /// its `window_class`. The window title is not used: it varies per modpack.
+    pub fn running_games_by_window(&self, windows: &[(String, String)]) -> Vec<GameId> {
+        GameId::ALL
+            .into_iter()
+            .filter(|g| {
+                let game = self.game(*g);
+                game.window_class.as_ref().is_some_and(|class| {
+                    windows.iter().any(|(image, c)| {
+                        c == class
+                            && game
+                                .window_images
+                                .iter()
+                                .any(|i| image.eq_ignore_ascii_case(i))
+                    })
+                })
             })
             .collect()
     }
@@ -405,5 +430,60 @@ mod tests {
             .running_games(&n(&["explorer.exe", "javaw.exe"]))
             .is_empty());
         assert!(m.running_games(&[]).is_empty());
+    }
+
+    fn w(image: &str, class: &str) -> (String, String) {
+        (image.to_owned(), class.to_owned())
+    }
+
+    #[test]
+    fn minecraft_is_found_by_a_glfw_window_of_a_java_process() {
+        let m = Matrix::embedded().unwrap();
+        // read on the user machine 2026-11-22
+        let cobbleverse = [
+            w("javaw.exe", "GLFW30"),
+            w("Code.exe", "Chrome_WidgetWin_1"),
+        ];
+        assert_eq!(
+            m.running_games_by_window(&cobbleverse),
+            vec![GameId::MinecraftJava]
+        );
+        assert_eq!(
+            m.running_games_by_window(&[w("JAVA.EXE", "GLFW30")]),
+            vec![GameId::MinecraftJava]
+        );
+    }
+
+    #[test]
+    fn an_ide_or_another_java_program_is_not_minecraft() {
+        let m = Matrix::embedded().unwrap();
+        // IntelliJ as read on the user machine: idea64.exe, class SunAwtFrame
+        assert!(m
+            .running_games_by_window(&[w("idea64.exe", "SunAwtFrame")])
+            .is_empty());
+        // a Java program with a Swing window
+        assert!(m
+            .running_games_by_window(&[w("javaw.exe", "SunAwtFrame")])
+            .is_empty());
+        // the right class but not owned by Java
+        assert!(m
+            .running_games_by_window(&[w("glfwdemo.exe", "GLFW30")])
+            .is_empty());
+        // the class is compared exactly
+        assert!(m
+            .running_games_by_window(&[w("javaw.exe", "GLFW3")])
+            .is_empty());
+        assert!(m
+            .running_games_by_window(&[w("javaw.exe", "glfw30")])
+            .is_empty());
+        assert!(m.running_games_by_window(&[]).is_empty());
+    }
+
+    #[test]
+    fn games_with_an_image_name_are_not_found_by_window() {
+        let m = Matrix::embedded().unwrap();
+        assert!(m
+            .running_games_by_window(&[w("League of Legends.exe", "GLFW30")])
+            .is_empty());
     }
 }

@@ -318,7 +318,12 @@ note = "not applicable (JVM argument proposal (text applied by the user)); forbi
 [games.minecraft-java]
 name = "Minecraft Java Edition"
 detect = []
-window_title_prefix = "Minecraft"
+# Minecraft is found by window, not by image name: a java(w).exe that owns a visible top-level window of class
+# GLFW30. Read on the user machine 2026-11-22 (modpack COBBLEVERSE: javaw.exe, class GLFW30, title "COBBLEVERSE");
+# IntelliJ is idea64.exe with class SunAwtFrame and VS Code is Code.exe, so neither matches. The title varies per
+# modpack and is not used.
+window_images = ["java.exe", "javaw.exe"]
+window_class = "GLFW30"
 [games.minecraft-java.items.O1]
 verdict = "unverified"
 sources = ["https://www.minecraft.net/en-us/eula", "https://www.minecraft.net/en-us/usage-guidelines"]

@@ -81,7 +81,7 @@ walks count as "game memory access" (S7, 2026-10-06). Blizzard's Code of Conduct
 - **Everything else** (O3, O6, O7, all actions, overlay): enabled only when `allowed`.
 - **Unknown games**: baseline observers only (handoff: observe-only on any game).
 - **Platform functions outside the matrix**: game detection by full image name (Microsoft-Windows-Kernel-Process ETW
-  events, Toolhelp snapshot) and by window title for Minecraft. They open no handle on any process, the same
+  events, Toolhelp snapshot) and by window class (`GLFW30` owned by `java(w).exe`) for Minecraft. They open no handle on any process, the same
   information Task Manager shows. Classic kernel process events truncate names to 15 bytes and are not used for
   identification; the `TargetProcess` guard fails closed on a truncated name.
 

@@ -16,7 +16,7 @@ const CRITICAL: [&str; 9] = [
     "audiodg.exe",
 ];
 const OWN: [&str; 4] = ["fa.exe", "fa-collector.exe", "fa-watchdog.exe", "fa-ui.exe"];
-/// Minecraft is identified by window title, which this type does not carry: any bare Java launcher is refused.
+/// Minecraft is identified by window class, which this type does not carry: any bare Java launcher is refused.
 const JAVA: [&str; 2] = ["java.exe", "javaw.exe"];
 /// Classic kernel process events truncate image names to 15 bytes.
 const KERNEL_NAME_LEN: usize = 15;
@@ -44,7 +44,7 @@ pub enum TargetError {
     Critical(String),
     #[error("{0:?} is a FrameAutopsy process")]
     Own(String),
-    #[error("{0:?} may be Minecraft (identified by window title only): refused")]
+    #[error("{0:?} may be Minecraft (identified by window class only): refused")]
     JavaLauncher(String),
 }
 
