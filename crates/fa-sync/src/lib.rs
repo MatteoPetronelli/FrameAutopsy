@@ -5,3 +5,4 @@
 
 #[cfg(feature = "test-support")]
 pub mod counting;
+pub mod spsc;

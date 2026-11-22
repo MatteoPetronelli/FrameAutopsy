@@ -13,10 +13,10 @@ ETW steps need an elevated terminal, run by the user.
 
 ## 2. SPSC ring and Miri (before any ETW wiring)
 
-- [ ] 2.1 Ask the user to approve `rustup +nightly component add miri` (it changes their toolchain); verify `cargo +nightly miri --version` succeeds. Do not create `crates/fa-sync/src/spsc.rs` before this passes: the gate runs Miri as soon as the file exists.
-- [ ] 2.2 Update the SYNC-01 catalog line (metric, reference `rtrb`, expected outcome: may tie) before code; verify the line in `docs/asm-unsafe-catalog.md`.
-- [ ] 2.3 Implement `fa-sync::spsc` (power-of-two capacity, `T: Copy`, `MaybeUninit<T>`, padded head and tail, Acquire/Release, non-blocking `push` with drop counter), each unsafe block with an uppercase `// SAFETY:` and one unsafe operation; verify with unit tests (order, full ring returns error and counts a drop, wrap-around).
-- [ ] 2.4 Add the two-thread stress test; verify `cargo +nightly miri test -p fa-sync` passes.
+- [x] 2.1 Ask the user to approve `rustup +nightly component add miri` (it changes their toolchain); verify `cargo +nightly miri --version` succeeds. Do not create `crates/fa-sync/src/spsc.rs` before this passes: the gate runs Miri as soon as the file exists.
+- [x] 2.2 Update the SYNC-01 catalog line (metric, reference `rtrb`, expected outcome: may tie) before code; verify the line in `docs/asm-unsafe-catalog.md`.
+- [x] 2.3 Implement `fa-sync::spsc` (power-of-two capacity, `T: Copy`, `MaybeUninit<T>`, padded head and tail, Acquire/Release, non-blocking `push` with drop counter), each unsafe block with an uppercase `// SAFETY:` and one unsafe operation; verify with unit tests (order, full ring returns error and counts a drop, wrap-around).
+- [x] 2.4 Add the two-thread stress test; verify `cargo +nightly miri test -p fa-sync` passes.
 - [ ] 2.5 French explanation checkpoint for every memory ordering and unsafe block of the ring, before ETW is wired to it; verify the user answered "compris".
 - [ ] 2.6 Parity test against `rtrb` (same sequence in and out) and criterion bench on 32-byte records (3 runs, median and spread, catalog section 2 protocol); verify results are pasted in the catalog.
 - [ ] 2.7 Decide: ship `spsc.rs` only if throughput is at least equal and the win is 5 % or more or latency is better by the same rule; otherwise adopt `rtrb`, delete `spsc.rs` (this removes the gate Miri step), keep the numbers; verify the verdict in the catalog and that the gate matches the file state.
