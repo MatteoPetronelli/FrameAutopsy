@@ -188,6 +188,21 @@ impl Matrix {
         &self.games[&g] // complete by construction (checked in `parse`)
     }
 
+    /// Games whose image name appears in `image_names`: full-name, case-insensitive equality, never a prefix (the
+    /// 15-byte truncation only affects classic kernel events, not a Toolhelp snapshot). Minecraft has no image name
+    /// (`detect` is empty) and is found by window title, not here.
+    pub fn running_games(&self, image_names: &[String]) -> Vec<GameId> {
+        GameId::ALL
+            .into_iter()
+            .filter(|g| {
+                self.game(*g)
+                    .detect
+                    .iter()
+                    .any(|d| image_names.iter().any(|n| n.eq_ignore_ascii_case(d)))
+            })
+            .collect()
+    }
+
     pub fn verdict(&self, g: GameId, it: Item) -> Verdict {
         self.game(g).items[&it].verdict
     }
@@ -365,5 +380,30 @@ mod tests {
         ));
         let big = format!("# {}\n", "x".repeat(OVERRIDE_MAX_BYTES));
         assert_eq!(m.with_override(&big).unwrap_err(), OverrideError::TooLarge);
+    }
+
+    #[test]
+    fn running_games_matches_full_names_case_insensitively() {
+        let m = Matrix::embedded().unwrap();
+        let n = |a: &[&str]| a.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+        assert_eq!(
+            m.running_games(&n(&["League of Legends.exe"])),
+            vec![GameId::Lol]
+        );
+        assert_eq!(
+            m.running_games(&n(&["LEAGUE OF LEGENDS.EXE"])),
+            vec![GameId::Lol]
+        );
+        assert!(
+            m.running_games(&n(&["League of Legends"])).is_empty(),
+            "no prefix match"
+        );
+        assert!(m
+            .running_games(&n(&["League of Legends.exe.bak"]))
+            .is_empty());
+        assert!(m
+            .running_games(&n(&["explorer.exe", "javaw.exe"]))
+            .is_empty());
+        assert!(m.running_games(&[]).is_empty());
     }
 }

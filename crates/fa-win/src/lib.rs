@@ -6,6 +6,8 @@
 pub mod clock;
 pub mod mem;
 pub mod pdh;
+pub mod power;
+pub mod procs;
 pub mod thread;
 pub mod timer;
 pub mod topology;

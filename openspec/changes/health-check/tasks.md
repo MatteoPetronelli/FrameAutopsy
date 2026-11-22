@@ -20,8 +20,8 @@ below ends with it, green.
 
 ## 3. Windows queries (`fa-win`, WIN-10)
 
-- [ ] 3.1 Implement the Toolhelp process-name listing with an RAII snapshot guard and no `OpenProcess`; verify with a test against the running test process name and the extended source test forbidding `OpenProcess` outside `open_target`.
-- [ ] 3.2 Implement read-only power state (AC or battery, active scheme name, effective overlay); verify with a test on the type conversions and a manual run printing the three values.
+- [x] 3.1 Implement the Toolhelp process-name listing with an RAII snapshot guard and no `OpenProcess`; verify with a test against the running test process name and the extended source test forbidding `OpenProcess` outside `open_target`.
+- [x] 3.2 Implement read-only power state (AC or battery, active scheme name, effective overlay); verify with a test on the type conversions and a manual run printing the three values.
 - [ ] 3.2b Minecraft detection (see design Decisions): FIRST ask the user to launch Minecraft and read its real window title (and a `javaw.exe` IDE/other Java app as negative case); only then implement `EnumWindows` + `GetWindowThreadProcessId` matching. Verify with a pure title-matching unit test (Minecraft titles match, IDE/other titles do not) and a manual run: `javaw.exe` without a Minecraft window does not block `fa check`.
 - [ ] 3.3 Explanation checkpoint (French) for each new `unsafe` block; verify the user answered "compris".
 - [ ] 3.4 Run the gate and verify it is green.
