@@ -6,6 +6,8 @@ publish.workspace = true
 
 [dev-dependencies]
 criterion = "0.8.2"
+rtrb = "0.4"
+fa-win = { version = "0.0.0", path = "../fa-win" }
 
 [features]
 test-support = []
@@ -18,3 +20,7 @@ required-features = ["test-support"]
 name = "counting_vs_system"
 harness = false
 required-features = ["test-support"]
+
+[[bench]]
+name = "spsc_vs_rtrb"
+harness = false
