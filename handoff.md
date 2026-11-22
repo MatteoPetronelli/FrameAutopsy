@@ -70,10 +70,10 @@ Per-lot points to look at (not exhaustive):
 - **Lot 9 `dashboard`.** The UI never runs elevated and only reads; every action goes through the command channel;
   text in French with decimal commas (`fa_probe::health::fr_num`).
 
-## Current state (main = `0b0c314`, 2026-11-22)
+## Current state (main = `131984e`, 2026-11-22)
 
 Lots 0 to 4 are done, merged into `main`, archived under `openspec/changes/archive/`, and `main` is pushed to
-`origin`. `openspec/specs/` holds 8 specs: `workspace-hygiene`, `unsafe-policy`, `compliance-matrix`, `tsc-clock`,
+`origin`. `openspec/specs/` holds 7 specs: `workspace-hygiene`, `unsafe-policy`, `compliance-matrix`, `tsc-clock`,
 `cpu-topology`, `driverless-probes`, `health-check`. `openspec/changes/` is empty (only `archive/`). The gate is green,
 172 tests pass.
 
