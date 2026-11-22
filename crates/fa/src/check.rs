@@ -218,9 +218,11 @@ fn run_inner() -> Result<ExitCode, Abort> {
     let gpu = gpu.join().ok().flatten();
     let read_gbs = bw[0];
     let on_battery = source == PowerSource::Battery;
+    let peak_ghz = peaks.iter().map(|(_, g)| *g).reduce(f64::max);
     let verdicts = verdict::evaluate(
         &curve_ghz,
         on_battery,
+        peak_ghz,
         modules.as_deref(),
         read_gbs,
         wake_stats.as_ref(),

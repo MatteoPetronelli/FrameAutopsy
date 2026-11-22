@@ -10,6 +10,11 @@ use std::collections::BTreeMap;
 
 pub const SCHEMA_VERSION: u32 = 1;
 
+/// A number as French text: comma as the decimal separator (`4,09`). The JSON keeps plain numbers.
+pub fn fr_num(v: f64, decimals: usize) -> String {
+    format!("{v:.decimals$}").replace('.', ",")
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct HealthReport {
@@ -182,7 +187,14 @@ pub(crate) mod fixtures {
         read: f64,
         wake: WakeStats,
     ) -> HealthReport {
-        let verdicts = evaluate(&curve, false, Some(&modules), Some(read), Some(&wake));
+        let verdicts = evaluate(
+            &curve,
+            false,
+            Some(4.31),
+            Some(&modules),
+            Some(read),
+            Some(&wake),
+        );
         HealthReport {
             schema_version: SCHEMA_VERSION,
             timestamp: timestamp.into(),

@@ -177,7 +177,20 @@
         "threshold_percent": 10.0,
         "worst_sustained_ghz": 4.09
       },
-      "text": "Pas de bridage : fréquence stable autour de 4.09 GHz (pire écart −0 %)."
+      "text": "Pas de bridage : fréquence stable autour de 4,09 GHz (pire écart −0 %)."
+    },
+    {
+      "id": "frequency_cap",
+      "fired": false,
+      "confidence": "high",
+      "evidence": {
+        "drop_percent": 5.1044083526682105,
+        "held_ghz": 4.09,
+        "on_battery": 0.0,
+        "peak_ghz": 4.31,
+        "threshold_percent": 15.0
+      },
+      "text": "Pas de plafonnement : 4,09 GHz tenus pour un pic mono-cœur de 4,31 GHz (−5 %)."
     },
     {
       "id": "single_channel_ram",

@@ -34,8 +34,8 @@ Games outside the matrix are not detected: close them yourself, they would distu
 
 ## Output
 
-- The French report on the terminal: power, CPU, frequency (one line per 5 s of the load), memory, scheduling, GPU, then
-  the verdicts. A verdict that fires shows its evidence numbers and a confidence. When nothing fires the report says so
+- The French report on the terminal (decimal comma): power, CPU, frequency (one line per 5 s of the load), memory,
+  scheduling, GPU, then the verdicts. Cache sizes against the topology are not printed (they are in the JSON). A verdict that fires shows its evidence numbers and a confidence. When nothing fires the report says so
   and lists what was checked.
 - `%LOCALAPPDATA%\FrameAutopsy\health\<YYYYMMDDTHHMMSSZ>.json` (UTC): the same data with numbers, for later comparisons.
 - `health\baseline.json`: the latest run **on AC power**. A battery run never overwrites it. Anything that reads the
@@ -47,6 +47,7 @@ Games outside the matrix are not detected: close them yourself, they would distu
 | Verdict | Fires when |
 |---|---|
 | Throttling | the median clock over a 3 s window, after the first 5 s, falls more than 10 % below the median of the first 5 s. Text: "bridage après X s, −Y %". A drop already under way in the first 5 s is not seen. |
+| Frequency cap | the median clock held under the load is more than 15 % below the highest single-core peak of the run (AC: -9 %, battery: -26 % on the target machine). Catches a machine held low from the first second, which the throttling rule cannot see. |
 | Single-channel RAM | WMI shows exactly one memory module. Confidence high when the all-core read bandwidth is also under 60 % of the dual-channel theoretical value, medium otherwise. Without WMI there is no verdict. |
 | Scheduling interference | wake-up p99 above 5 ms. |
 

@@ -61,6 +61,11 @@ rules, all `(calibrate)`:
 - throttling: median all-core frequency per second; fires when the median after the first 5 s drops more than 10 %
   below the first-5 s median. Text "bridage apres X s, -Y %", X being the first second where the 3 s moving median is
   under 90 %, with the curve. Confidence high when the drop is monotonic over 3 s or more, medium when it recovers.
+- frequency cap (added 2026-11-22 after the first AC and battery runs): the median clock held under the load against the
+  highest single-core peak of the same run; fires when it is more than 15 % below. Why: on battery the target machine
+  held 2.49 GHz flat for 60 s against a 3.39 GHz peak (-26 %); the throttling rule, which compares with the first 5 s of the
+  same curve, saw nothing and said "pas de bridage". On AC the same load holds 4.09 against 4.49 (-9 %), under the
+  threshold. Calibrated on two runs of one machine.
 - single-channel RAM likely: the WMI module count decides. One module fires the verdict (high confidence when the
   all-core READ bandwidth is also under 60 % of the dual-channel theoretical value, speed x 8 B x 2; medium otherwise);
   more than one module does not fire it. When WMI fails there is no module count and no configured speed, hence no theoretical bandwidth: no RAM verdict (low confidence, said in the report). Why not

@@ -7,44 +7,44 @@ Alimentation
 
 Processeur
   Intel(R) Core(TM) i5-11400H @ 2.70GHz : 6 cœurs, 12 threads
-  TSC invariant : oui (2.688 GHz) ; AVX2 oui, AVX-512 oui, WAITPKG non, MWAITX non
+  TSC invariant : oui (2,688 GHz) ; AVX2 oui, AVX-512 oui, WAITPKG non, MWAITX non
 
 Fréquence
-  pic mono-cœur (GHz) : CPU 0 : 4.19 ; CPU 2 : 4.31 ; CPU 4 : 4.29
+  pic mono-cœur (GHz) : CPU 0 : 4,19 ; CPU 2 : 4,31 ; CPU 4 : 4,29
   charge FMA AVX-512 pendant 60 s sur 5 CPU (un par autre cœur physique, le jumeau du CPU mesuré reste libre) ; mesure sur le CPU 4
-     0-4  s : 4.20 GHz
-     5-9  s : 4.20 GHz
-    10-14 s : 4.20 GHz
-    15-19 s : 4.20 GHz
-    20-24 s : 4.20 GHz
-    25-29 s : 3.10 GHz
-    30-34 s : 3.10 GHz
-    35-39 s : 3.10 GHz
-    40-44 s : 3.10 GHz
-    45-49 s : 3.10 GHz
-    50-54 s : 3.10 GHz
-    55-59 s : 3.10 GHz
+     0-4  s : 4,20 GHz
+     5-9  s : 4,20 GHz
+    10-14 s : 4,20 GHz
+    15-19 s : 4,20 GHz
+    20-24 s : 4,20 GHz
+    25-29 s : 3,10 GHz
+    30-34 s : 3,10 GHz
+    35-39 s : 3,10 GHz
+    40-44 s : 3,10 GHz
+    45-49 s : 3,10 GHz
+    50-54 s : 3,10 GHz
+    55-59 s : 3,10 GHz
 
 Mémoire
-  latence (pages de 4 Kio) : L1 1.2 ns ; L2 4.4 ns ; RAM 108.0 ns
-  débit sur 6 cœurs : lecture 22.0 Go/s ; écriture 30.0 Go/s ; copie 28.0 Go/s
-  cache L1 : topologie 48 Kio, mesuré 48 Kio (concordant)
-  cache L3 : topologie 12288 Kio, mesuré 1024 Kio (écart signalé, non bloquant)
+  latence (pages de 4 Kio) : L1 1,2 ns ; L2 4,4 ns ; RAM 108,0 ns
+  débit sur 6 cœurs : lecture 22,0 Go/s ; écriture 30,0 Go/s ; copie 28,0 Go/s
   modules (WMI) : 1
     16 Gio, configuré 3200 MT/s, nominal 3200 MT/s, banque BANK 0
 
 Ordonnancement
-  réveil d'un timer haute résolution (1 ms) : p50 600 µs, p99 7.20 ms, max 30.00 ms
+  réveil d'un timer haute résolution (1 ms) : p50 600 µs, p99 7,20 ms, max 30,00 ms
 
 GPU (NVML ; la lecture peut réveiller un GPU en veille)
   NVIDIA GeForce RTX 3060 Laptop GPU : état P8, limite de puissance inconnu
 
 Verdicts
-  [!] bridage après 25 s, −26 % (4.2 → 3.1 GHz). (confiance haute)
-      preuves : baseline_ghz=4.20, drop_percent=26.19, on_battery=0.00, onset_s=25.00, threshold_percent=10.00, worst_sustained_ghz=3.10
+  [!] bridage après 25 s, −26 % (4,2 → 3,1 GHz). (confiance haute)
+      preuves : baseline_ghz=4,20, drop_percent=26,19, on_battery=0,00, onset_s=25,00, threshold_percent=10,00, worst_sustained_ghz=3,10
+  [!] Fréquence plafonnée sous charge : 3,10 GHz tenus pour un pic mono-cœur de 4,31 GHz (−28 %). (confiance haute)
+      preuves : drop_percent=28,07, held_ghz=3,10, on_battery=0,00, peak_ghz=4,31, threshold_percent=15,00
   [!] Mémoire probablement en simple canal : un seul module détecté. Lecture mesurée 22 Go/s pour 51 Go/s en double canal. (confiance haute)
-      preuves : dual_channel_theoretical_gbs=51.20, modules=1.00, read_gbs=22.00, threshold_fraction=0.60
-  [!] Interférence d'ordonnancement probable : réveil p99 = 7.2 ms (seuil 5 ms). Fermez les autres applications et recommencez. (confiance moyenne)
-      preuves : max_us=30000.00, p50_us=600.00, p99_us=7200.00, threshold_p99_us=5000.00
+      preuves : dual_channel_theoretical_gbs=51,20, modules=1,00, read_gbs=22,00, threshold_fraction=0,60
+  [!] Interférence d'ordonnancement probable : réveil p99 = 7,2 ms (seuil 5 ms). Fermez les autres applications et recommencez. (confiance moyenne)
+      preuves : max_us=30000,00, p50_us=600,00, p99_us=7200,00, threshold_p99_us=5000,00
 
 Limites : seuls les jeux de la matrice sont détectés avant le test ; les seuils sont des valeurs de départ.

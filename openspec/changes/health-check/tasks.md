@@ -42,7 +42,7 @@ below ends with it, green.
 
 ## 6. `fa check` command (`fa`)
 
-- [x] 6.1 (refusal with a real game window still to be confirmed by the user) Wire `fa check`: refusal when a matrix game is running (message asking to close it, exit non-zero), battery warning, phase sequencing under an 85 s deadline, Ctrl-C handling; verify with a test using a fake process list for `League of Legends.exe` and a manual run.
+- [x] 6.1 (refusal with a real game window confirmed by the user on 2026-11-22: exit code 3 with Cobbleverse open) Wire `fa check`: refusal when a matrix game is running (message asking to close it, exit non-zero), battery warning, phase sequencing under an 85 s deadline, Ctrl-C handling; verify with a test using a fake process list for `League of Legends.exe` and a manual run.
 - [x] 6.1b Choose the load CPUs from the topology: one logical CPU per other physical core, never the sampler's core or its SMT sibling; verify with unit tests on synthetic topologies (SMT, non-SMT, hybrid fixture) and that the report states which CPUs were loaded.
 - [x] 6.2 Verify `fa check` runs non-elevated, changes no setting (before/after power scheme and overlay compared), and finishes within 90 s (timed manual run and a test of the deadline logic).
 - [x] 6.2b Time every phase on the laptop (the memory phase of 8 s has never been measured as a whole; the cache curve alone takes several seconds) and fix the budgets of D-1, shrinking the curve sweep if needed; verify the phases plus margin stay under 85 s.
@@ -53,9 +53,10 @@ below ends with it, green.
 
 - [x] 7.1 Run `fa check` on the user's laptop on AC power and keep the French report and JSON; verify the run completed in 90 s or less.
 - [x] 7.2 Run `fa check` on the user's laptop on battery and keep the report and JSON; verify the battery warning appeared and the baseline file was not overwritten.
-- [ ] 7.3 Show both reports to the user BEFORE freezing any threshold; verify the user's feedback is recorded and apply the agreed threshold changes.
-- [ ] 7.4 Log the final thresholds, the phase order choice and the HWiNFO comparison result (if done) in `docs/decisions.md` section 5, and paste both reports in the PR description; verify the entries exist.
-- [ ] 7.5 Run `openspec validate health-check --strict` and the gate; verify both are green.
+- [x] 7.3b Add the frequency cap verdict (user decision 2026-11-22, after the battery run showed 2.49 GHz held flat with no throttling verdict), remove the cache lines from the default text report and print decimals with a comma; verify with fixture tests, mutation checks and regenerated golden files.
+- [x] 7.3 Show both reports to the user BEFORE freezing any threshold; verify the user's feedback is recorded and apply the agreed threshold changes.
+- [x] 7.4 Log the final thresholds, the phase order choice and the HWiNFO comparison result (if done) in `docs/decisions.md` section 5, and paste both reports in the PR description; verify the entries exist.
+- [x] 7.5 Run `openspec validate health-check --strict` and the gate; verify both are green.
 
 ## Workflow follow-up
 

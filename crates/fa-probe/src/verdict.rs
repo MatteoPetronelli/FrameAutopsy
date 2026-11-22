@@ -2,7 +2,7 @@
 //! Starting thresholds, all `(calibrate)`: they are frozen after the user has seen real AC and battery reports.
 //! A missing input never fires a verdict: it lowers the confidence and the text says the value is unknown.
 
-use crate::health::{Confidence, Verdict};
+use crate::health::{fr_num, Confidence, Verdict};
 use crate::sysinfo::{theoretical_gbs, MemoryModule};
 use crate::wake::WakeStats;
 use std::collections::BTreeMap;
@@ -13,6 +13,8 @@ pub const BASELINE_SECONDS: usize = 5;
 pub const THROTTLE_DROP: f64 = 0.10;
 /// Window of the moving median that decides "sustained".
 pub const MOVING_SECONDS: usize = 3;
+/// A sustained load clock this far below the single-core peak counts as a capped machine.
+pub const CAP_DROP: f64 = 0.15;
 /// Read bandwidth under this fraction of the dual-channel theoretical value confirms a single channel.
 pub const RAM_FRACTION: f64 = 0.60;
 /// Wake-up p99 above this (microseconds) means scheduling interference. The idle target machine measures about 2 to 3 ms.
@@ -70,6 +72,7 @@ pub fn throttling(curve_ghz: &[f64], on_battery: bool) -> Verdict {
         .collect();
     let worst = moving.iter().copied().fold(f64::INFINITY, f64::min);
     let drop_pct = ((1.0 - worst / base) * 100.0).max(0.0);
+    let (base2, base1, worst1) = (fr_num(base, 2), fr_num(base, 1), fr_num(worst, 1));
     let ev = [
         ("baseline_ghz", base),
         ("worst_sustained_ghz", worst),
@@ -89,7 +92,7 @@ pub fn throttling(curve_ghz: &[f64], on_battery: bool) -> Verdict {
             conf,
             &ev,
             format!(
-                "Pas de bridage : fréquence stable autour de {base:.2} GHz (pire écart −{drop_pct:.0} %){batt}."
+                "Pas de bridage : fréquence stable autour de {base2} GHz (pire écart −{drop_pct:.0} %){batt}."
             ),
         );
     };
@@ -113,7 +116,7 @@ pub fn throttling(curve_ghz: &[f64], on_battery: bool) -> Verdict {
         conf,
         &ev,
         format!(
-            "bridage après {onset} s, −{drop_pct:.0} % ({base:.1} → {worst:.1} GHz){batt}{}",
+            "bridage après {onset} s, −{drop_pct:.0} % ({base1} → {worst1} GHz){batt}{}",
             if recovered {
                 " ; la fréquence est ensuite remontée."
             } else {
@@ -121,6 +124,68 @@ pub fn throttling(curve_ghz: &[f64], on_battery: bool) -> Verdict {
             }
         ),
     )
+}
+
+/// Frequency cap: the clock held under load (median of the whole curve) against the single-core peak of the same
+/// machine. A machine held low from the first second, by a battery power mode or a power limit, shows no drop over time
+/// (so no throttling verdict) but runs far below what its cores can do. Measured on the target machine: AC 4.09 against a
+/// peak of 4.49 GHz (-9 %), battery 2.49 against 3.39 (-26 %); the threshold sits between.
+pub fn frequency_cap(curve_ghz: &[f64], peak_ghz: Option<f64>, on_battery: bool) -> Verdict {
+    let batt = if on_battery { " (sur batterie)" } else { "" };
+    let Some(peak) = peak_ghz.filter(|p| *p > 0.0) else {
+        return verdict(
+            "frequency_cap",
+            false,
+            Confidence::Low,
+            &[],
+            "Pic mono-cœur inconnu : pas de verdict de plafonnement.".to_owned(),
+        );
+    };
+    if curve_ghz.len() < BASELINE_SECONDS {
+        return verdict(
+            "frequency_cap",
+            false,
+            Confidence::Low,
+            &[("seconds", curve_ghz.len() as f64)],
+            "Mesure sous charge trop courte : pas de verdict de plafonnement.".to_owned(),
+        );
+    }
+    let held = median(curve_ghz);
+    let drop_pct = ((1.0 - held / peak) * 100.0).max(0.0);
+    let ev = [
+        ("held_ghz", held),
+        ("peak_ghz", peak),
+        ("drop_percent", drop_pct),
+        ("threshold_percent", CAP_DROP * 100.0),
+        ("on_battery", f64::from(on_battery)),
+    ];
+    let conf = if curve_ghz.len() >= 30 {
+        Confidence::High
+    } else {
+        Confidence::Medium
+    };
+    let (h, k) = (fr_num(held, 2), fr_num(peak, 2));
+    if held < peak * (1.0 - CAP_DROP) {
+        verdict(
+            "frequency_cap",
+            true,
+            conf,
+            &ev,
+            format!(
+                "Fréquence plafonnée sous charge : {h} GHz tenus pour un pic mono-cœur de {k} GHz (−{drop_pct:.0} %){batt}."
+            ),
+        )
+    } else {
+        verdict(
+            "frequency_cap",
+            false,
+            conf,
+            &ev,
+            format!(
+                "Pas de plafonnement : {h} GHz tenus pour un pic mono-cœur de {k} GHz (−{drop_pct:.0} %){batt}."
+            ),
+        )
+    }
 }
 
 /// Single-channel RAM. The module count decides: one module fires (high confidence when the all-core read bandwidth
@@ -211,8 +276,8 @@ pub fn scheduling(wake: Option<&WakeStats>) -> Verdict {
             Confidence::Medium,
             &ev,
             format!(
-                "Interférence d'ordonnancement probable : réveil p99 = {:.1} ms (seuil {:.0} ms). Fermez les autres applications et recommencez.",
-                w.p99_us / 1000.0,
+                "Interférence d'ordonnancement probable : réveil p99 = {} ms (seuil {:.0} ms). Fermez les autres applications et recommencez.",
+                fr_num(w.p99_us / 1000.0, 1),
                 WAKE_P99_US / 1000.0
             ),
         )
@@ -223,7 +288,7 @@ pub fn scheduling(wake: Option<&WakeStats>) -> Verdict {
             Confidence::Medium,
             &ev,
             format!(
-                "Ordonnancement normal : réveil p50 = {:.0} µs, p99 = {:.1} ms.",
+                "Ordonnancement normal : réveil p50 = {:.0} µs, p99 = {} ms.",
                 w.p50_us,
                 w.p99_us / 1000.0
             ),
@@ -235,12 +300,14 @@ pub fn scheduling(wake: Option<&WakeStats>) -> Verdict {
 pub fn evaluate(
     curve_ghz: &[f64],
     on_battery: bool,
+    peak_ghz: Option<f64>,
     modules: Option<&[MemoryModule]>,
     read_gbs: Option<f64>,
     wake: Option<&WakeStats>,
 ) -> Vec<Verdict> {
     vec![
         throttling(curve_ghz, on_battery),
+        frequency_cap(curve_ghz, peak_ghz, on_battery),
         single_channel_ram(modules, read_gbs),
         scheduling(wake),
     ]
@@ -421,11 +488,79 @@ mod tests {
         let v = evaluate(
             &vec![4.1; 60],
             false,
+            Some(4.4),
             Some(&m),
             Some(32.0),
             Some(&wake(520.0, 2_500.0)),
         );
-        assert_eq!(v.len(), 3);
+        assert_eq!(v.len(), 4);
         assert!(v.iter().all(|x| !x.fired), "{v:?}");
+    }
+
+    #[test]
+    fn the_two_real_runs_of_the_target_machine_are_told_apart() {
+        // AC: 4.09 held for a 4.49 peak (-8.9 %); battery: 2.49 held for a 3.39 peak (-26.4 %)
+        let ac = frequency_cap(&vec![4.09; 60], Some(4.49), false);
+        assert!(
+            !ac.fired && ac.text.starts_with("Pas de plafonnement"),
+            "{}",
+            ac.text
+        );
+        let battery = frequency_cap(&vec![2.49; 60], Some(3.39), true);
+        assert!(battery.fired, "{battery:?}");
+        assert_eq!(
+            battery.text,
+            "Fréquence plafonnée sous charge : 2,49 GHz tenus pour un pic mono-cœur de 3,39 GHz (−27 %) (sur batterie)."
+        );
+        assert_eq!(battery.confidence, Confidence::High);
+    }
+
+    #[test]
+    fn the_cap_threshold_is_fifteen_percent_and_strict() {
+        // peak 2.0: the limit is exactly 1.7
+        assert!(!frequency_cap(&vec![1.7; 40], Some(2.0), false).fired);
+        assert!(frequency_cap(&vec![1.69; 40], Some(2.0), false).fired);
+        // a faster clock than the peak is fine
+        assert!(!frequency_cap(&vec![2.2; 40], Some(2.0), false).fired);
+    }
+
+    #[test]
+    fn the_cap_uses_the_median_of_the_whole_curve_not_the_first_seconds() {
+        // a fast start (turbo) then a long hold far below the peak
+        let mut c = vec![4.4; 5];
+        c.extend(vec![2.0; 55]);
+        assert!(frequency_cap(&c, Some(4.5), false).fired);
+    }
+
+    #[test]
+    fn the_cap_needs_a_peak_and_enough_seconds() {
+        for v in [
+            frequency_cap(&vec![2.0; 40], None, false),
+            frequency_cap(&vec![2.0; 40], Some(0.0), false),
+            frequency_cap(&[2.0; 3], Some(4.0), false),
+        ] {
+            assert!(!v.fired && v.confidence == Confidence::Low, "{v:?}");
+        }
+        assert_eq!(
+            frequency_cap(&[1.0; 10], Some(4.0), false).confidence,
+            Confidence::Medium
+        );
+    }
+
+    #[test]
+    fn a_machine_held_low_from_the_start_is_capped_but_not_throttling() {
+        let c = vec![2.49; 60];
+        assert!(!throttling(&c, true).fired);
+        assert!(frequency_cap(&c, Some(3.39), true).fired);
+    }
+
+    #[test]
+    fn numbers_in_the_texts_use_a_decimal_comma() {
+        assert_eq!(fr_num(4.094, 2), "4,09");
+        assert_eq!(fr_num(7.2, 1), "7,2");
+        let v = scheduling(Some(&wake(520.0, 7_200.0)));
+        assert!(v.text.contains("7,2 ms"), "{}", v.text);
+        let t = throttling(&laptop(), false);
+        assert!(t.text.contains("(4,2 → 3,1 GHz)"), "{}", t.text);
     }
 }

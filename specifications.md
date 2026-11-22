@@ -498,6 +498,10 @@ starting rules (calibrate) are given by the rule scenarios below.
 - **WHEN** the median frequency after the first 5 s drops more than 10 % below the first-5 s median
 - **THEN** the throttling verdict fires with "bridage après X s, −Y %"
 
+##### Scenario: Frequency cap rule
+- **WHEN** the median clock held under the load is more than 15 % below the highest single-core peak of the same run (measured on the target machine: AC 4.09 against 4.49 GHz, -9 %; battery 2.49 against 3.39 GHz, -26 %)
+- **THEN** the frequency cap verdict fires with "Fréquence plafonnée sous charge", the held clock, the peak and the drop, naming the battery when on battery
+
 ##### Scenario: Single-channel RAM rule
 - **WHEN** WMI shows one memory module
 - **THEN** the single-channel RAM verdict fires, with high confidence when the all-core read bandwidth is also under 60 % of the dual-channel theoretical value for the configured speed and medium otherwise; with more than one module it does not fire, and when WMI gives no module count there is no verdict (no configured speed, so no theoretical bandwidth to compare with)

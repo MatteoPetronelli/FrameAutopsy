@@ -172,7 +172,20 @@
         "threshold_percent": 10.0,
         "worst_sustained_ghz": 3.1
       },
-      "text": "bridage après 25 s, −26 % (4.2 → 3.1 GHz)."
+      "text": "bridage après 25 s, −26 % (4,2 → 3,1 GHz)."
+    },
+    {
+      "id": "frequency_cap",
+      "fired": true,
+      "confidence": "high",
+      "evidence": {
+        "drop_percent": 28.07424593967517,
+        "held_ghz": 3.1,
+        "on_battery": 0.0,
+        "peak_ghz": 4.31,
+        "threshold_percent": 15.0
+      },
+      "text": "Fréquence plafonnée sous charge : 3,10 GHz tenus pour un pic mono-cœur de 4,31 GHz (−28 %)."
     },
     {
       "id": "single_channel_ram",
@@ -196,7 +209,7 @@
         "p99_us": 7200.0,
         "threshold_p99_us": 5000.0
       },
-      "text": "Interférence d'ordonnancement probable : réveil p99 = 7.2 ms (seuil 5 ms). Fermez les autres applications et recommencez."
+      "text": "Interférence d'ordonnancement probable : réveil p99 = 7,2 ms (seuil 5 ms). Fermez les autres applications et recommencez."
     }
   ],
   "checks": [

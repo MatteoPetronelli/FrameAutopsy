@@ -7,35 +7,33 @@ Alimentation
 
 Processeur
   Intel(R) Core(TM) i5-11400H @ 2.70GHz : 6 cœurs, 12 threads
-  TSC invariant : oui (2.688 GHz) ; AVX2 oui, AVX-512 oui, WAITPKG non, MWAITX non
+  TSC invariant : oui (2,688 GHz) ; AVX2 oui, AVX-512 oui, WAITPKG non, MWAITX non
 
 Fréquence
-  pic mono-cœur (GHz) : CPU 0 : 4.19 ; CPU 2 : 4.31 ; CPU 4 : 4.29
+  pic mono-cœur (GHz) : CPU 0 : 4,19 ; CPU 2 : 4,31 ; CPU 4 : 4,29
   charge FMA AVX-512 pendant 60 s sur 5 CPU (un par autre cœur physique, le jumeau du CPU mesuré reste libre) ; mesure sur le CPU 4
-     0-4  s : 4.09 GHz
-     5-9  s : 4.09 GHz
-    10-14 s : 4.09 GHz
-    15-19 s : 4.09 GHz
-    20-24 s : 4.09 GHz
-    25-29 s : 4.09 GHz
-    30-34 s : 4.09 GHz
-    35-39 s : 4.09 GHz
-    40-44 s : 4.09 GHz
-    45-49 s : 4.09 GHz
-    50-54 s : 4.09 GHz
-    55-59 s : 4.09 GHz
+     0-4  s : 4,09 GHz
+     5-9  s : 4,09 GHz
+    10-14 s : 4,09 GHz
+    15-19 s : 4,09 GHz
+    20-24 s : 4,09 GHz
+    25-29 s : 4,09 GHz
+    30-34 s : 4,09 GHz
+    35-39 s : 4,09 GHz
+    40-44 s : 4,09 GHz
+    45-49 s : 4,09 GHz
+    50-54 s : 4,09 GHz
+    55-59 s : 4,09 GHz
 
 Mémoire
-  latence (pages de 4 Kio) : L1 1.2 ns ; L2 4.4 ns ; RAM 108.0 ns
-  débit sur 6 cœurs : lecture 32.0 Go/s ; écriture 30.0 Go/s ; copie 28.0 Go/s
-  cache L1 : topologie 48 Kio, mesuré 48 Kio (concordant)
-  cache L3 : topologie 12288 Kio, mesuré 1024 Kio (écart signalé, non bloquant)
+  latence (pages de 4 Kio) : L1 1,2 ns ; L2 4,4 ns ; RAM 108,0 ns
+  débit sur 6 cœurs : lecture 32,0 Go/s ; écriture 30,0 Go/s ; copie 28,0 Go/s
   modules (WMI) : 2
     16 Gio, configuré 3200 MT/s, nominal 3200 MT/s, banque BANK 0
     16 Gio, configuré 3200 MT/s, nominal 3200 MT/s, banque BANK 0
 
 Ordonnancement
-  réveil d'un timer haute résolution (1 ms) : p50 520 µs, p99 2.50 ms, max 11.00 ms
+  réveil d'un timer haute résolution (1 ms) : p50 520 µs, p99 2,50 ms, max 11,00 ms
 
 GPU (NVML ; la lecture peut réveiller un GPU en veille)
   NVIDIA GeForce RTX 3060 Laptop GPU : état P8, limite de puissance inconnu
@@ -46,7 +44,8 @@ Verdicts
    - mémoire : latence, débit, tailles de cache, modules WMI
    - ordonnancement : latence de réveil du timer haute résolution
    - alimentation : source, plan, mode
-   > Pas de bridage : fréquence stable autour de 4.09 GHz (pire écart −0 %). (confiance haute)
+   > Pas de bridage : fréquence stable autour de 4,09 GHz (pire écart −0 %). (confiance haute)
+   > Pas de plafonnement : 4,09 GHz tenus pour un pic mono-cœur de 4,31 GHz (−5 %). (confiance haute)
    > Pas de signe de mémoire en simple canal : 2 modules détectés. (confiance moyenne)
    > Ordonnancement normal : réveil p50 = 520 µs, p99 = 2.5 ms. (confiance moyenne)
 

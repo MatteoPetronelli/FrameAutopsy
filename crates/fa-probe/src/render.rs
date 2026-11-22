@@ -1,6 +1,6 @@
 //! The French text report and the JSON of a [`HealthReport`].
 
-use crate::health::{Confidence, HealthReport, Verdict};
+use crate::health::{fr_num, Confidence, HealthReport, Verdict};
 use std::fmt::Write;
 
 pub fn to_json(r: &HealthReport) -> String {
@@ -27,13 +27,13 @@ fn confidence(c: Confidence) -> &'static str {
 fn evidence(v: &Verdict) -> String {
     v.evidence
         .iter()
-        .map(|(k, x)| format!("{k}={x:.2}"))
+        .map(|(k, x)| format!("{k}={}", fr_num(*x, 2)))
         .collect::<Vec<_>>()
         .join(", ")
 }
 
 fn opt(v: Option<f64>, unit: &str) -> String {
-    v.map_or("inconnu".to_owned(), |x| format!("{x:.1} {unit}"))
+    v.map_or("inconnu".to_owned(), |x| format!("{} {unit}", fr_num(x, 1)))
 }
 
 /// Median of the curve over blocks of 5 s, one line per block.
@@ -45,7 +45,7 @@ fn curve_lines(curve: &[f64]) -> Vec<String> {
             let mut s = c.to_vec();
             s.sort_by(f64::total_cmp);
             let (a, b) = (i * 5, i * 5 + c.len() - 1);
-            format!("    {a:>2}-{b:<2} s : {:.2} GHz", s[s.len() / 2])
+            format!("    {a:>2}-{b:<2} s : {} GHz", fr_num(s[s.len() / 2], 2))
         })
         .collect()
 }
@@ -93,9 +93,9 @@ pub fn render_fr(r: &HealthReport) -> String {
     );
     let _ = writeln!(
         w,
-        "  TSC invariant : {} ({:.3} GHz) ; AVX2 {}, AVX-512 {}, WAITPKG {}, MWAITX {}",
+        "  TSC invariant : {} ({} GHz) ; AVX2 {}, AVX-512 {}, WAITPKG {}, MWAITX {}",
         yes(c.invariant_tsc),
-        c.tsc_hz as f64 / 1e9,
+        fr_num(c.tsc_hz as f64 / 1e9, 3),
         yes(c.avx2),
         yes(c.avx512),
         yes(c.waitpkg),
@@ -107,7 +107,7 @@ pub fn render_fr(r: &HealthReport) -> String {
     let peaks: Vec<String> = f
         .single_core_peak_ghz
         .iter()
-        .map(|(cpu, g)| format!("CPU {cpu} : {g:.2}"))
+        .map(|(cpu, g)| format!("CPU {cpu} : {}", fr_num(*g, 2)))
         .collect();
     let _ = writeln!(w, "  pic mono-cœur (GHz) : {}", peaks.join(" ; "));
     let _ = writeln!(
@@ -140,21 +140,8 @@ pub fn render_fr(r: &HealthReport) -> String {
         opt(m.write_gbs, "Go/s"),
         opt(m.copy_gbs, "Go/s")
     );
-    for k in &m.cache {
-        let _ = writeln!(
-            w,
-            "  cache L{} : topologie {} Kio, mesuré {} ({})",
-            k.level,
-            k.topology_kib,
-            k.detected_kib
-                .map_or("non détecté".to_owned(), |d| format!("{d} Kio")),
-            if k.agrees {
-                "concordant"
-            } else {
-                "écart signalé, non bloquant"
-            }
-        );
-    }
+    // cache sizes against the topology are in the JSON and in `fa probe curve`, not here: the coarse sweep of
+    // `fa check` flags "gaps" on healthy machines and that reads like a fault.
     match (&m.modules, &m.modules_error) {
         (Some(mods), _) => {
             let _ = writeln!(w, "  modules (WMI) : {}", mods.len());
@@ -183,10 +170,10 @@ pub fn render_fr(r: &HealthReport) -> String {
         Some(x) => {
             let _ = writeln!(
                 w,
-                "  réveil d'un timer haute résolution (1 ms) : p50 {:.0} µs, p99 {:.2} ms, max {:.2} ms",
+                "  réveil d'un timer haute résolution (1 ms) : p50 {:.0} µs, p99 {} ms, max {} ms",
                 x.p50_us,
-                x.p99_us / 1000.0,
-                x.max_us / 1000.0
+                fr_num(x.p99_us / 1000.0, 2),
+                fr_num(x.max_us / 1000.0, 2)
             );
         }
         None => {
