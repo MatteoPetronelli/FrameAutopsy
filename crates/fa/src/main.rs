@@ -2,6 +2,7 @@
 #![forbid(unsafe_code)]
 
 mod capture;
+mod capture_compare;
 mod check;
 mod probe;
 mod windows_cmd;
@@ -19,6 +20,7 @@ const USAGE: &str = "usage: fa check   (machine health check, about 75 s, no adm
        fa probe curve [--cpu N]   (memory latency, 16 KiB to 256 MiB, CSV + comparison with the topology)
        fa probe bw [--kernel avx2|sse2|scalar]   (memory bandwidth, 1 to N cores)
        fa capture [--seconds N] [--frames-csv FILE] [--allow-game]   (ETW capture, ELEVATED terminal; refuses while a game runs)
+       fa capture compare OURS.csv PRESENTMON.csv [--tolerance-ms 0.1]   (frametime parity with a PresentMon CSV)
        fa windows [--all]   (visible windows of Java processes, or all: pid, class, title; read-only)";
 
 fn main() -> ExitCode {
@@ -59,6 +61,12 @@ fn main() -> ExitCode {
             run_or_fail(|| probe::run_bw(&args[2..]))
         }
         Some("check") if args.len() == 1 => check::run(),
+        Some("capture") if args.get(1).map(String::as_str) == Some("compare") => {
+            match capture_compare::parse(&args[2..]) {
+                Some(a) => capture_compare::run(a),
+                None => usage(),
+            }
+        }
         Some("capture") => match capture::parse(&args[1..]) {
             Some(a) => capture::run(a),
             None => usage(),
