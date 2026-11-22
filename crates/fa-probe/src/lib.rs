@@ -5,4 +5,5 @@ pub mod bandwidth;
 pub mod domain;
 pub mod freq;
 pub mod mem;
+pub mod sysinfo;
 pub mod wake;
