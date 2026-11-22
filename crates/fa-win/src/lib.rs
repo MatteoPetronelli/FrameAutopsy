@@ -11,3 +11,4 @@ pub mod procs;
 pub mod thread;
 pub mod timer;
 pub mod topology;
+pub mod windows;

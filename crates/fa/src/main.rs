@@ -2,6 +2,7 @@
 #![forbid(unsafe_code)]
 
 mod probe;
+mod windows_cmd;
 
 use fa_core::clock::Timebase;
 use fa_win::{clock, topology};
@@ -13,7 +14,8 @@ const USAGE: &str = "usage: fa clock [--seconds N]   (TSC vs QPC interval, defau
        fa probe wake [--cpu N]   (timer wake-up lateness, 1 ms x 2000)
        fa probe domain [--cpu A] [--other B]   (does core A follow the load of core B?)
        fa probe curve [--cpu N]   (memory latency, 16 KiB to 256 MiB, CSV + comparison with the topology)
-       fa probe bw [--kernel avx2|sse2|scalar]   (memory bandwidth, 1 to N cores)";
+       fa probe bw [--kernel avx2|sse2|scalar]   (memory bandwidth, 1 to N cores)
+       fa windows [--all]   (visible windows of Java processes, or all: pid, class, title; read-only)";
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -52,6 +54,7 @@ fn main() -> ExitCode {
         Some("probe") if args.get(1).map(String::as_str) == Some("bw") => {
             run_or_fail(|| probe::run_bw(&args[2..]))
         }
+        Some("windows") => run_or_fail(|| windows_cmd::parse(&args[1..]).map(windows_cmd::run)),
         _ => usage(),
     }
 }

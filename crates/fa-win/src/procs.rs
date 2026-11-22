@@ -26,8 +26,8 @@ fn name_from_wide(buf: &[u16]) -> String {
     String::from_utf16_lossy(&buf[..end])
 }
 
-/// Image names of every running process, in snapshot order (one entry per process, duplicates kept).
-pub fn process_names() -> io::Result<Vec<String>> {
+/// `(pid, image name)` of every running process, in snapshot order (duplicates kept).
+pub fn process_list() -> io::Result<Vec<(u32, String)>> {
     // SAFETY: `TH32CS_SNAPPROCESS` with process id 0 snapshots all processes; no pointer is passed.
     let handle = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
     if handle == INVALID_HANDLE_VALUE {
@@ -37,15 +37,20 @@ pub fn process_names() -> io::Result<Vec<String>> {
     // SAFETY: all-zero is a valid `PROCESSENTRY32W` (plain integers and arrays); `dwSize` is set right after.
     let mut entry: PROCESSENTRY32W = unsafe { std::mem::zeroed() };
     entry.dwSize = size_of::<PROCESSENTRY32W>() as u32;
-    let mut names = Vec::new();
+    let mut list = Vec::new();
     // SAFETY: `snap.0` is a live snapshot and `entry` is a valid, correctly sized out-structure.
     let mut more = unsafe { Process32FirstW(snap.0, &mut entry) } != 0;
     while more {
-        names.push(name_from_wide(&entry.szExeFile));
+        list.push((entry.th32ProcessID, name_from_wide(&entry.szExeFile)));
         // SAFETY: same as above.
         more = unsafe { Process32NextW(snap.0, &mut entry) } != 0;
     }
-    Ok(names)
+    Ok(list)
+}
+
+/// Image names of every running process.
+pub fn process_names() -> io::Result<Vec<String>> {
+    Ok(process_list()?.into_iter().map(|(_, n)| n).collect())
 }
 
 #[cfg(test)]
