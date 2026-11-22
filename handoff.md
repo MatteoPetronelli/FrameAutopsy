@@ -103,7 +103,7 @@ deleted** (4 ties out of 5 candidates: expect a tie unless a kernel is genuinely
   Latency L1 1.25 ns, L2 4.4 ns, RAM about 110 ns. Effective last-level capacity with 4 KiB pages looks like 3 to 4 MiB
   although the topology says 12 MiB: cause not established.
 - Large pages (`MEM_LARGE_PAGES`) are refused; using them needs the lock-memory privilege enabled in our own token,
-  which needs `OpenProcessToken`, forbidden outside `open_target` by the source test. **Decision pending with the user.**
+  which needs `OpenProcessToken`, forbidden outside `open_target` by the source test. **Rejected by the user (2026-11-22): 4 KiB pages everywhere.**
 - Minecraft Java is detected by a visible window of class `GLFW30` owned by `java.exe`/`javaw.exe` (modpack COBBLEVERSE
   reads as class `GLFW30`, title "COBBLEVERSE"); IntelliJ is `idea64.exe`/`SunAwtFrame`, VS Code is `Code.exe`.
 - HWiNFO crashes on launch on this machine (kernel driver, cause not investigated); the frequency probe agrees with the

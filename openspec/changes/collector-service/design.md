@@ -21,7 +21,7 @@ Windows 11 build 26300, i5-11400H. See `proposal.md` for motivation and complian
 - No process handle of any kind: `open_target` does not exist (lot 12) and this lot does not need it. The watchdog
   (abandoned-mutex detection, `docs/decisions.md` section 2) belongs to lot 12, the governor lot, per the roadmap; this
   lot only creates the collector's named mutex.
-- No large pages: the decision is pending with the user; the collector does not use them.
+- No large pages: rejected by the user (2026-11-22, catalog WIN-09); 4 KiB pages everywhere.
 - No dashboard (lot 9), no store (lot 8): the UI side of the shared memory is a test reader here.
 
 ## Decisions

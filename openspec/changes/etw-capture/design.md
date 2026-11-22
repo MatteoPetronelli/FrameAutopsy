@@ -76,7 +76,7 @@ and `TargetProcess` fails closed on a truncated name. Lot 5 needs no process han
 
 **D-9. PresentMon parity target.** The roadmap asks for parity "on a simple D3D test window before the Lab", but the
 D3D11 render loop is WIN-05 (lot 6). Decision: lot 5 measures parity (at least 99 % of frames within 0.1 ms, calibrate)
-on an existing non-game DXGI application chosen with the user (**open question**); lot 6 replays the same comparison on
+on Opera and Chrome (a WebGL page or a 60 fps video, hardware acceleration on; user choice 2026-11-22); lot 6 replays the same comparison on
 the Lab loop. PresentMon is installed by the user (availability unverified); both tools capture at the same time. If
 no suitable application is found, the parity criterion moves to lot 6 and this is logged in `docs/decisions.md` section 5.
 

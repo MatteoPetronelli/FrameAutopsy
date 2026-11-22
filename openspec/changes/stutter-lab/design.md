@@ -14,7 +14,7 @@ Intel UHD (Optimus), Windows 11 build 26300. See `proposal.md` for the complianc
 
 **Non-Goals:**
 - No scoring (lot 10, `cause-engine`); no game, no action on another process.
-- No large pages (refused on the target, decision pending with the user).
+- No large pages (rejected by the user 2026-11-22, catalog WIN-09).
 - No GPU load injector in this lot.
 
 ## Decisions

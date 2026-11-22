@@ -45,6 +45,8 @@
 | Horloge (lot 2) : maths pures dans `fa-core::clock`, lectures TSC dans `fa-asm::tsc`, QPC et type `Clock` dans `fa-win::clock` (qui dépend de `fa-asm` et `fa-core`). | `fa-core` ne peut pas dépendre de `fa-win` (cycle via `TargetProcess`) ; pas de crate `fa-clock` pour quelques centaines de lignes. |
 | Épinglage du thread courant (WIN-07) créé au lot 2 au lieu du lot 3. | Décision de Matteo (2026-11-21) : base commune pour les tests d'horloge et les sondes. |
 | Checkpoint d'explication : base théorique, pas un checkpoint par groupe `unsafe` ; un seul pour l'asm au lot 2. | Décision de Matteo (2026-11-21). |
+| Large pages (WIN-09) rejetées : pages de 4 Kio partout, privilège « Verrouiller les pages en mémoire » jamais demandé. | Décision de Matteo (2026-11-22). Les activer demande un privilège accordé par stratégie et `OpenProcessToken`, interdit hors `open_target` par le test de source ; gain nul pour le produit (seule la courbe de cache des sondes en profitait) et le repli 4 Kio fonctionne. |
+| Parité PresentMon du lot 5 mesurée sur Opera et Chrome (page WebGL ou vidéo 60 images/s), pas sur un jeu. | Décision de Matteo (2026-11-22). Chrome est le navigateur ouvert pendant ses parties ; la boucle D3D11 du Lab n'arrive qu'au lot 6. |
 
 ## 3. Corrections apportées pendant le brainstorming
 
