@@ -6,10 +6,10 @@ ETW steps need an elevated terminal, run by the user.
 
 ## 1. Spike: kernel addresses on build 26300
 
-- [ ] 1.1 Write a throwaway spike (no new crate, not committed as product code) that starts an admin session without `SeDebugPrivilege`, enables DPC/ISR, image-load rundown and a short stack-walk request, and counts non-zero kernel addresses; verify it never calls `OpenProcess` or enables `SeDebugPrivilege` (`no_open_process` source test green).
-- [ ] 1.2 The user runs it in an elevated terminal; verify the raw output (counts of zero and non-zero addresses per event type) is pasted in the session.
-- [ ] 1.3 Record the verdict, and whether kernel events work in a private session or need the NT Kernel Logger, in `docs/decisions.md`; verify the entry states the fallback of design D-1 if addresses are zeroed, and the user has read it.
-- [ ] 1.4 Run the gate and verify it is green.
+- [x] 1.1 Write a throwaway spike (no new crate, not committed as product code) that starts an admin session without `SeDebugPrivilege`, enables DPC/ISR, image-load rundown and a short stack-walk request, and counts non-zero kernel addresses; verify it never calls `OpenProcess` or enables `SeDebugPrivilege` (`no_open_process` source test green).
+- [x] 1.2 The user runs it in an elevated terminal; verify the raw output (counts of zero and non-zero addresses per event type) is pasted in the session.
+- [x] 1.3 Record the verdict, and whether kernel events work in a private session or need the NT Kernel Logger, in `docs/decisions.md`; verify the entry states the fallback of design D-1 if addresses are zeroed, and the user has read it.
+- [x] 1.4 Run the gate and verify it is green.
 
 ## 2. SPSC ring and Miri (before any ETW wiring)
 

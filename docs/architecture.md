@@ -184,8 +184,9 @@ Nothing is written inside game, launcher or mod folders.
 ## 8. Open points for the builder
 
 - Exact ETW keywords and provider flags (follow PresentMon's source).
-- Whether Windows 11 system providers allow kernel events in a private session instead of the NT Kernel Logger (verify
-  on the user's build).
+- ~~Whether Windows 11 system providers allow kernel events in a private session instead of the NT Kernel Logger~~:
+  verified 2026-11-22 on build 26300, a private session started with `EVENT_TRACE_SYSTEM_LOGGER_MODE` and
+  `EnableFlags` receives DPC/ISR, image-load and stack-walk events (`docs/decisions.md` section 2).
 - egui plotting details and decimation strategy.
 - JFR tick source on Windows (lot 15).
 - How the non-elevated UI opens the WAL store in `%ProgramData%` read-only (SQLite needs the `-shm` file readable;

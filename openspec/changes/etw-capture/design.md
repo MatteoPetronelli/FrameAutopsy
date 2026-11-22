@@ -30,6 +30,8 @@ are non-zero. The user runs the elevated terminal. The verdict goes in `docs/dec
 Fallback if addresses are zeroed: the module map keeps module names (and bases) from image-load events but resolves no
 address to module + offset; DPC/ISR events are attributed by count and duration only; O3 stack walks (lot 11) and
 `driver-attribution` are impacted and must be re-scoped with the user. We never enable `SeDebugPrivilege`.
+**Spike verdict (2026-11-22): addresses are non-zero and a private system-logger session works; the fallback is not
+needed** (`docs/decisions.md`).
 
 **D-2. Session and consumer in `fa-win::etw` (WIN-01).** `StartTraceW` with session name `FrameAutopsy`, real-time
 mode, `ClientContext = 3` when the TSC is invariant (else QPC through `Timebase::Qpc`); `EnableTraceEx2` per provider;
