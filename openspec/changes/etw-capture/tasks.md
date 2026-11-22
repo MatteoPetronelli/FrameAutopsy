@@ -33,11 +33,11 @@ ETW steps need an elevated terminal, run by the user.
 
 ## 4. ETW session in `fa-win::etw` (WIN-01)
 
-- [ ] 4.1 Update the WIN-01 catalog line with the comparison protocol before code; verify the line in the catalog.
+- [x] 4.1 Update the WIN-01 catalog line with the comparison protocol before code; verify the line in the catalog.
 - [ ] 4.2 Implement the session (`StartTraceW`, `EnableTraceEx2`, `OpenTraceW`, `ProcessTrace`), `ClientContext = 3`, `PROCESS_TRACE_MODE_RAW_TIMESTAMP`, QPC fallback through `Timebase`, RAII stop, orphan-session stop at startup; verify (elevated, by the user) that starting twice in a row works and that timestamps are comparable with `fa_asm::tsc` reads (delta within a bound recorded in the test).
-- [ ] 4.3 Implement the callback with a borrowed view and `catch_unwind`; verify with a test that an injected panic does not cross the C boundary and that the view is never stored.
-- [ ] 4.4 Implement the module map (rundown + live image loads, address to module + offset) per the spike verdict; verify with synthetic loads and, if addresses are zeroed, that only names are kept and no address is resolved.
-- [ ] 4.5 Implement Microsoft-Windows-Kernel-Process identification (PID, full image name); verify with a test that a 15-byte truncated name from a classic kernel event is never accepted as a name, and that `grep` finds no `OpenProcess` outside the allowed file (`no_open_process` green).
+- [x] 4.3 Implement the callback with a borrowed view and `catch_unwind`; verify with a test that an injected panic does not cross the C boundary and that the view is never stored.
+- [x] 4.4 Implement the module map (rundown + live image loads, address to module + offset) per the spike verdict; verify with synthetic loads and, if addresses are zeroed, that only names are kept and no address is resolved.
+- [x] 4.5 Implement Microsoft-Windows-Kernel-Process identification (PID, full image name); verify with a test that a 15-byte truncated name from a classic kernel event is never accepted as a name, and that `grep` finds no `OpenProcess` outside the allowed file (`no_open_process` green).
 - [ ] 4.6 French explanation checkpoint for each new unsafe block of `fa-win::etw`; verify the user answered "compris".
 - [ ] 4.7 Compare with `ferrisetw` on the same synthetic stream (allocations per event, events/s, 3 runs); verify parity of decoded records and record the verdict in the catalog (hand-written for hot providers only with 0 allocations and throughput at least equal, else `ferrisetw` for non-hot providers).
 - [ ] 4.8 Run the gate and verify it is green.

@@ -14,19 +14,5 @@ pub mod guids {
     pub const NT_PROCESS: u128 = 0x3d6fa8d0_fe05_11d0_9dda_00c04fd7ba7c;
 }
 
-/// One event. `data` is valid only for the duration of the callback: copy what you need, never store the view.
-#[derive(Clone, Copy, Debug)]
-pub struct EventView<'a> {
-    pub provider: u128,
-    pub id: u16,
-    pub version: u8,
-    pub opcode: u8,
-    /// Raw TSC ticks (`ClientContext = 3` and `PROCESS_TRACE_MODE_RAW_TIMESTAMP`).
-    pub timestamp: u64,
-    pub pid: u32,
-    pub tid: u32,
-    pub cpu: u16,
-    /// The event was written by a 32-bit process: pointers in `data` are 4 bytes.
-    pub ptr32: bool,
-    pub data: &'a [u8],
-}
+/// One event, borrowed from the ETW buffer (defined next to the callback in `fa-win`).
+pub use fa_win::etw::EventView;

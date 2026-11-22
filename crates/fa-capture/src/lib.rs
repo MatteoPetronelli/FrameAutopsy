@@ -7,6 +7,8 @@
 
 pub mod capture;
 pub mod decode;
+pub mod modules;
+pub mod processes;
 pub mod record;
 pub mod synthetic;
 pub mod view;

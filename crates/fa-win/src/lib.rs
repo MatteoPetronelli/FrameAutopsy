@@ -5,6 +5,7 @@
 
 pub mod clock;
 pub mod console;
+pub mod etw;
 pub mod mem;
 pub mod pdh;
 pub mod power;
