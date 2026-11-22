@@ -24,8 +24,8 @@ first, reference, parity test, recorded comparison, runtime fallback (`FA_FORCE_
 **D1. Frequency probe: dependent-add chain (ASM-02).** `core::arch::asm!`, Intel syntax: N `add reg, 1` on the same
 register (1-cycle latency each, so cycles = N), unrolled to last about 50 us, bracketed by two TSC reads from lot 2.
 Effective frequency = N / elapsed TSC time. Asm is mandatory because rustc folds N repeated `x + 1` into one add.
-Samples above 1.5x the recent median are dropped (preemption). References: a Rust `black_box` chain (same GHz within
-3 %) and PDH. Alternative rejected: APERF/MPERF (driver).
+Samples above 1.5x the recent median are dropped (preemption). References: a Rust chain of dependent squarings (same GHz within
+3 %; a `black_box` add chain and `x*3` and `x*(x|3)` chains were tried and rejected, see `fa-asm::freq`) and PDH. Alternative rejected: APERF/MPERF (driver).
 
 **D2. Pointer chase (ASM-03).** Buffer of at least 4x the LLC (from topology), arranged as one random cyclic
 permutation built with Sattolo's algorithm. A plain shuffle can leave short cycles whose data fits in cache; Sattolo
