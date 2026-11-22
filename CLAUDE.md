@@ -26,7 +26,8 @@ lot 5 `etw-capture`.
 ## Source documents (read before acting)
 | File | Content | Read when |
 |---|---|---|
-| `handoff.md` | origin brief: vision, compliance constraints, asm leads, open questions | context, scope doubts |
+| `handoff.md` | session starter: current state, measured facts, the next task | **start of every new session** |
+| `handoff-origin.md` | origin brief: vision, compliance constraints, asm leads, open questions | context, scope doubts |
 | `roadmap.md` | 17 lots: order, scope, done criteria, **launch prompt per lot**, `openspec/config.yaml` draft | starting a lot |
 | `specifications.md` | one `##` section per capability, OpenSpec format, `(calibrate)` / `(Claude's call)` markers | creating a change |
 | `docs/architecture.md` | crates, binaries, trust boundaries, data flow, timebase, budgets, storage layout | any design work |

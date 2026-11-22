@@ -1,6 +1,6 @@
 # FrameAutopsy : feuille de route par lots
 
-Sources : `handoff.md` (vision), session de brainstorming du 2026-11-20 (décisions dans `docs/decisions.md`).
+Sources : `handoff-origin.md` (vision), session de brainstorming du 2026-11-20 (décisions dans `docs/decisions.md`).
 Spécifications : `specifications.md` (une section par capacité, au format OpenSpec). Annexes : `docs/architecture.md`,
 `docs/asm-unsafe-catalog.md`, `docs/compliance.md`.
 

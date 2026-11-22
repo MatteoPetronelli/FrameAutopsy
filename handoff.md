@@ -1,206 +1,161 @@
-# Handoff — FrameAutopsy (nom de travail)
-
-> Document de passation destiné à Claude Code. Il est autonome : tu n'as pas accès à la conversation qui l'a produit.
-> Langue de travail avec l'utilisateur : français. Code, identifiants, commits et documentation technique : anglais (conventions de ses autres dépôts : Conventional Commits `feat(scope): ...`).
-
----
-
-## 0. Ton rôle
-
-Tu es le **présentateur et l'initialisateur du projet**. À la première session :
-
-1. Présente le projet à l'utilisateur en français, de façon claire et courte (sections 1 à 3 de ce document, avec tes propres mots, pas un copier-coller). Vérifie qu'il est d'accord sur la vision avant d'aller plus loin.
-2. Exécute les tâches d'initialisation de la section 5, dans l'ordre.
-3. Pose les questions ouvertes de la section 7, par lots de 4 maximum (outil `AskUserQuestion` si disponible), et consigne les réponses dans `docs/decisions.md`.
-4. **N'écris pas de code applicatif tant que les spécifications OpenSpec de la phase 1 ne sont pas validées par l'utilisateur.** Il travaille spec d'abord, et il dirige : tu codes, il relit.
-
-Ne devine pas ce que tu peux vérifier. Si une information de ce document te semble obsolète ou fausse, dis-le.
-
----
-
-## 1. Contexte
-
-- **Utilisateur :** étudiant en 3e année de bachelor, développeur autodidacte rapide, Windows 10/11 x86-64, portable avec GPU NVIDIA RTX 3060 Laptop (6 Go de VRAM), 16 Go de RAM ou plus, virtualisation activée.
-- **Stack maîtrisée :** Python, TypeScript/SvelteKit, Rust niveau application (Tauri, tokio, reqwest, ratatui, rusqlite). Aucune expérience préalable de l'assembleur ni du Rust `unsafe` bas niveau.
-- **Projet de référence (privé, lecture seule) :** `D:\Matteo\RiftMind`. C'est son projet le plus abouti : compagnon de League of Legends en Rust (workspace de crates `core`, `rofl`, `storage`, `poller`), avec un ring buffer de 120 échantillons, une machine à états sans allocation, un moteur de règles en TOML, un stockage MessagePack + zstd dans SQLite, 83 scénarios de test et un overlay Win32. Il sert de modèle d'architecture et de conventions. **Ne publie rien de ce dépôt privé.**
-- **Contraintes de vie :** budget nul. Tout doit fonctionner avec des outils gratuits et en local. L'utilisateur consacre plus de 20 h par semaine au projet et accepte un horizon de plusieurs mois, mais il veut un premier résultat visible rapidement.
-
-## 2. Vision
-
-Un outil de bureau pour joueurs sur PC, utilisé tous les jours, qui **explique puis corrige les saccades et les pics de latence en jeu**, et **prouve** que ses corrections fonctionnent.
-
-Les outils existants (LatencyMon, PresentMon, CapFrameX, HWiNFO, Process Lasso, le mode jeu de Windows) mesurent une tranche du problème ou appliquent des recettes génériques sans vérifier leur effet. Le projet se distingue par une boucle fermée complète :
-
-1. **Observer** : frametimes, interruptions et DPC des pilotes, ordonnancement CPU, files du GPU, défauts de page, thermique, limites de puissance, E/S disque.
-2. **Diagnostiquer** : un moteur de causes à règles déclaratives (TOML), alimenté par un buffer circulaire des dernières secondes, déclenché par un événement de saccade. Même philosophie que `CausalityStateMachine` de RiftMind.
-3. **Agir** : corrections réversibles, appliquées uniquement aux **autres processus et au système**, jamais au jeu : priorité et mode économie (EcoQoS) de processus d'arrière-plan, CPU Sets pour les écarter des cœurs du jeu, report de tâches de maintenance, résolution du timer, profil d'alimentation.
-4. **Prouver** : A/B par sessions alternées (correction activée ou non), puis comparaison statistique des pires frames (1 % et 0,1 %). Une règle qui ne prouve rien chez l'utilisateur est désactivée. Le rapport est lisible : « cette règle réduit tes saccades de X % sur ce jeu, sur cette machine ».
-
-Cibles de jeux : League of Legends (lien avec RiftMind : croiser les événements de partie et les événements système), Fortnite, Overwatch, Minecraft Java (serveurs entre amis ; réglage de la JVM et diagnostic des pauses du ramasse-miettes). L'outil doit rester utile sur n'importe quel jeu en mode observation seule.
-
-**Positionnement honnête :** sur un PC fixe propre, les gains seront modestes. Sur portable (thermique, limites de puissance, bascule GPU intégré/dédié, mode batterie) ils peuvent être réels. L'outil doit le dire quand il ne trouve rien.
-
-## 3. Architecture cible (hypothèse de départ, à discuter)
-
-- Workspace Rust, une crate par responsabilité (inspiration RiftMind) : `capture` (ETW, compteurs, NVML), `core` (buffer circulaire, moteur de règles, FSM sans allocation), `governor` (actions réversibles, journal, bouton d'arrêt d'urgence), `experiment` (A/B et statistiques), `storage` (SQLite WAL, MessagePack + zstd), `app` (interface bureau).
-- Données : **ne jamais enregistrer les événements noyau bruts en continu** (centaines de Mo par minute). Garder la fenêtre en mémoire et ne persister que le contexte d'un incident. Plafond de rétention (30 jours glissants, 2 Go par défaut), configurable.
-- Privilèges : la session de trace noyau (ETW) demande les droits administrateur. Le modèle d'élévation est une question ouverte (section 7).
-- Hygiène du disque dès le premier commit : dans `Cargo.toml`, `[profile.dev] debug = "line-tables-only"` et `[profile.dev.package."*"] debug = false`. Documenter `cargo sweep --time 14`. (Le `target/` de RiftMind pèse 50,39 Go pour 60 Mo de code ; ne pas reproduire.)
-
----
-
-## 4. Contraintes non négociables : conformité aux conditions des jeux
-
-L'utilisateur reste **strictement dans les règles** des éditeurs. Cela vaut pour League of Legends (Riot), Fortnite (Epic), Overwatch (Blizzard) et Minecraft (Mojang/Microsoft).
-
-### 4.1 Interdit, quel que soit le jeu
-
-- Injection de DLL, hook de DirectX/Vulkan ou d'API dans le processus du jeu.
-- Lecture ou écriture de la mémoire du jeu ; ouverture d'un handle sur le processus du jeu avec des droits de lecture mémoire ou de modification (pas nécessaire pour ETW, donc à éviter totalement).
-- Modification des fichiers du jeu, de ses processus ou de sa priorité.
-- Pilote noyau (risque de plantage et conflit avec les anti-triche).
-- Automatisation des entrées, macros, contournement ou détection de l'anti-triche.
-- Interception ou modification du trafic réseau du jeu.
-- Tout avantage compétitif en direct (par exemple des conseils de jeu pendant que le joueur est en vie). RiftMind masque déjà le diagnostic tant que le joueur est vivant : conserver ce principe.
-
-### 4.2 Probablement acceptable, **à vérifier avant usage**
-
-- Session ETW système (même famille d'API que PresentMon) ; compteurs de performance ; NVML ; capteurs système.
-- Live Client Data API de League of Legends (API locale officielle de Riot sur le port 2999), fichiers de replays `.rofl`.
-- Fenêtre overlay **séparée** (topmost, sans injection), comme RiftMind. À confirmer pour chaque jeu.
-- Pour Minecraft : journaux de la JVM (`-Xlog:gc`), arguments de la JVM dans le profil du lanceur de l'utilisateur, profilage côté serveur avec l'accord de l'administrateur du serveur.
-
-### 4.3 Ce que tu dois faire
-
-1. Cherche les textes officiels (conditions d'utilisation, règles de l'anti-triche, politiques sur les outils tiers et les API) pour les quatre jeux. N'utilise que des sources officielles ou fiables et cite l'URL et la date de consultation.
-2. Écris `docs/compliance.md` : pour chaque jeu, anti-triche utilisé, éléments autorisés, zones grises, éléments interdits, verdict **autorisé / zone grise / interdit / non vérifié**. Ne présume jamais d'une règle de mémoire.
-3. Si un point est « zone grise » ou « non vérifié », **ne l'implémente pas** et demande à l'utilisateur.
-4. Encode la conformité dans le produit : une **matrice de capacités par jeu** (`compliance.toml`). Chaque observateur et chaque action y est activé ou non pour chaque jeu. **Tout jeu inconnu démarre en observation seule.** Ajoute un test qui échoue si une action est activée pour un jeu sans entrée de conformité.
-5. Prévois de faire tester l'outil par l'utilisateur avec l'anti-triche actif sur chaque jeu avant toute diffusion, et note le résultat dans `docs/compliance.md`. Tu ne peux pas le garantir toi-même.
-
----
-
-## 5. Tâches d'initialisation (dans l'ordre)
-
-### 5.1 Lire les conventions de RiftMind (lecture seule)
-
-Ouvre `D:\Matteo\RiftMind` : `CLAUDE.md`, `.claude/` (skills et réglages), `openspec/`, `ORCHESTRATOR_INSIGHTS.md`, `ROADMAP.md`, `PRODUCT_EVOLUTION_PLAN.md`, `.graphifyignore`, `Cargo.toml`. Reprends ce qui est réutilisable (structure, style de spécification, gardes) sans copier ses données ni ses secrets. Si le dossier n'est pas accessible, dis-le et continue.
-
-### 5.2 Créer le dépôt
-
-Dépôt local, `main` par défaut, `.gitignore` Rust (`target/`), `LICENSE` (question ouverte : MIT comme VibeDiff ?), `README.md` court, `CLAUDE.md` (conventions de la section 8), `Cargo.toml` de workspace avec les réglages de la section 3.
-
-### 5.3 Initialiser OpenSpec
-
-Installe et initialise OpenSpec dans le dépôt (probablement `openspec init`, mais vérifie la commande exacte avec `--help` ou la documentation officielle avant de l'exécuter). Crée ensuite les trois premières *changes*, sous forme de propositions seulement (pas d'implémentation) :
-
-- `bootstrap-workspace` : workspace, CI locale, hygiène du disque.
-- `compliance-matrix` : `compliance.toml`, tests de conformité, `docs/compliance.md`.
-- `etw-frametime-capture` : phase 1 de la feuille de route, tray qui trace les frametimes et affiche une timeline.
-
-### 5.4 Initialiser Graphify
-
-L'utilisateur utilise déjà Graphify dans RiftMind (fichiers `.graphifyignore` et dossier `graphify-out`, configuré lors d'un commit « Add Claude Code setup and graphify configuration »). Reproduis cette configuration dans le nouveau dépôt, après avoir consulté la documentation ou l'aide de l'outil. Ignore `target/`, `graphify-out/` et les données. Dis à l'utilisateur ce que tu as fait et ce que Graphify produit.
-
-### 5.5 Rechercher et proposer des skills
-
-1. Regarde d'abord ce qui existe dans `RiftMind/.claude` (il contient des skills de garde et de replays) et ce qui est déjà installé.
-2. Cherche des skills pertinents pour : Rust (revue, `clippy`, `unsafe`), API Windows et ETW, profilage et benchmarks (`criterion`), tests par scénarios, workflow OpenSpec, Conventional Commits, revue de sécurité, rédaction de README, et selon la décision d'interface, Tauri/Svelte. L'utilisateur admire des skills qui réduisent le code superflu (par exemple Ponytail) : un skill de ce type est un bon candidat.
-3. **Audite chaque candidat avant de l'installer** : lis le `SKILL.md` en entier et tous les scripts, vérifie la licence, l'auteur et l'historique, et refuse tout ce qui exécute du code réseau inattendu ou touche aux secrets.
-4. Présente 5 à 10 candidats à l'utilisateur (nom, source, utilité, risque), puis installe dans `.claude/skills/` du dépôt **ceux qu'il valide**.
-
-### 5.6 Documenter
-
-Crée `docs/decisions.md` (réponses aux questions et choix) et `docs/compliance.md` (section 4).
-
-### 5.7 Résumé final
-
-Termine par un résumé court : ce qui est fait, ce qui reste, les trois prochaines décisions de l'utilisateur.
-
----
-
-## 6. L'assembleur : situation et pistes
-
-**État des lieux honnête :** le projet utilise très peu d'assembleur (environ 2 à 5 %, des instructions comme `rdtscp` et `cpuid` pour l'horloge matérielle et la topologie CPU). Sa difficulté réelle est ailleurs (événements noyau, API natives de Windows, code sans allocation, décision en temps réel). L'utilisateur aimerait **approfondir cet aspect** sans enfreindre les conditions des jeux.
-
-**Règle d'or :** tout code assembleur reste dans notre propre processus, ne touche jamais au jeu et ne contourne rien. Chaque module assembleur doit **battre sa version Rust de référence** dans un benchmark `criterion`, sinon il est abandonné. Chaque module a un repli en Rust sûr, activé par détection de fonctionnalités à l'exécution (`cfg(target_arch)`), et des tests de parité entre les deux versions.
-
-Pistes à évaluer et à chiffrer (ne rien décider seul) :
-
-1. **Horloge calibrée** : `rdtscp` calibré contre `QueryPerformanceCounter`, avec détection d'un TSC invariant. Petit, utile, bon point de départ.
-2. **Noyaux SIMD (AVX2) pour l'analyse** : histogrammes et percentiles des frametimes, détection de ruptures et corrélation croisée avec décalage entre la série des frametimes et des milliers de séries d'événements système, sur fenêtre glissante. C'est du calcul réel, mesurable face à Rust auto-vectorisé.
-3. **Générateur de causes synthétiques** (banc d'essai) : boucles d'occupation précises au cycle, saturation du cache, des TLB et de la bande passante mémoire, pour provoquer des saccades **contrôlées** sur la machine de test. Cela fournit une vérité terrain pour valider le diagnostic et les tests A/B. Légitime et très adapté à l'assembleur.
-4. **Topologie CPU** : `cpuid` (feuilles de topologie et type de cœur sur les processeurs hybrides) pour guider les CPU Sets. Attention : des API Windows le font déjà ; l'intérêt est la validation et l'apprentissage, à documenter honnêtement.
-5. **Déroulement de piles x86-64** : les événements de pile d'ETW donnent des adresses brutes ; les attribuer à des fonctions de pilotes demande de parser les tables d'exceptions `.pdata` et les codes de déroulement (ABI x64). C'est de la compréhension profonde de l'architecture, sans écrire d'assembleur, à envisager pour la phase de diagnostic avancé.
-6. **Structures sans verrou** : buffer circulaire SPSC avec ordre mémoire explicite et préchargement, éventuellement des écritures non temporelles, comparé à l'implémentation Rust.
-
-Choix de forme à poser à l'utilisateur : assembleur en ligne (`core::arch::asm!`, stable, simple) ou fichiers externes MASM/NASM assemblés par `build.rs` (plus formateur, plus lourd). VibeDiff a déjà un `build.rs`.
-
-**À exclure explicitement :** pilote noyau, lecture des MSR par un pilote tiers (les anti-triche bloquent les pilotes vulnérables), tout ce qui interagit avec le processus du jeu.
-
----
-
-## 7. Questions ouvertes (à poser à l'utilisateur)
-
-**Périmètre et produit**
-1. Faut-il un seul exécutable en tray avec fenêtre de tableau de bord, ou un service d'arrière-plan plus une interface séparée ?
-2. Quelle interface : Tauri + Svelte (comme NanoDrop et RiftMind), `egui`, ou natif ? Contrainte de l'utilisateur : démarrage instantané et faible mémoire.
-3. Quelles sont les 3 corrections prioritaires de la première version du pilote d'actions ? Lesquelles sont réversibles à 100 % ?
-4. Quel niveau d'autonomie par défaut : proposer, demander confirmation, ou appliquer seul avec journal ?
-5. Que doit afficher l'overlay en jeu, si on en prévoit un ? Est-il compatible avec chaque jeu et chaque mode d'affichage (plein écran exclusif) ?
-
-**Technique**
-6. Capture des frames : événements ETW de présentation faits maison ou réutilisation de la bibliothèque de PresentMon ?
-7. Modèle de privilèges : administrateur à chaque lancement, tâche planifiée élevée, ou service Windows ?
-8. Matériel visé : NVIDIA seulement (NVML) ou AMD et Intel aussi ? Portables et fixes ?
-9. Méthode statistique du test A/B : nombre minimal de sessions, test choisi, traitement des sessions bruitées ?
-10. Comment tester sans jeu ? (fixtures et scénarios synthétiques à la RiftMind, plus le générateur de la section 6.3.)
-
-**Données et vie privée**
-11. Rétention par défaut (30 jours, 2 Go) ? Export des rapports ? Aucune télémétrie envoyée sans consentement explicite ?
-12. Base de connaissances communautaire anonyme (hybride) : oui, non, plus tard ?
-13. Rôle d'un petit modèle local pour expliquer les diagnostics en français : indispensable, optionnel ou hors périmètre ?
-
-**Jeux et conformité**
-14. Autres jeux joués et modés par l'utilisateur ? Priorité entre les quatre jeux cités ?
-15. Minecraft : client seulement, ou aussi le serveur de ses amis (avec l'accord de l'administrateur) ? Quel lanceur utilise-t-il (CurseForge, officiel, autre) ?
-16. Quels documents de conformité l'utilisateur a-t-il déjà lus pour RiftMind ? (pour ne pas refaire le travail)
-
-**Diffusion**
-17. Licence (MIT ?), dépôt public dès le départ, nom définitif du projet ?
-18. Objectif de visibilité : démonstration (captures, vidéo, rapport A/B) pour son portfolio ?
-
-**Assembleur**
-19. Quelles pistes de la section 6 l'attirent le plus ? Assembleur en ligne ou fichiers externes ?
-20. Quel budget d'apprentissage accepte-t-il (heures par semaine) avant que l'assembleur ne devienne un frein à l'avancement ?
-
----
-
-## 8. Conventions de travail
-
-- **Spec d'abord** : une *change* OpenSpec par fonctionnalité, validée par l'utilisateur avant le code.
-- **Tests** : fixtures et scénarios (modèle : 83 scénarios de RiftMind), test d'absence d'allocation sur le chemin chaud, tests de parité pour tout module assembleur.
-- **Commits** : Conventional Commits en anglais, petits et fréquents.
-- **Documentation** : README de production (comme VibeDiff), schémas Mermaid si utile.
-- **Sécurité** : aucun secret dans le dépôt, `.env.example` uniquement ; aucun téléchargement ni exécution de code tiers non audité.
-- **`unsafe` et assembleur** : l'utilisateur apprend vite mais n'a pas encore écrit de Rust `unsafe` ni d'assembleur. Les erreurs de ce type ne se voient pas à la compilation, donc :
-  - isole tout le code `unsafe` dans un module ou une crate dédiée (par exemple `sys`) et expose une interface sûre ; mets `#![forbid(unsafe_code)]` dans toutes les autres crates ;
-  - active `#![deny(unsafe_op_in_unsafe_fn)]` et le lint Clippy `undocumented_unsafe_blocks` ;
-  - chaque bloc `unsafe` porte un commentaire `// SAFETY:` qui énonce l'invariant qui le rend correct ;
-  - avant de fusionner un bloc `unsafe` ou assembleur, explique-le en français à l'utilisateur (ce qu'il fait, pourquoi il est correct, ce qui casserait) et attends qu'il dise l'avoir compris ;
-  - teste le code pur avec Miri quand c'est possible (Miri ne couvre pas les appels Windows), et par des tests de parité pour l'assembleur.
-- **Fichiers volumineux** : ne commite jamais `target/`, enregistrements ou traces.
-- **Communication** : explique ce que tu fais et pourquoi, brièvement. L'utilisateur relit tout ; pas de jargon inutile, mais il veut comprendre le bas niveau. Quand tu touches à `unsafe` ou à l'assembleur, explique le raisonnement.
-- **Honnêteté** : dis quand une piste est risquée, quand un gain est incertain, et quand tu n'as pas pu vérifier une information.
-
-## 9. Livrables attendus de cette première session
-
-- `docs/compliance.md` avec sources et verdicts.
-- Dépôt initialisé, OpenSpec et Graphify configurés, trois *changes* en proposition.
-- Liste de skills candidats auditée et skills validés installés.
-- `docs/decisions.md` avec les réponses de l'utilisateur.
-- Résumé final (section 5.7).
-
-## 10. Hors périmètre
-
-Pilote noyau, interaction avec les processus des jeux, automatisation des entrées, toute fonction donnant un avantage compétitif en direct, collecte de données personnelles, dépendance à des services payants.
+# Handoff: session starter (written 2026-11-22, after lot 4)
+
+This file starts a **new Claude Code session** on FrameAutopsy. The original brief of the project (vision, compliance
+constraints, asm leads) is kept aside in `handoff-origin.md`: read it only for context or scope doubts.
+
+The user speaks French (talk to them in French). Code, commits, OpenSpec artifacts and technical docs are in English.
+
+## Your task
+
+**Initialise the OpenSpec changes of lots 5 to 9** under `openspec/changes/`, exactly as was done for lots 0 to 4 at the
+start of the project. Write **no application code**. When the five changes are written and valid, report to the user in
+French and wait: each change is validated by the user at the start of its own lot, before any code.
+
+| Lot | Change id | Capabilities it introduces (sections of `specifications.md`) | Roadmap prompt |
+|---|---|---|---|
+| 5 | `etw-capture` | `etw-capture` **and** `lockfree-transport` (both are "Introduced by change `etw-capture`") | `roadmap.md`, "Lot 5" |
+| 6 | `stutter-lab` | `stutter-lab` | "Lot 6" |
+| 7 | `collector-service` | `collector-ipc` | "Lot 7" |
+| 8 | `incident-store` | `incident-store` | "Lot 8" |
+| 9 | `dashboard` | `dashboard` | "Lot 9" |
+
+### Procedure (per change)
+
+1. Check the OpenSpec command first (`openspec --help`, `openspec new change --help`); do not guess flags. Skill
+   `openspec-propose` describes the workflow. `openspec/config.yaml` holds the rules each artifact must follow.
+2. `openspec new change <id>` then write, in `openspec/changes/<id>/`:
+   - `proposal.md`: why, what changes, **effect on `compliance.toml` and on the "never touch the game" boundary**, the
+     catalog modules added or changed (`docs/asm-unsafe-catalog.md`), crates, dependencies, storage.
+   - `design.md`: context, goals / non-goals, numbered decisions (D-1...), risks. Each unsafe or asm module follows
+     the earn-its-place rule.
+   - `tasks.md`: numbered groups; each group ends with the gate (`powershell -File scripts/gate.ps1`); every task says
+     how it is verified ("verify ..."); an explanation-checkpoint task (French, user says "compris") for each new
+     unsafe or asm block.
+   - `specs/<capability>/spec.md`: copied from the matching section of `specifications.md`, headings raised one level,
+     under `## ADDED Requirements`, the "Introduced by" line dropped. Every requirement needs a `#### Scenario:`.
+3. `openspec validate <id> --strict` must pass. A requirement text over 500 characters makes `--strict` warn: keep the
+   requirement short and put the rules and examples in scenarios (this was done for lot 4).
+4. Work on a local branch (for example `plan/lots-5-9`), commit in small Conventional Commits, merge into `main` only
+   after the user's go, then push `main`. Lot branches are never pushed.
+
+### Cross-check each design against what lots 0 to 4 measured (this is the important part)
+
+The lot 4 change was written before lot 3 produced its data, and three of its starting thresholds were wrong against
+the measurements. Do not repeat that. Before you finalise a design, read `docs/decisions.md` section 5,
+`docs/asm-unsafe-catalog.md` (results and verdicts) and section "Facts measured on the target machine" below, and
+correct every number, threshold or assumption that a measurement contradicts. List these corrections in your report.
+Say plainly when a lead is risky, a gain is uncertain, or a fact is unverified.
+
+Per-lot points to look at (not exhaustive):
+
+- **Lot 5 `etw-capture`.** The spike comes first: the target is Windows 11 build 26300 ("26H2"); do ETW kernel events give
+  kernel addresses to an admin session without `SeDebugPrivilege`? ETW needs an elevated terminal. `fa-sync::spsc`
+  (SYNC-01) must pass `cargo +nightly miri test -p fa-sync`, and **Miri is not installed** on the nightly toolchain
+  (`cargo +nightly miri --version` fails: `rustup +nightly component add miri` is a prerequisite; ask the user, it
+  changes their toolchain). Task `3.x`-style rule: no `OpenProcess`; process names come from
+  Microsoft-Windows-Kernel-Process (full names), never from classic kernel events (15-byte truncation). The hot
+  path is allocation-free, proven with the counting allocator (`fa-sync`, `test-support` feature).
+- **Lot 6 `stutter-lab`.** D3D11 and COM in unsafe (WIN-05). Dev commands run from an admin terminal. The Lab refuses
+  to run while a matrix game runs (reuse `fa_probe::plan::running_games`). ASM-06 (FMA load) exists already as the
+  intrinsics module `fa_asm::fma` (`fma::burn`); ASM-07 (`clflushopt`) is still to earn its place. `cpu-burn` should
+  not load the SMT sibling of a CPU that something else measures (see the SMT bias below).
+- **Lot 7 `collector-service`.** Trust boundary: use the `threat-modeling` skill and show the model to the user first.
+  `SYNC-02` seqlock under Miri. **The first anti-cheat test is run by the user only**; never run, trigger or simulate
+  one. `health\baseline.json` (written by `fa check`) is a user-writable input: the collector must read it with
+  `fa_probe::store::read_baseline` (size cap, strict schema).
+- **Lot 8 `incident-store`.** The SIMD-01 codec stays only if it beats "delta + zstd" on real snapshots: measure zstd
+  alone against delta+zstd first. In-game probe sampling (duty cycle at most 0.01 %) must pick CPUs without game hot
+  threads and, on this machine, **avoid probing a core whose SMT sibling is busy** (the frequency probe reads about
+  9 % low then).
+- **Lot 9 `dashboard`.** The UI never runs elevated and only reads; every action goes through the command channel;
+  text in French with decimal commas (`fa_probe::health::fr_num`).
+
+## Current state (main = `0b0c314`, 2026-11-22)
+
+Lots 0 to 4 are done, merged into `main`, archived under `openspec/changes/archive/`, and `main` is pushed to
+`origin`. `openspec/specs/` holds 8 specs: `workspace-hygiene`, `unsafe-policy`, `compliance-matrix`, `tsc-clock`,
+`cpu-topology`, `driverless-probes`, `health-check`. `openspec/changes/` is empty (only `archive/`). The gate is green,
+172 tests pass.
+
+Crates: `fa-core` (matrix, `TargetProcess`, clock math; no unsafe), `fa-asm` (CPUID, TSC, frequency chain, pointer chase,
+bandwidth, FMA load), `fa-win` (clock, topology, pinning, timers, PDH, large pages, process list, windows, power,
+console), `fa-sync` (counting allocator only so far), `fa-probe` (probes, verdicts, report, baseline; no unsafe), `fa`
+(CLI). `fa-capture`, `fa-storage` and later crates do not exist yet: each is created by the lot that first needs it.
+
+CLI (all non-elevated): `fa check` (about 70 s, refuses while a game runs; see `docs/fa-check.md`), `fa clock`,
+`fa probe freq|wake|domain|curve|bw`, `fa windows [--all]`.
+
+Earn-its-place verdicts so far: ASM-02 (frequency chain, asm mandatory) kept; ASM-01 (TSC reads), ASM-03 (pointer chase),
+ASM-04 (bandwidth) and ASM-06 (FMA load) **tied with the Rust/intrinsics reference, which ships and the asm was
+deleted** (4 ties out of 5 candidates: expect a tie unless a kernel is genuinely different from what LLVM emits).
+
+### Facts measured on the target machine (i5-11400H, Windows 11 build 26300, AC power, performance mode, no overclock)
+
+- 6 cores / 12 threads, one LLC, no hybrid cores, AVX2 + AVX-512, no WAITPKG, no MWAITX. TSC invariant, 2 688 000 000 Hz
+  (CPUID `0x15`), 4.6 ppm above the QPC calibration; the 10 s TSC/QPC criterion was relaxed to 100 µs (45 µs measured).
+- Single-core clock about 4.2 to 4.5 GHz on AC (3.4 on battery); all-core FMA load holds about 4.09 GHz on AC and
+  2.49 GHz on battery.
+- **SMT bias**: the frequency probe reads about 9 % low when the SMT sibling of its core is busy. Load other physical
+  cores only (`fa_probe::plan::load_cpus`).
+- Timer wake-up (`CREATE_WAITABLE_TIMER_HIGH_RESOLUTION`, 1 ms): lateness p50 about 0.5 ms, p99 1.3 to 3.3 ms, up to 4.6 ms
+  with a background build.
+- Memory: 2 x 16 GiB DDR4-3200 (51.2 GB/s dual channel). Read 32 to 45 GB/s, write 26 to 35, copy 26 to 38 (noisy, +-10 %).
+  Latency L1 1.25 ns, L2 4.4 ns, RAM about 110 ns. Effective last-level capacity with 4 KiB pages looks like 3 to 4 MiB
+  although the topology says 12 MiB: cause not established.
+- Large pages (`MEM_LARGE_PAGES`) are refused; using them needs the lock-memory privilege enabled in our own token,
+  which needs `OpenProcessToken`, forbidden outside `open_target` by the source test. **Decision pending with the user.**
+- Minecraft Java is detected by a visible window of class `GLFW30` owned by `java.exe`/`javaw.exe` (modpack COBBLEVERSE
+  reads as class `GLFW30`, title "COBBLEVERSE"); IntelliJ is `idea64.exe`/`SunAwtFrame`, VS Code is `Code.exe`.
+- HWiNFO crashes on launch on this machine (kernel driver, cause not investigated); the frequency probe agrees with the
+  PDH counter within 0.2 % and nothing else was compared.
+- Power mode overlay GUIDs: zero GUID on AC, `{961cc777-2547-4f9d-8174-7d86181b8a7a}` on battery (names not verified).
+
+### Open items outside the code
+
+- Riot: the product is registered as a personal project on the Riot Developer Portal (`docs/compliance.md` 2.1); the
+  user reports everything is confirmed, nothing in writing; the DevRel message was not sent. The technical question about
+  ETW stack walks (O3) waits for lot 11. **Never write "approved by Riot"** anywhere.
+- Blizzard: the Code of Conduct and support article could not be read (login wall); the user confirmed nothing else exists
+  beyond the Anti-cheating Agreement and the EULA.
+- The compliance matrix has `unverified` cells for the baseline observers until the lot 7 anti-cheat test.
+
+## Standing rules (full text in `CLAUDE.md`, which you must read first)
+
+- Talk to the user in French. Explain what you do and why, briefly; explain low-level reasoning (unsafe, asm); give options
+  with a recommendation, not a survey. Do not re-litigate decisions already made (`docs/decisions.md`).
+- Never infer a game rule from memory. A `gray` or `unverified` item is not implemented: ask the user. Only the user runs
+  anti-cheat tests. No handle on any game process (`OpenProcess` only through `fa-win::process::open_target`, enforced by
+  a source test that scans every crate).
+- `unsafe` only in `fa-asm`, `fa-win`, `fa-sync`; every unsafe block has an uppercase `// SAFETY:` and a single unsafe
+  operation. Every new unsafe or asm block gets a French explanation checkpoint; merge after the user says "compris".
+- Earn its place: catalog line first, then reference, parity test, recorded comparison, runtime fallback; a win under 5 %
+  is a tie and the reference ships.
+- The GitHub repo is public. `profile.md` and `RIOT_DEVREL_MESSAGE.md` are gitignored and never committed.
+- Conventional Commits; end commit messages with the attribution line given in the session. **Chain commands with `&&`,
+  never `;`** when a gate must pass before a commit (a failed gate was committed once because of `;`).
+- Publishing: lot branches stay local; merge into `main` only after the user's go, then push `main`.
+
+## Practical notes (learned the hard way)
+
+- The Bash tool breaks on long heredocs that contain quotes or apostrophes. For anything non-trivial write the file with the
+  Write tool, or write a Python script file in the scratchpad and run it. Python edit scripts must preserve the file's line
+  endings (many files are CRLF on disk); use raw strings or `–`-style escapes for non-ASCII characters in scripts.
+- Benchmarks (`cargo bench`) run from the repository root (criterion writes next to the working directory); pin them with
+  PowerShell `Start-Process ... ; $p.ProcessorAffinity = [IntPtr]16`; 3 runs, median and spread. The graphify rebuild that
+  follows each commit disturbs timing tests: do not benchmark right after a commit.
+- Timing-sensitive unit tests must be robust to a busy machine (best of several runs).
+- Guard tests are verified by mutation (change the code, see the test fail, restore); a script that applies a list of
+  mutants and restores the file in a `finally` is the efficient way (see the lot 4 work in the git history).
+- `scripts/gate.ps1`: headers, fmt, clippy `-D warnings --all-features`, tests, Miri (once `crates/fa-sync/src/spsc.rs`
+  exists), `fa lab score` (once `crates/fa/src/lab.rs` exists), graphify update.
+- `docs/decisions.md` section 5 logs every recalibrated `(calibrate)` value; user decisions D1 to D12 are never rewritten.
+
+## Definition of done for this task
+
+1. `openspec list` shows `etw-capture`, `stutter-lab`, `collector-service`, `incident-store`, `dashboard`, each valid under
+   `openspec validate <id> --strict`; `openspec validate --all` passes.
+2. The gate is green; everything committed on a local branch.
+3. A French report to the user: for each change, what it contains in a few lines, the corrections you made after
+   cross-checking with the measurements, the risks and unverified facts, and the questions that only the user can answer.
+4. No application code and no new crate written. Wait for the user's go before merging into `main`, and for their
+   validation of each change at the start of its lot.
