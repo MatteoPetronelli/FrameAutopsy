@@ -63,7 +63,7 @@ rules, all `(calibrate)`:
   under 90 %, with the curve. Confidence high when the drop is monotonic over 3 s or more, medium when it recovers.
 - single-channel RAM likely: the WMI module count decides. One module fires the verdict (high confidence when the
   all-core READ bandwidth is also under 60 % of the dual-channel theoretical value, speed x 8 B x 2; medium otherwise);
-  more than one module does not fire it. When WMI fails, the bandwidth alone fires it with low confidence. Why not
+  more than one module does not fire it. When WMI fails there is no module count and no configured speed, hence no theoretical bandwidth: no RAM verdict (low confidence, said in the report). Why not
   bandwidth first: lot 3 measured about 32 GB/s read and 26 to 30 GB/s write or copy, +-10 % between runs, which is
   right at 60 % of 51.2 GB/s (DDR4-3200), so the bandwidth cannot decide alone. Read only: the least noisy mode.
 - scheduling interference likely: wake-up p99 above 5 ms. Lot 3 measured on the idle target machine a lateness p50 of

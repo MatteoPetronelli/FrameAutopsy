@@ -500,7 +500,7 @@ starting rules (calibrate) are given by the rule scenarios below.
 
 ##### Scenario: Single-channel RAM rule
 - **WHEN** WMI shows one memory module
-- **THEN** the single-channel RAM verdict fires, with high confidence when the all-core read bandwidth is also under 60 % of the dual-channel theoretical value for the configured speed and medium otherwise; with more than one module it does not fire, and with an unknown module count the bandwidth alone fires it with low confidence
+- **THEN** the single-channel RAM verdict fires, with high confidence when the all-core read bandwidth is also under 60 % of the dual-channel theoretical value for the configured speed and medium otherwise; with more than one module it does not fire, and when WMI gives no module count there is no verdict (no configured speed, so no theoretical bandwidth to compare with)
 
 ##### Scenario: Scheduling rule
 - **WHEN** the wake-up p99 is above 5 ms (the idle target machine measures p50 about 0.5 ms and p99 2 to 3 ms, so 500 µs would fire on every run)

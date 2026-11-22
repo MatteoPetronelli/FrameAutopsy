@@ -7,7 +7,8 @@ use fa_win::{clock::Clock, thread::pin_current_thread, timer::HiResTimer};
 use std::io;
 use std::time::Duration;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct WakeStats {
     pub n: usize,
     pub p50_us: f64,

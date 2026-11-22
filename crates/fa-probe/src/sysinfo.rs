@@ -8,6 +8,7 @@ use std::time::Duration;
 
 /// One physical memory module (a DIMM or soldered chip) as WMI reports it.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MemoryModule {
     pub capacity_bytes: u64,
     /// `ConfiguredClockSpeed`: what the module runs at. WMI documents it as MHz but reports the data rate in MT/s on
@@ -62,6 +63,7 @@ pub fn theoretical_gbs(mt_per_s: u32, channels: u32) -> f64 {
 
 /// What NVML says about the first GPU.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct GpuInfo {
     pub name: String,
     /// "P0".."P15" or "inconnu".

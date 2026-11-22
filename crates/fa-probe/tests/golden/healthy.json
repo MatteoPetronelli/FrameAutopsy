@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "timestamp": "20261122T101500Z",
+  "cpu": {
+    "model": "Intel(R) Core(TM) i5-11400H @ 2.70GHz",
+    "physical_cores": 6,
+    "logical_cpus": 12,
+    "invariant_tsc": true,
+    "tsc_hz": 2688000000,
+    "avx2": true,
+    "avx512": true,
+    "waitpkg": false,
+    "mwaitx": false
+  },
+  "frequency": {
+    "load_isa": "AVX-512",
+    "single_core_peak_ghz": [
+      [
+        0,
+        4.19
+      ],
+      [
+        2,
+        4.31
+      ],
+      [
+        4,
+        4.29
+      ]
+    ],
+    "sampler_cpu": 4,
+    "load_cpus": [
+      0,
+      2,
+      6,
+      8,
+      10
+    ],
+    "curve_ghz": [
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09,
+      4.09
+    ]
+  },
+  "memory": {
+    "page_size": "4 Kio",
+    "latency_curve": [
+      {
+        "kib": 32,
+        "ns_per_load": 1.25
+      },
+      {
+        "kib": 512,
+        "ns_per_load": 4.4
+      },
+      {
+        "kib": 65536,
+        "ns_per_load": 108.0
+      }
+    ],
+    "cache": [
+      {
+        "level": 1,
+        "topology_kib": 48,
+        "detected_kib": 48,
+        "agrees": true
+      },
+      {
+        "level": 3,
+        "topology_kib": 12288,
+        "detected_kib": 1024,
+        "agrees": false
+      }
+    ],
+    "bandwidth_threads": 6,
+    "read_gbs": 32.0,
+    "write_gbs": 30.0,
+    "copy_gbs": 28.0,
+    "modules": [
+      {
+        "capacity_bytes": 17179869184,
+        "configured_speed": 3200,
+        "rated_speed": 3200,
+        "bank": "BANK 0"
+      },
+      {
+        "capacity_bytes": 17179869184,
+        "configured_speed": 3200,
+        "rated_speed": 3200,
+        "bank": "BANK 0"
+      }
+    ],
+    "modules_error": null
+  },
+  "scheduling": {
+    "n": 2000,
+    "p50_us": 520.0,
+    "p99_us": 2500.0,
+    "max_us": 11000.0
+  },
+  "power": {
+    "source": "ac",
+    "scheme": "Consigliati da HP",
+    "overlay": "{00000000-0000-0000-0000-000000000000}"
+  },
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+    "performance_state": "P8",
+    "power_limit_watts": null
+  },
+  "verdicts": [
+    {
+      "id": "throttling",
+      "fired": false,
+      "confidence": "high",
+      "evidence": {
+        "baseline_ghz": 4.09,
+        "drop_percent": 0.0,
+        "on_battery": 0.0,
+        "threshold_percent": 10.0,
+        "worst_sustained_ghz": 4.09
+      },
+      "text": "Pas de bridage : fréquence stable autour de 4.09 GHz (pire écart −0 %)."
+    },
+    {
+      "id": "single_channel_ram",
+      "fired": false,
+      "confidence": "medium",
+      "evidence": {
+        "dual_channel_theoretical_gbs": 51.2,
+        "modules": 2.0,
+        "read_gbs": 32.0,
+        "threshold_fraction": 0.6
+      },
+      "text": "Pas de signe de mémoire en simple canal : 2 modules détectés."
+    },
+    {
+      "id": "scheduling_interference",
+      "fired": false,
+      "confidence": "medium",
+      "evidence": {
+        "max_us": 11000.0,
+        "p50_us": 520.0,
+        "p99_us": 2500.0,
+        "threshold_p99_us": 5000.0
+      },
+      "text": "Ordonnancement normal : réveil p50 = 520 µs, p99 = 2.5 ms."
+    }
+  ],
+  "checks": [
+    "fréquence : pic mono-cœur et courbe sous charge FMA de 60 s",
+    "mémoire : latence, débit, tailles de cache, modules WMI",
+    "ordonnancement : latence de réveil du timer haute résolution",
+    "alimentation : source, plan, mode"
+  ]
+}

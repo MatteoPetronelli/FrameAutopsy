@@ -34,10 +34,10 @@ below ends with it, green.
 
 ## 5. Verdicts and report (`fa-probe`)
 
-- [ ] 5.1 Implement the verdict rules (throttling, single-channel RAM likely, scheduling interference likely) with evidence and confidence; verify with fixture tests for "bridage apres 25 s, -26 %" and for the healthy desktop.
-- [ ] 5.2 Add mutation checks on each threshold (10 %, 60 %, 5 ms, one module against several) and the first-5 s window, and verify each mutant fails a test (`mutation-verified-testing`).
-- [ ] 5.3 Implement the `HealthReport` struct, the French text renderer (including the honest "nothing found" listing of checks) and the JSON writer; verify with golden-file tests for both outputs.
-- [ ] 5.4 Implement the AC baseline (`health\baseline.json`, atomic rename, never from a battery run) and the strict reader (size cap, `deny_unknown_fields`); verify with tests for AC, battery and an oversized or malformed file.
+- [x] 5.1 Implement the verdict rules (throttling, single-channel RAM likely, scheduling interference likely) with evidence and confidence; verify with fixture tests for "bridage apres 25 s, -26 %" and for the healthy desktop.
+- [x] 5.2 Add mutation checks on each threshold (10 %, 60 %, 5 ms, one module against several) and the first-5 s window, and verify each mutant fails a test (`mutation-verified-testing`).
+- [x] 5.3 Implement the `HealthReport` struct, the French text renderer (including the honest "nothing found" listing of checks) and the JSON writer; verify with golden-file tests for both outputs.
+- [x] 5.4 Implement the AC baseline (`health\baseline.json`, atomic rename, never from a battery run) and the strict reader (size cap, `deny_unknown_fields`); verify with tests for AC, battery and an oversized or malformed file.
 - [ ] 5.5 Run the gate and verify it is green.
 
 ## 6. `fa check` command (`fa`)
