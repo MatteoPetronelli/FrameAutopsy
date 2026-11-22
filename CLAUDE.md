@@ -6,11 +6,12 @@ triggered by a stutter) → act (reversible actions on *other* processes and the
 A/B blocks, exact sign-flip test on 1 % lows). Rust workspace (edition 2021), elevated headless collector + non-elevated
 egui UI. Target games: LoL, VALORANT, Fortnite, Overwatch 2, Minecraft Java (client); any other game is observe-only.
 
-**Status (2026-11-22): lots 0 to 3 done, merged into `main` and archived** (workspace, gate, counting allocator,
-compliance matrix, `TargetProcess`, `OpenProcess` source test, TSC clock, topology, pinning, driverless probes: frequency,
-latency, bandwidth, cache curve, wake-up; ASM-01, ASM-03 and ASM-04 tied so intrinsics/Rust ship, ASM-02 asm kept). Product
-registered on the Riot Developer Portal as a personal project (`docs/compliance.md` 2.1); Riot technical questions (stack
-walks) wait for lot 11. Next: lot 4 `health-check` (prompt in `roadmap.md`).
+**Status (2026-11-22): lots 0 to 4 done, merged into `main` and archived** (workspace, gate, counting allocator,
+compliance matrix, `TargetProcess`, `OpenProcess` source test, TSC clock, topology, pinning, driverless probes, `fa check`
+with its verdicts and AC baseline; ASM-01, ASM-03, ASM-04 and ASM-06 tied so intrinsics/Rust ship, ASM-02 asm kept).
+Product registered on the Riot Developer Portal as a personal project (`docs/compliance.md` 2.1); Riot technical
+questions (stack walks) wait for lot 11. Next: initialise the OpenSpec changes of lots 5 to 9 (see `handoff.md`), then
+lot 5 `etw-capture`.
 
 ## Working agreement
 - Talk to the user in **French**. Code, identifiers, commits, OpenSpec artifacts and technical docs in **English**.
