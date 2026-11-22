@@ -101,3 +101,30 @@ counters printed by `fa capture`.
 - [A panic crossing the C boundary] -> `catch_unwind` in every callback, tested with an injected panic.
 - [Orphan session after a crash] -> stop by name at startup and at exit; test starts twice in a row.
 - [Running ETW near a competitive game] -> `fa capture` is a developer command, the user decides when; O1/O2 stay unverified.
+
+## Reference notes: PresentMon (MIT)
+
+Read 2026-11-22 from `https://github.com/GameTechDev/PresentMon`, commit `e580ac87f21ce7885df7bce46d5022ad789a2eac`
+(2026-11-21), files `PresentData/PresentMonTraceSession.cpp`, `PresentData/PresentMonTraceConsumer.cpp` and
+`PresentData/ETW/*.h`. Event descriptors are (id, version, keyword). PresentMon uses a manifest session
+(`EVENT_TRACE_REAL_TIME_MODE`, `PROCESS_TRACE_MODE_EVENT_RECORD | RAW_TIMESTAMP`, never `EVENT_TRACE_FLAG_*`).
+
+| Provider | GUID | MatchAny we use | Events we need (id, version) |
+|---|---|---|---|
+| Microsoft-Windows-DXGI | `CA11C036-0102-4A2D-A6AD-F03CFED5D3C9` | `0x8000000000000002` | Present_Start `0x2a` v0 (swap chain u64, Flags u32, SyncInterval i32); Present_Stop `0x2b` v0 (Result u32); PresentMultiplaneOverlay_Start `0x37` |
+| Microsoft-Windows-D3D9 | `783ACA0A-790E-4D7F-8451-AA850511C6B9` | all | Present_Start `0x01` (swap chain u64, Flags u32); Present_Stop `0x02` (Result u32) |
+| Microsoft-Windows-DxgKrnl | `802EC45A-1E99-4B83-9920-87C98277BA9D` | `0x4000000008000001` (PresentMon patches the Performance keyword out) | Present_Info `0xb8` v1, PresentHistory_Start `0xab` v2, PresentHistory_Info `0xac` v2, Flip_Info `0xa8`, MMIOFlip_Info `0x74`, VSyncDPC_Info `0x11`, QueuePacket_Start `0xb2` v1 / Stop `0xb4` v1, Blit_Info `0xa6` (displayed time, present mode) |
+| Microsoft-Windows-DxgKrnl-Win7 | `65CD4C8A-0848-4583-92A0-31C0FBAF00C0` | all, level information | legacy sub-GUIDs routed to the same handlers; Windows 7 only, not enabled by us |
+| Microsoft-Windows-Kernel-Process | `22FB2CD6-0E7B-422B-A0C7-2FAD1FD0E716` | process keyword | ProcessStart, ProcessStop, ProcessRundown (full image name); rundown through `EVENT_CONTROL_CODE_CAPTURE_STATE` |
+| Win32k `8C416C79-...`, Dwm-Core `9E9BBA3C-...`, Direct3D12, Intel-PresentMon, Nvidia-* | | | conditional in PresentMon (display, input, GPU or app tracking): not needed for frametime, not enabled in lot 5 |
+
+PresentMon enables NO kernel provider (no context switch, DPC, ISR, image load, hard fault, disk): those come from the
+Windows kernel flags `EVENT_TRACE_FLAG_CSWITCH | DPC | INTERRUPT | IMAGE_LOAD | PROCESS | THREAD | DISK_IO |
+MEMORY_HARD_FAULTS`, set in the private system-logger session (spike verdict). Which of them the cause engine needs is
+decided in lot 10; lot 5 enables and counts them all and decodes the hot ones listed in D-4.
+
+Frametime rule taken from PresentMon: present start = `EVENT_HEADER.TimeStamp` of the DXGI/D3D9 Present_Start; key =
+(process id, swap chain address); frametime = interval between consecutive present starts of the same key
+(`MsBetweenPresents`); Present_Stop is paired to its start by thread id. The DxgKrnl events only add displayed time
+and present mode. Not verified: the exact typedefs of some payload fields (read from the TDH dump, task 3.3), and
+whether DWM-composed flip presents need the Win32k and Dwm-Core events for displayed time.

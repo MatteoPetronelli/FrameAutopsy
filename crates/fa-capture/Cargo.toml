@@ -1,0 +1,11 @@
+[package]
+name = "fa-capture"
+edition.workspace = true
+version.workspace = true
+publish.workspace = true
+
+[dependencies]
+fa-core = { version = "0.0.0", path = "../fa-core" }
+
+[dev-dependencies]
+fa-sync = { version = "0.0.0", path = "../fa-sync", features = ["test-support"] }

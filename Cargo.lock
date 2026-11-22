@@ -373,6 +373,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "fa-capture"
+version = "0.0.0"
+dependencies = [
+ "fa-core",
+ "fa-sync",
+]
+
+[[package]]
 name = "fa-core"
 version = "0.0.0"
 dependencies = [

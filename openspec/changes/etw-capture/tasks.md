@@ -24,8 +24,8 @@ ETW steps need an elevated terminal, run by the user.
 
 ## 3. Crate `fa-capture`, decoders, synthetic stream
 
-- [ ] 3.1 Create crate `fa-capture` with `#![forbid(unsafe_code)]` and register it in the workspace; verify `cargo build -p fa-capture` and the gate headers step.
-- [ ] 3.2 Read PresentMon's source (MIT) for keywords, flags, event ids and versions; note the commit and the list in the design notes; verify the list covers every provider of spec `etw-capture` "Providers".
+- [x] 3.1 Create crate `fa-capture` with `#![forbid(unsafe_code)]` and register it in the workspace; verify `cargo build -p fa-capture` and the gate headers step.
+- [x] 3.2 Read PresentMon's source (MIT) for keywords, flags, event ids and versions; note the commit and the list in the design notes; verify the list covers every provider of spec `etw-capture` "Providers".
 - [ ] 3.3 Write the TDH layout-dump developer tool (may allocate, not on the hot path); verify it prints the layout of one known event on the user's machine.
 - [ ] 3.4 Implement hand-written decoders keyed by provider, event id and version into fixed-size `Copy` records, with an unknown-version counter; verify with tests on synthetic byte buffers including truncated buffers and unknown versions (no panic, counted and skipped).
 - [ ] 3.5 Build the synthetic `EVENT_RECORD` generator; verify the zero-allocation test passes for one million events through callback, decode and push under `assert_no_alloc`, including the full-ring drop path.
