@@ -128,3 +128,24 @@ Frametime rule taken from PresentMon: present start = `EVENT_HEADER.TimeStamp` o
 (`MsBetweenPresents`); Present_Stop is paired to its start by thread id. The DxgKrnl events only add displayed time
 and present mode. Not verified: the exact typedefs of some payload fields (read from the TDH dump, task 3.3), and
 whether DWM-composed flip presents need the Win32k and Dwm-Core events for displayed time.
+
+### Layouts verified on the target machine (TDH dump, 2026-11-22, build 26300)
+
+- One private system-logger session accepted the kernel flags AND `EnableTraceEx2` on DXGI, D3D9, DxgKrnl and
+  Kernel-Process (all codes 0): a single session is enough (design D-2 stands, no second session).
+- Opcodes (PerfInfo): 67 ISR, 68 DPC, 69 TimerDPC. DXGI `Present_Start` has `SyncInterval` as UINT32 (PresentMon reads
+  an int32) followed by `DirtyRects` and `ScrollRects`. Kernel-Process `ImageName` is the file name (`chrome.exe`),
+  not a path, and is the full name, not the 15-byte kernel truncation.
+- Context switch (Thread class, opcode 36, version 5): about 41 000 events per second in normal use (818 049 in 20 s)
+  and **no TDH schema** (code 1168). Only `NewThreadId`, `OldThreadId` and the two priorities are read (documented
+  stable prefix); the remaining 18 bytes are not decoded. Unverified against another Windows build.
+- Not seen in 20 s: any hard page fault event (the flag is on; unverified that it works, to test with the Lab's
+  `page-fault-storm`), any D3D9 event (no D3D9 app ran: not decoded). Unverified: frame extraction for apps that never
+  call DXGI (OpenGL, Vulkan, Minecraft Java): their only present event would be DxgKrnl `Present_Info`, which is decoded
+  as `DxgPresent`; to verify in the frame-extraction group with an OpenGL application.
+- A context switch carries thread ids only. Attributing switches to a process needs a thread-to-process map from
+  Kernel-Process `ThreadStart` (id 3); no thread rundown event arrived with the process rundown, so threads started
+  before the session need another source (open for lots 7 and 8).
+- Records: `HotRecord` is 32 bytes (present, DxgKrnl present, DPC/ISR, context switch, disk I/O); `ColdRecord` (process
+  and image events, name inline in 62 UTF-8 bytes with a truncation flag) goes through its own smaller ring. A truncated
+  name is never complete (`Name::complete()` is `None`), classic Process events are never decoded.

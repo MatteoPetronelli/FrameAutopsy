@@ -6,6 +6,7 @@ publish.workspace = true
 
 [dependencies]
 fa-core = { version = "0.0.0", path = "../fa-core" }
+fa-sync = { version = "0.0.0", path = "../fa-sync" }
 
 [dev-dependencies]
 fa-sync = { version = "0.0.0", path = "../fa-sync", features = ["test-support"] }

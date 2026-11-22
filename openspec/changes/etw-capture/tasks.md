@@ -26,10 +26,10 @@ ETW steps need an elevated terminal, run by the user.
 
 - [x] 3.1 Create crate `fa-capture` with `#![forbid(unsafe_code)]` and register it in the workspace; verify `cargo build -p fa-capture` and the gate headers step.
 - [x] 3.2 Read PresentMon's source (MIT) for keywords, flags, event ids and versions; note the commit and the list in the design notes; verify the list covers every provider of spec `etw-capture` "Providers".
-- [ ] 3.3 Write the TDH layout-dump developer tool (may allocate, not on the hot path); verify it prints the layout of one known event on the user's machine.
-- [ ] 3.4 Implement hand-written decoders keyed by provider, event id and version into fixed-size `Copy` records, with an unknown-version counter; verify with tests on synthetic byte buffers including truncated buffers and unknown versions (no panic, counted and skipped).
-- [ ] 3.5 Build the synthetic `EVENT_RECORD` generator; verify the zero-allocation test passes for one million events through callback, decode and push under `assert_no_alloc`, including the full-ring drop path.
-- [ ] 3.6 Run the gate and verify it is green.
+- [x] 3.3 Write the TDH layout-dump developer tool (may allocate, not on the hot path); verify it prints the layout of one known event on the user's machine.
+- [x] 3.4 Implement hand-written decoders keyed by provider, event id and version into fixed-size `Copy` records, with an unknown-version counter; verify with tests on synthetic byte buffers including truncated buffers and unknown versions (no panic, counted and skipped).
+- [x] 3.5 Build the synthetic `EVENT_RECORD` generator; verify the zero-allocation test passes for one million events through callback, decode and push under `assert_no_alloc`, including the full-ring drop path.
+- [x] 3.6 Run the gate and verify it is green.
 
 ## 4. ETW session in `fa-win::etw` (WIN-01)
 
