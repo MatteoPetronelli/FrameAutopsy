@@ -6,5 +6,6 @@
 pub mod bw;
 pub mod chase;
 pub mod cpuid;
+pub mod fma;
 pub mod freq;
 pub mod tsc;

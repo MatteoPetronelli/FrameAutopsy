@@ -11,12 +11,12 @@ below ends with it, green.
 
 ## 2. ASM-06 FMA power load (`fa-asm`)
 
-- [ ] 2.1 Write the intrinsics reference (AVX2 and AVX-512 behind runtime dispatch, scalar fallback with `FA_FORCE_SCALAR=1`) and verify the dispatch test selects the expected variant on this machine.
-- [ ] 2.2 Write the parity test (same FLOP count, same final accumulators) and verify it passes for AVX2, AVX-512 and scalar.
-- [ ] 2.3 Write the `asm!` candidate (Intel syntax, 8 independent chains, `// SAFETY:` comments, precise `options`) and verify the parity test passes against the reference.
-- [ ] 2.4 Write `cargo bench -p fa-asm --bench fma_load_vs_intrinsics` (FLOP per TSC tick, 3 runs, pinned thread, AC power); paste results, verdict and date into ASM-06; verify the loser is deleted if the win is under 5 %.
-- [ ] 2.5 Explanation checkpoint (French): present the asm block to the user (ce que ca fait, pourquoi c'est correct, ce qui le casserait, comment on le verifie, template catalog section 7); verify the user answered "compris" before merge. Skipped with the block if intrinsics win.
-- [ ] 2.6 Run the gate and verify it is green.
+- [x] 2.1 Write the intrinsics reference (AVX2 and AVX-512 behind runtime dispatch, scalar fallback with `FA_FORCE_SCALAR=1`) and verify the dispatch test selects the expected variant on this machine.
+- [x] 2.2 Write the parity test (same FLOP count, same final accumulators) and verify it passes for AVX2, AVX-512 and scalar.
+- [x] 2.3 Write the `asm!` candidate (Intel syntax, 8 independent chains, `// SAFETY:` comments, precise `options`) and verify the parity test passes against the reference.
+- [x] 2.4 Write `cargo bench -p fa-asm --bench fma_load_vs_intrinsics` (FLOP per TSC tick, 3 runs, pinned thread, AC power); paste results, verdict and date into ASM-06; verify the loser is deleted if the win is under 5 %.
+- [x] 2.5 (skipped: the asm block lost and was deleted) Explanation checkpoint (French): present the asm block to the user (ce que ca fait, pourquoi c'est correct, ce qui le casserait, comment on le verifie, template catalog section 7); verify the user answered "compris" before merge. Skipped with the block if intrinsics win.
+- [x] 2.6 Run the gate and verify it is green.
 
 ## 3. Windows queries (`fa-win`, WIN-10)
 
