@@ -6,6 +6,7 @@
 pub mod clock;
 pub mod console;
 pub mod etw;
+pub mod labsys;
 pub mod mem;
 pub mod pdh;
 pub mod power;

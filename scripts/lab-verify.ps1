@@ -34,6 +34,7 @@ if ($LASTEXITCODE -ne 0) { $cap.Kill(); exit $LASTEXITCODE }
 $cap.WaitForExit()
 & $fa lab verify $journal $csv
 $code = $LASTEXITCODE
+& $fa lab effect $journal $csv
 if ($PresentMon) {
     $pm.WaitForExit()
     & $fa capture compare $csv $pmCsv

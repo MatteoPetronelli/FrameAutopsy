@@ -14,12 +14,15 @@ pub struct Journal {
     pub tsc_hz: f64,
     /// `(start_tsc, end_tsc)` of every finished frame-stall.
     pub stalls: Vec<(u64, u64)>,
+    /// `(cause, start_tsc, end_tsc)` of every finished injection.
+    pub injections: Vec<(String, u64, u64)>,
 }
 
 pub fn parse_journal(text: &str) -> Option<Journal> {
     let mut pid = None;
     let mut tsc_hz = None;
     let mut stalls = Vec::new();
+    let mut injections = Vec::new();
     for line in text.lines().filter(|l| !l.trim().is_empty()) {
         let v: Value = serde_json::from_str(line).ok()?;
         match v["kind"].as_str()? {
@@ -27,8 +30,12 @@ pub fn parse_journal(text: &str) -> Option<Journal> {
                 pid = v["pid"].as_u64();
                 tsc_hz = v["tsc_hz"].as_f64();
             }
-            "end" if v["cause"] == "frame-stall" => {
-                stalls.push((v["start_tsc"].as_u64()?, v["end_tsc"].as_u64()?));
+            "end" => {
+                let (start, end) = (v["start_tsc"].as_u64()?, v["end_tsc"].as_u64()?);
+                injections.push((v["cause"].as_str()?.to_string(), start, end));
+                if v["cause"] == "frame-stall" {
+                    stalls.push((start, end));
+                }
             }
             _ => {}
         }
@@ -37,6 +44,7 @@ pub fn parse_journal(text: &str) -> Option<Journal> {
         pid: pid?,
         tsc_hz: tsc_hz?,
         stalls,
+        injections,
     })
 }
 
@@ -103,7 +111,67 @@ pub fn run(journal: &str, frames: &str) -> std::io::Result<bool> {
             None => println!("stall {i} : aucune frame capturée après la fin du stall"),
         }
     }
-    Ok(!results.is_empty() && results.iter().all(|c| c.ok))
+    if results.is_empty() {
+        println!("aucun frame-stall dans ce journal : rien à vérifier ici");
+    }
+    Ok(results.iter().all(|c| c.ok))
+}
+
+fn percentile(sorted: &[f64], q: f64) -> f64 {
+    sorted
+        .get(((sorted.len().max(1) - 1) as f64 * q).round() as usize)
+        .copied()
+        .unwrap_or(0.0)
+}
+
+/// Frame-time statistics `(count, p50, p99, max)` in ms.
+type Stats = (usize, f64, f64, f64);
+
+fn stats(mut ms: Vec<f64>) -> Stats {
+    ms.sort_by(f64::total_cmp);
+    (
+        ms.len(),
+        percentile(&ms, 0.5),
+        percentile(&ms, 0.99),
+        ms.last().copied().unwrap_or(0.0),
+    )
+}
+
+/// For each injection, the frame times of the Lab inside its window against the frames outside every window. The
+/// journal and the capture share the TSC timebase. Informational: whether the effect is "measurable" is a judgement.
+pub fn effect(j: &Journal, frames: &[(u64, f64)]) -> Vec<(String, Stats, Stats)> {
+    let inside = |ts: u64| j.injections.iter().any(|(_, s, e)| (*s..=*e).contains(&ts));
+    let outside = stats(
+        frames
+            .iter()
+            .filter(|(ts, _)| !inside(*ts))
+            .map(|&(_, ms)| ms)
+            .collect(),
+    );
+    j.injections
+        .iter()
+        .map(|(cause, s, e)| {
+            let ms = frames
+                .iter()
+                .filter(|(ts, _)| (*s..=*e).contains(ts))
+                .map(|&(_, ms)| ms)
+                .collect();
+            (cause.clone(), stats(ms), outside)
+        })
+        .collect()
+}
+
+pub fn run_effect(journal: &str, frames: &str) -> std::io::Result<()> {
+    let j = parse_journal(&std::fs::read_to_string(journal)?)
+        .ok_or_else(|| std::io::Error::other("journal illisible ou sans en-tête"))?;
+    let frames = parse_frames(&std::fs::read_to_string(frames)?, j.pid);
+    for (cause, inn, out) in effect(&j, &frames) {
+        println!(
+            "{cause} : pendant {} frames p50 {:.3} / p99 {:.3} / max {:.3} ms ; hors injection {} frames p50 {:.3} / p99 {:.3} / max {:.3} ms",
+            inn.0, inn.1, inn.2, inn.3, out.0, out.1, out.2, out.3
+        );
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -143,6 +211,21 @@ mod tests {
         assert!(check(&j, &parse_frames(&csv("51.5000"), 4242), BUDGET_MS)[0].ok);
         // A frame shorter than the stall is wrong too, not only a longer one.
         assert!(!check(&j, &parse_frames(&csv("48.0000"), 4242), BUDGET_MS)[0].ok);
+    }
+
+    #[test]
+    fn effect_compares_the_frames_inside_each_window_with_the_rest() {
+        let j = parse_journal(JOURNAL).unwrap(); // one stall from tick 1_000_000 to 51_000_000
+        let frames = [(10, 7.0), (20, 7.2), (2_000_000, 50.0), (60_000_000, 7.1)];
+        let r = effect(&j, &frames);
+        assert_eq!(r.len(), 1);
+        assert_eq!(
+            r[0].1,
+            (1, 50.0, 50.0, 50.0),
+            "only the frame inside the window"
+        );
+        assert_eq!(r[0].2 .0, 3, "three frames outside");
+        assert_eq!(r[0].2 .3, 7.2);
     }
 
     #[test]

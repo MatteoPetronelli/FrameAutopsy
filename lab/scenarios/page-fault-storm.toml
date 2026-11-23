@@ -1,0 +1,10 @@
+name = "page-fault-storm"
+fps = "144"
+duration = 20.0
+expected_causes = ["page-fault-storm"]
+
+[[injection]]
+cause = "page-fault-storm"
+start = 5.0
+duration = 10.0
+size_mib = 64

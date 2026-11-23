@@ -6,6 +6,9 @@ use super::scenario::{Cause, Injection};
 use fa_win::clock::Clock;
 use serde_json::{json, Value};
 use std::io::{self, Write};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::thread::JoinHandle;
 
 enum State {
     Waiting,
@@ -66,5 +69,114 @@ impl FrameStall {
             _ => {}
         }
         Ok(())
+    }
+}
+
+pub type Work = Arc<dyn Fn(&AtomicBool) + Send + Sync>;
+/// Given the CPU the render thread is on, the CPUs to use and the journal parameters.
+pub type Pick = Box<dyn Fn(u32) -> (Vec<u32>, Value)>;
+
+enum TimedState {
+    Waiting,
+    Running {
+        start_tsc: u64,
+        stop: Arc<AtomicBool>,
+        handles: Vec<JoinHandle<()>>,
+    },
+    Done,
+}
+
+/// A worker injection: one thread per CPU runs `work` between `start_s` and `end_s` (seconds into the scenario). Both
+/// transitions happen after `Present`, so spawning, joining and the journal writes never lengthen a frame. Dropping a
+/// running injection (Ctrl+C, error) stops and joins its threads.
+pub struct Timed {
+    cause: Cause,
+    start_s: f64,
+    end_s: f64,
+    work: Work,
+    pick: Pick,
+    params: Value,
+    state: TimedState,
+}
+
+impl Timed {
+    pub fn new(cause: Cause, start_s: f64, end_s: f64, work: Work, pick: Pick) -> Self {
+        Timed {
+            cause,
+            start_s,
+            end_s,
+            work,
+            pick,
+            params: Value::Null,
+            state: TimedState::Waiting,
+        }
+    }
+
+    pub fn hook<W: Write>(
+        &mut self,
+        journal: &mut Journal<W>,
+        clock: &Clock,
+        elapsed_ticks: u64,
+        stage: Stage,
+    ) -> io::Result<()> {
+        if stage != Stage::AfterPresent {
+            return Ok(());
+        }
+        let hz = clock.hz().get() as f64;
+        let elapsed = elapsed_ticks as f64;
+        match &mut self.state {
+            TimedState::Waiting if elapsed >= self.start_s * hz => {
+                // The hook runs on the render thread: this is the CPU the burners must stay away from.
+                let (cpus, params) = (self.pick)(fa_win::thread::current_cpu());
+                self.params = params;
+                let start_tsc = clock.now();
+                journal.start(self.cause, start_tsc, &self.params)?;
+                let stop = Arc::new(AtomicBool::new(false));
+                let handles = cpus
+                    .iter()
+                    .map(|&cpu| {
+                        let (stop, work) = (stop.clone(), self.work.clone());
+                        std::thread::spawn(move || {
+                            let _pin = fa_win::thread::pin_current_thread(cpu);
+                            work(&stop);
+                        })
+                    })
+                    .collect();
+                self.state = TimedState::Running {
+                    start_tsc,
+                    stop,
+                    handles,
+                };
+            }
+            TimedState::Running { .. } if elapsed >= self.end_s * hz => {
+                if let TimedState::Running {
+                    start_tsc,
+                    stop,
+                    handles,
+                } = std::mem::replace(&mut self.state, TimedState::Done)
+                {
+                    stop.store(true, Ordering::Relaxed);
+                    handles.into_iter().for_each(|h| {
+                        let _ = h.join();
+                    });
+                    journal.end(self.cause, start_tsc, clock.now(), &self.params)?;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+}
+
+impl Drop for Timed {
+    fn drop(&mut self) {
+        if let TimedState::Running { stop, handles, .. } =
+            std::mem::replace(&mut self.state, TimedState::Done)
+        {
+            stop.store(true, Ordering::Relaxed);
+            handles.into_iter().for_each(|h| {
+                let _ = h.join();
+            });
+        }
     }
 }

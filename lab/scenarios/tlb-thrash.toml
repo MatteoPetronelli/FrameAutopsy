@@ -1,0 +1,10 @@
+name = "tlb-thrash"
+fps = "144"
+duration = 20.0
+expected_causes = ["tlb-thrash"]
+
+[[injection]]
+cause = "tlb-thrash"
+start = 5.0
+duration = 10.0
+size_mib = 256

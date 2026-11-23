@@ -25,6 +25,7 @@ const USAGE: &str = "usage: fa check   (machine health check, about 75 s, no adm
        fa lab loop [--fps vsync|uncapped|N] [--seconds N]   (Lab render loop alone: baseline jitter header; no admin)
        fa lab run FILE.toml [--journal OUT]   (run a scenario in the Lab window, write its ground-truth journal; no admin, capture runs apart)
        fa lab verify JOURNAL FRAMES.csv   (does the capture see the injected frame stalls? exit 1 if not)
+       fa lab effect JOURNAL FRAMES.csv   (frame times inside each injection against the rest)
        fa lab check FILE.toml   (parse a scenario and check it against the guards; runs nothing)
        fa windows [--all]   (visible windows of Java processes, or all: pid, class, title; read-only)";
 

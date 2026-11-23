@@ -15,6 +15,8 @@ use std::path::PathBuf;
 pub const MAX_INJECTION_SECS: f64 = 30.0;
 /// Biggest disk burst, in MiB (1 GiB).
 pub const MAX_DISK_MIB: u64 = 1024;
+/// Biggest buffer of a memory injector, in MiB per thread.
+pub const MAX_MEMORY_MIB: u64 = 512;
 
 #[derive(Debug, PartialEq)]
 pub enum GuardError {
@@ -25,6 +27,7 @@ pub enum GuardError {
     DiskBurstSize { index: usize },
     BadIntensity { index: usize },
     FrameStallLength { index: usize },
+    MemorySize { index: usize },
 }
 
 impl fmt::Display for GuardError {
@@ -48,6 +51,10 @@ impl fmt::Display for GuardError {
             GuardError::BadIntensity { index } => {
                 write!(f, "injection {index} : intensity hors de 0 à 1")
             }
+            GuardError::MemorySize { index } => write!(
+                f,
+                "injection {index} : size_mib doit être entre 1 et {MAX_MEMORY_MIB} (par thread)"
+            ),
             GuardError::FrameStallLength { index } => write!(
                 f,
                 "injection {index} : frame-stall demande stall_ms entre 0 (exclu) et la durée de l'injection"
@@ -83,6 +90,17 @@ pub fn validate(s: &Scenario) -> Result<(), GuardError> {
                 .is_some_and(|ms| ms > 0.0 && ms <= inj.duration * 1000.0)
         {
             return Err(GuardError::FrameStallLength { index });
+        }
+        let memory = matches!(
+            inj.cause,
+            Cause::CacheThrash | Cause::TlbThrash | Cause::MemBandwidth | Cause::PageFaultStorm
+        );
+        if memory
+            && inj
+                .size_mib
+                .is_some_and(|m| !(1..=MAX_MEMORY_MIB).contains(&m))
+        {
+            return Err(GuardError::MemorySize { index });
         }
         if inj.cause == Cause::DiskBurst
             && !inj
@@ -159,6 +177,7 @@ mod tests {
             cpus: None,
             size_mib,
             stall_ms: None,
+            fma: None,
         }
     }
 
@@ -180,6 +199,28 @@ mod tests {
         assert!(validate(&scenario(inj(Cause::DiskBurst, 5.0, Some(1025)))).is_err());
         assert!(validate(&scenario(inj(Cause::DiskBurst, 5.0, Some(0)))).is_err());
         assert!(validate(&scenario(inj(Cause::DiskBurst, 5.0, None))).is_err());
+    }
+
+    #[test]
+    fn the_memory_cap_is_512_mib_inclusive_per_thread() {
+        for cause in [
+            Cause::CacheThrash,
+            Cause::TlbThrash,
+            Cause::MemBandwidth,
+            Cause::PageFaultStorm,
+        ] {
+            assert_eq!(validate(&scenario(inj(cause, 5.0, Some(512)))), Ok(()));
+            assert_eq!(
+                validate(&scenario(inj(cause, 5.0, None))),
+                Ok(()),
+                "the size has a default"
+            );
+            assert!(matches!(
+                validate(&scenario(inj(cause, 5.0, Some(513)))),
+                Err(GuardError::MemorySize { .. })
+            ));
+            assert!(validate(&scenario(inj(cause, 5.0, Some(0)))).is_err());
+        }
     }
 
     #[test]

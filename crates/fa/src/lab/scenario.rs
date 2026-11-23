@@ -33,6 +33,8 @@ pub struct Injection {
     pub size_mib: Option<u64>,
     /// Frame stall length in milliseconds.
     pub stall_ms: Option<f64>,
+    /// `cpu-burn`: use the FMA power load instead of a plain busy loop.
+    pub fma: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]

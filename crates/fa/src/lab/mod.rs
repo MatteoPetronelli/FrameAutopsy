@@ -9,6 +9,7 @@ mod render_loop;
 #[allow(dead_code)]
 mod scenario;
 mod verify;
+mod workers;
 
 use render_loop::{Fps, Runner};
 use scenario::Cause;
@@ -31,6 +32,8 @@ pub enum LabArgs {
     },
     /// Compare a journal with a `fa capture --frames-csv` file.
     Verify { journal: PathBuf, frames: PathBuf },
+    /// Frame times inside each injection window against the rest, from the same two files.
+    Effect { journal: PathBuf, frames: PathBuf },
 }
 
 pub fn parse(args: &[String]) -> Option<LabArgs> {
@@ -40,6 +43,10 @@ pub fn parse(args: &[String]) -> Option<LabArgs> {
     match (first.as_str(), rest) {
         ("check", [file]) => Some(LabArgs::Check { file: file.into() }),
         ("verify", [journal, frames]) => Some(LabArgs::Verify {
+            journal: journal.into(),
+            frames: frames.into(),
+        }),
+        ("effect", [journal, frames]) => Some(LabArgs::Effect {
             journal: journal.into(),
             frames: frames.into(),
         }),
@@ -90,7 +97,16 @@ fn default_journal_path(name: &str) -> io::Result<PathBuf> {
 
 fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
     let s = load(&file)?;
-    if let Some(inj) = s.injections.iter().find(|i| i.cause != Cause::FrameStall) {
+    let unimplemented = [
+        Cause::DiskBurst,
+        Cause::TimerResolution,
+        Cause::PriorityContention,
+    ];
+    if let Some(inj) = s
+        .injections
+        .iter()
+        .find(|i| unimplemented.contains(&i.cause))
+    {
         return Err(io::Error::other(format!(
             "l'injecteur {:?} n'est pas encore implémenté",
             inj.cause
@@ -99,6 +115,7 @@ fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
     guards::ensure_no_game()?;
     fa_win::console::install_ctrl_c()?;
     let fps = Fps::parse(&s.fps).ok_or_else(|| io::Error::other("fps inconnu"))?;
+    let topology = fa_win::topology::read().map_err(io::Error::other)?;
     let mut runner = Runner::open(fps)?;
     println!("Mesure de la gigue de base ({BASELINE_SECONDS} s)...");
     let baseline = runner.run_for(BASELINE_SECONDS, &mut |_, _, _| Ok(()))?;
@@ -115,8 +132,17 @@ fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
         &baseline,
     );
     let mut log = journal::Journal::create(std::fs::File::create(&path)?, &header)?;
-    let mut stalls: Vec<inject::FrameStall> =
-        s.injections.iter().map(inject::FrameStall::new).collect();
+    let mut stalls: Vec<inject::FrameStall> = s
+        .injections
+        .iter()
+        .filter(|i| i.cause == Cause::FrameStall)
+        .map(inject::FrameStall::new)
+        .collect();
+    let mut workers: Vec<inject::Timed> = s
+        .injections
+        .iter()
+        .filter_map(|i| workers::timed(i, &topology.cpus))
+        .collect();
     println!(
         "Scénario {} ({} s), journal : {}",
         s.name,
@@ -126,7 +152,10 @@ fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
     runner.run_for(s.duration, &mut |clock, elapsed, stage| {
         stalls
             .iter_mut()
-            .try_for_each(|st| st.hook(&mut log, clock, elapsed, stage))
+            .try_for_each(|st| st.hook(&mut log, clock, elapsed, stage))?;
+        workers
+            .iter_mut()
+            .try_for_each(|w| w.hook(&mut log, clock, elapsed, stage))
     })?;
     println!("Terminé. Processus du Lab : {}.", std::process::id());
     Ok(())
@@ -154,6 +183,9 @@ pub fn run(a: LabArgs) -> io::Result<()> {
                     "la capture ne reproduit pas le stall injecté",
                 ))
             }
+        }
+        LabArgs::Effect { journal, frames } => {
+            verify::run_effect(&journal.to_string_lossy(), &frames.to_string_lossy())
         }
         LabArgs::Loop { fps, seconds } => {
             guards::ensure_no_game()?;
