@@ -1,5 +1,7 @@
 # Dev check of the Lab against the lot 5 capture (tasks 4.2): run from an ELEVATED terminal (ETW needs admin).
-#   powershell -File scripts\lab-verify.ps1 <run-name> [scenario.toml]
+#   powershell -File scripts\lab-verify.ps1 <run-name> [scenario.toml] [-PresentMon]
+# With -PresentMon, PresentMon 2.6.0 records fa.exe at the same time (pm-<run-name>.csv, gitignored) and the
+# frametime parity of the lot 5 (`fa capture compare`, 0.1 ms) is replayed on the Lab loop (task 4.3).
 # Writes ours-<run-name>.csv (capture) and ours-<run-name>.jsonl (journal) at the repository root, both gitignored,
 # then compares them with `fa lab verify`. Use a new run name each time: an existing name is overwritten.
 param(
