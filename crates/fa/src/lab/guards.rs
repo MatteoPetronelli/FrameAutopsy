@@ -24,6 +24,7 @@ pub enum GuardError {
     PastTheEnd { index: usize },
     DiskBurstSize { index: usize },
     BadIntensity { index: usize },
+    FrameStallLength { index: usize },
 }
 
 impl fmt::Display for GuardError {
@@ -47,6 +48,10 @@ impl fmt::Display for GuardError {
             GuardError::BadIntensity { index } => {
                 write!(f, "injection {index} : intensity hors de 0 à 1")
             }
+            GuardError::FrameStallLength { index } => write!(
+                f,
+                "injection {index} : frame-stall demande stall_ms entre 0 (exclu) et la durée de l'injection"
+            ),
         }
     }
 }
@@ -71,6 +76,13 @@ pub fn validate(s: &Scenario) -> Result<(), GuardError> {
         }
         if inj.intensity.is_some_and(|i| !(0.0..=1.0).contains(&i)) {
             return Err(GuardError::BadIntensity { index });
+        }
+        if inj.cause == Cause::FrameStall
+            && !inj
+                .stall_ms
+                .is_some_and(|ms| ms > 0.0 && ms <= inj.duration * 1000.0)
+        {
+            return Err(GuardError::FrameStallLength { index });
         }
         if inj.cause == Cause::DiskBurst
             && !inj
@@ -146,6 +158,7 @@ mod tests {
             intensity: None,
             cpus: None,
             size_mib,
+            stall_ms: None,
         }
     }
 

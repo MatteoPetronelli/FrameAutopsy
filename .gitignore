@@ -56,3 +56,4 @@ proptest-regressions/
 # fa capture parity runs (local)
 /ours*.csv
 /pm*.csv
+/ours*.jsonl

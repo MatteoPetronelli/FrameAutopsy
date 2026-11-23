@@ -31,6 +31,8 @@ pub struct Injection {
     pub cpus: Option<Vec<u32>>,
     /// Disk burst size in MiB.
     pub size_mib: Option<u64>,
+    /// Frame stall length in milliseconds.
+    pub stall_ms: Option<f64>,
 }
 
 #[derive(Debug, Deserialize)]

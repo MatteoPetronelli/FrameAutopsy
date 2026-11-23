@@ -14,6 +14,8 @@ use std::io::{self, Write};
 pub struct Header<'a> {
     pub kind: &'static str,
     pub scenario: &'a str,
+    /// The Lab process, to pick its frames out of a capture.
+    pub pid: u32,
     pub fps: String,
     pub tsc_hz: u64,
     pub adapter: &'a str,
@@ -25,10 +27,18 @@ pub struct Header<'a> {
 }
 
 impl<'a> Header<'a> {
-    pub fn new(scenario: &'a str, fps: Fps, tsc_hz: u64, adapter: &'a str, b: &Baseline) -> Self {
+    pub fn new(
+        scenario: &'a str,
+        fps: Fps,
+        tsc_hz: u64,
+        pid: u32,
+        adapter: &'a str,
+        b: &Baseline,
+    ) -> Self {
         Header {
             kind: "header",
             scenario,
+            pid,
             fps: fps.label(),
             tsc_hz,
             adapter,
@@ -135,6 +145,7 @@ mod tests {
             "idle",
             Fps::Fixed(144),
             2_688_000_000,
+            4242,
             "NVIDIA \"RTX\" 3060",
             &baseline(),
         )
@@ -142,13 +153,20 @@ mod tests {
         assert!(!line.contains('\n'));
         assert_eq!(
             line,
-            r#"{"kind":"header","scenario":"idle","fps":"144","tsc_hz":2688000000,"adapter":"NVIDIA \"RTX\" 3060","baseline_frames":3,"baseline_p50_ns":6944444,"baseline_p99_ns":7000000,"baseline_max_ns":8000000,"baseline_jitter_p99_ns":120000}"#
+            r#"{"kind":"header","scenario":"idle","pid":4242,"fps":"144","tsc_hz":2688000000,"adapter":"NVIDIA \"RTX\" 3060","baseline_frames":3,"baseline_p50_ns":6944444,"baseline_p99_ns":7000000,"baseline_max_ns":8000000,"baseline_jitter_p99_ns":120000}"#
         );
     }
 
     #[test]
     fn a_whole_run_matches_the_golden_file() {
-        let header = Header::new("golden", Fps::Fixed(144), 2_688_000_000, "GPU", &baseline());
+        let header = Header::new(
+            "golden",
+            Fps::Fixed(144),
+            2_688_000_000,
+            4242,
+            "GPU",
+            &baseline(),
+        );
         let mut j = Journal::create(Vec::new(), &header).unwrap();
         let params = json!({"cpus": [2, 4], "intensity": 1.0});
         j.start(Cause::CpuBurn, 1000, &params).unwrap();
@@ -162,7 +180,7 @@ mod tests {
     fn a_killed_run_leaves_a_start_line_without_an_end_line() {
         let path =
             std::env::temp_dir().join(format!("fa-lab-journal-{}.jsonl", std::process::id()));
-        let header = Header::new("killed", Fps::Uncapped, 1, "GPU", &baseline());
+        let header = Header::new("killed", Fps::Uncapped, 1, 4242, "GPU", &baseline());
         let mut j = Journal::create(std::fs::File::create(&path).unwrap(), &header).unwrap();
         j.start(Cause::DiskBurst, 42, &json!({"size_mib": 512}))
             .unwrap();

@@ -90,45 +90,92 @@ pub struct LoopReport {
     pub baseline: Baseline,
 }
 
-/// Runs the loop for `seconds`, or until Ctrl-C or the window is closed, and returns the measured baseline.
-pub fn run(fps: Fps, seconds: u64) -> io::Result<LoopReport> {
-    let clock = Clock::new();
-    let hz = clock.hz().get();
-    let window = LabWindow::new(960, 540)?;
-    let timer = HiResTimer::new()?;
-    let period = match fps {
-        Fps::Fixed(f) => Some(hz / u64::from(f)),
-        _ => None,
-    };
-    let margin = hz * 3 / 2000; // 1.5 ms of ticks
-    let end = clock.now() + hz * seconds;
-    let mut frame_ns = Vec::with_capacity(usize::try_from(seconds).unwrap_or(0) * 1000);
-    let mut deadline = clock.now();
-    let mut last: Option<u64> = None;
-    let mut frame = 0u64;
-    while window.pump() && !ctrl_c_requested() && clock.now() < end {
-        window.draw(frame);
-        if let Some(p) = period {
-            deadline += p;
-            let now = clock.now();
-            if now > deadline + p {
-                deadline = now; // fell more than a frame behind: resynchronise instead of catching up in a burst
-            }
-            wait_until(&clock, &timer, deadline, margin, hz)?;
-        }
-        window.present(fps == Fps::Vsync, fps == Fps::Uncapped)?;
-        let now = clock.now();
-        if let Some(prev) = last {
-            frame_ns.push(u64::try_from(clock.ticks_to_ns(now - prev)).unwrap_or(u64::MAX));
-        }
-        last = Some(now);
-        frame += 1;
+/// When in a frame an injection hook is called.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Stage {
+    /// The frame is drawn; pacing and `Present` come next. A stall burnt here lengthens this frame.
+    BeforePresent,
+    /// `Present` returned: the place for slow work (journal writes) that must not lengthen the frame.
+    AfterPresent,
+}
+
+/// The window, the timer and the pacing state, so that several phases (baseline, scenario) share one window.
+pub struct Runner {
+    pub clock: Clock,
+    window: LabWindow,
+    timer: HiResTimer,
+    fps: Fps,
+    frame: u64,
+}
+
+impl Runner {
+    pub fn open(fps: Fps) -> io::Result<Self> {
+        Ok(Runner {
+            clock: Clock::new(),
+            window: LabWindow::new(960, 540)?,
+            timer: HiResTimer::new()?,
+            fps,
+            frame: 0,
+        })
     }
-    let target_ns = period.map(|p| u64::try_from(clock.ticks_to_ns(p)).unwrap_or(0));
+
+    pub fn adapter(&self) -> &str {
+        self.window.adapter_name()
+    }
+
+    /// Runs for `seconds`, or until Ctrl-C or the window is closed, and returns the frame-time statistics. `hook` gets
+    /// the ticks elapsed since this call started, at both stages of every frame.
+    pub fn run_for(
+        &mut self,
+        seconds: f64,
+        hook: &mut dyn FnMut(&Clock, u64, Stage) -> io::Result<()>,
+    ) -> io::Result<Baseline> {
+        let clock = &self.clock;
+        let hz = clock.hz().get();
+        let period = match self.fps {
+            Fps::Fixed(f) => Some(hz / u64::from(f)),
+            _ => None,
+        };
+        let margin = hz * 3 / 2000; // 1.5 ms of ticks
+        let began = clock.now();
+        let end = began + (hz as f64 * seconds) as u64;
+        let mut frame_ns = Vec::with_capacity((seconds * 1000.0) as usize);
+        let mut deadline = began;
+        let mut last: Option<u64> = None;
+        while self.window.pump() && !ctrl_c_requested() && clock.now() < end {
+            self.window.draw(self.frame);
+            hook(clock, clock.now() - began, Stage::BeforePresent)?;
+            if let Some(p) = period {
+                deadline += p;
+                let now = clock.now();
+                if now > deadline + p {
+                    deadline = now; // fell more than a frame behind: resynchronise instead of catching up in a burst
+                }
+                wait_until(clock, &self.timer, deadline, margin, hz)?;
+            }
+            self.window
+                .present(self.fps == Fps::Vsync, self.fps == Fps::Uncapped)?;
+            let now = clock.now();
+            if let Some(prev) = last {
+                frame_ns.push(u64::try_from(clock.ticks_to_ns(now - prev)).unwrap_or(u64::MAX));
+            }
+            last = Some(now);
+            self.frame += 1;
+            hook(clock, now - began, Stage::AfterPresent)?;
+        }
+        let target_ns = period.map(|p| u64::try_from(clock.ticks_to_ns(p)).unwrap_or(0));
+        Ok(Baseline::from_frames(&frame_ns, target_ns))
+    }
+}
+
+/// Runs the loop alone for `seconds` and returns the measured baseline.
+pub fn run(fps: Fps, seconds: u64) -> io::Result<LoopReport> {
+    let mut runner = Runner::open(fps)?;
+    let baseline = runner.run_for(seconds as f64, &mut |_, _, _| Ok(()))?;
     Ok(LoopReport {
-        adapter: window.adapter_name().to_string(),
-        tsc_hz: hz,
-        baseline: Baseline::from_frames(&frame_ns, target_ns),
+        adapter: runner.adapter().to_string(),
+        tsc_hz: runner.clock.hz().get(),
+        baseline,
     })
 }
 

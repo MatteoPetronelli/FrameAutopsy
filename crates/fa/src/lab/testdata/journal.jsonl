@@ -1,3 +1,3 @@
-{"kind":"header","scenario":"golden","fps":"144","tsc_hz":2688000000,"adapter":"GPU","baseline_frames":3,"baseline_p50_ns":6944444,"baseline_p99_ns":7000000,"baseline_max_ns":8000000,"baseline_jitter_p99_ns":120000}
+{"kind":"header","scenario":"golden","pid":4242,"fps":"144","tsc_hz":2688000000,"adapter":"GPU","baseline_frames":3,"baseline_p50_ns":6944444,"baseline_p99_ns":7000000,"baseline_max_ns":8000000,"baseline_jitter_p99_ns":120000}
 {"kind":"start","cause":"cpu-burn","start_tsc":1000,"params":{"cpus":[2,4],"intensity":1.0}}
 {"kind":"end","cause":"cpu-burn","start_tsc":1000,"end_tsc":2688001000,"params":{"cpus":[2,4],"intensity":1.0}}

@@ -1,0 +1,22 @@
+name = "frame-stall-50ms"
+fps = "144"
+duration = 20.0
+expected_causes = ["frame-stall"]
+
+[[injection]]
+cause = "frame-stall"
+start = 5.0
+duration = 1.0
+stall_ms = 50.0
+
+[[injection]]
+cause = "frame-stall"
+start = 10.0
+duration = 1.0
+stall_ms = 100.0
+
+[[injection]]
+cause = "frame-stall"
+start = 15.0
+duration = 1.0
+stall_ms = 30.0
