@@ -1,8 +1,8 @@
 # Dev check of the Lab against the lot 5 capture (tasks 4.2 and 4.3): run from an ELEVATED terminal (ETW needs admin).
 #   powershell -File scripts\lab-verify.ps1 <run-name> [scenario.toml] [-PresentMon]
-# Writes ours-<run-name>.csv (capture) and ours-<run-name>.jsonl (journal) at the repository root, both gitignored,
+# Writes measurements\ours-<run-name>.csv (capture) and measurements\ours-<run-name>.jsonl (journal), gitignored,
 # then compares them with `fa lab verify`. Use a new run name each time: an existing name is overwritten.
-# With -PresentMon, PresentMon 2.6.0 records fa.exe at the same time (pm-<run-name>.csv, gitignored) and the
+# With -PresentMon, PresentMon 2.6.0 records fa.exe at the same time (measurements\pm-<run-name>.csv) and the
 # frametime parity of the lot 5 (`fa capture compare`, 0.1 ms) is replayed on the Lab loop.
 param(
     [Parameter(Mandatory = $true)][string]$Run,
@@ -14,9 +14,10 @@ $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 if (-not $admin) { Write-Error 'Terminal non eleve : relancez dans un PowerShell ouvert en administrateur.'; exit 2 }
 Set-Location (Split-Path $PSScriptRoot)
 $root = (Get-Location).Path -replace '\\', '/'
-$csv = "$root/ours-$Run.csv"
-$journal = "$root/ours-$Run.jsonl"
-$pmCsv = "$root/pm-$Run.csv"
+New-Item -ItemType Directory -Force 'measurements' | Out-Null
+$csv = "$root/measurements/ours-$Run.csv"
+$journal = "$root/measurements/ours-$Run.jsonl"
+$pmCsv = "$root/measurements/pm-$Run.csv"
 $pmExe = 'C:\Program Files\Intel\PresentMon\PresentMonConsoleApplication\PresentMon-2.6.0-x64.exe'
 $fa = 'target\release\fa.exe'
 if (-not (Test-Path $fa)) { Write-Error 'Compilez d abord : cargo build -p fa --release'; exit 2 }

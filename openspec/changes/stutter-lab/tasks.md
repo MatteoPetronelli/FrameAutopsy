@@ -27,8 +27,8 @@ Gate = `powershell -File scripts/gate.ps1`. Each group ends with it, green. Dev 
 
 - [x] 4.1 Implement `frame-stall` (burn N ms before `Present` at frame k); verify the journal holds the exact start and end ticks.
 - [x] 4.2 Run `fa lab run` with the lot 5 capture from an elevated terminal; verify the captured frame time at frame k equals the injected stall within the frozen baseline jitter budget (see 2.2).
-- [ ] 4.3 Replay the lot 5 PresentMon parity on the Lab loop; verify the result is recorded and matches the lot 5 criterion.
-- [ ] 4.4 Run the gate and verify it is green.
+- [x] 4.3 Replay the lot 5 PresentMon parity on the Lab loop; verify the result is recorded and matches the lot 5 criterion.
+- [x] 4.4 Run the gate and verify it is green.
 
 ## 5. CPU and memory injectors
 

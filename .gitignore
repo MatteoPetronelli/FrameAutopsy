@@ -53,7 +53,5 @@ Desktop.ini
 # proptest seeds from mutation runs are not kept
 proptest-regressions/
 
-# fa capture parity runs (local)
-/ours*.csv
-/pm*.csv
-/ours*.jsonl
+# captures, PresentMon files and Lab journals of local measurement runs
+/measurements/

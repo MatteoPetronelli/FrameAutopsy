@@ -54,8 +54,9 @@ The OpenSpec change already exists and is valid: `openspec/changes/stutter-lab/`
   `"/c/Program Files/Intel/PresentMon/PresentMonConsoleApplication/PresentMon-2.6.0-x64.exe" --process_name <exe> --output_file D:/... --timed 20 --terminate_after_timed --stop_existing_session`
   (run it in the same elevated terminal, in the background with `&`, together with `fa capture`).
 - Use forward slashes in paths given to commands from Git Bash (`D:/Matteo/...`): backslashes are eaten. Give new file
-  names to each measurement run, a reused name overwrites the previous run (this happened). `/ours*.csv` and `/pm*.csv`
-  are gitignored.
+  names to each measurement run, a reused name overwrites the previous run (this happened). `measurements/` (captures,
+  PresentMon CSVs, Lab journals) is gitignored; `scripts/lab-verify.ps1` writes there. The old probe CSVs of lot 3 are
+  in `docs/measurements/`.
 
 ## Current state (main = `4e624b8`, 2026-11-22, pushed)
 
