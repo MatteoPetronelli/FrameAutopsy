@@ -20,8 +20,8 @@ Gate = `powershell -File scripts/gate.ps1`. Each group ends with it, green. Dev 
 
 - [x] 3.1 Implement the JSONL journal (header, start and end lines, TSC ticks); verify with a golden-file test and a killed-run test showing a start line without an end line.
 - [x] 3.2 Implement the scenario parser (`deny_unknown_fields`, cap validation); verify with tests for a valid file, an unknown field and an injection over 30 s.
-- [ ] 3.3 Implement the guards: game refusal via `fa_probe::plan::running_games`, caps, Ctrl+C cleanup; verify with a fake process list for `Overwatch.exe` (refusal names it), a mutation check on each cap (`mutation-verified-testing`) and a manual Ctrl+C run leaving no temporary file.
-- [ ] 3.4 Run the gate and verify it is green.
+- [x] 3.3 Implement the guards: game refusal via `fa_probe::plan::running_games`, caps, Ctrl+C cleanup; verify with a fake process list for `Overwatch.exe` (refusal names it), a mutation check on each cap (`mutation-verified-testing`) and a manual Ctrl+C run leaving no temporary file.
+- [x] 3.4 Run the gate and verify it is green.
 
 ## 4. `frame-stall` and capture check
 
