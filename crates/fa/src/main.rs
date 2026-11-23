@@ -4,6 +4,7 @@
 mod capture;
 mod capture_compare;
 mod check;
+mod lab;
 mod probe;
 mod windows_cmd;
 

@@ -4,9 +4,9 @@ Gate = `powershell -File scripts/gate.ps1`. Each group ends with it, green. Dev 
 
 ## 1. Catalog, gate and layout
 
-- [ ] 1.1 Fill WIN-05 and ASM-07 and add WIN-12 (Lab system calls) in `docs/asm-unsafe-catalog.md` before any code; verify the lines are present with "pending".
-- [ ] 1.2 Create the module directory `crates/fa/src/lab/mod.rs` and change the gate trigger in `scripts/gate.ps1` to `crates/fa/src/lab/score.rs`; verify the gate runs in lot 6 without a `lab score` step.
-- [ ] 1.3 Run the gate and verify it is green.
+- [x] 1.1 Fill WIN-05 and ASM-07 and add WIN-12 (Lab system calls) in `docs/asm-unsafe-catalog.md` before any code; verify the lines are present with "pending".
+- [x] 1.2 Create the module directory `crates/fa/src/lab/mod.rs` and change the gate trigger in `scripts/gate.ps1` to `crates/fa/src/lab/score.rs`; verify the gate runs in lot 6 without a `lab score` step.
+- [x] 1.3 Run the gate and verify it is green.
 
 ## 2. Render loop (`fa-win` WIN-05, `fa`)
 
