@@ -367,6 +367,7 @@ dependencies = [
  "fa-win",
  "serde",
  "serde_json",
+ "toml",
 ]
 
 [[package]]

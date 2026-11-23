@@ -23,6 +23,7 @@ const USAGE: &str = "usage: fa check   (machine health check, about 75 s, no adm
        fa capture [--seconds N] [--frames-csv FILE] [--allow-game]   (ETW capture, ELEVATED terminal; refuses while a game runs)
        fa capture compare OURS.csv PRESENTMON.csv [--tolerance-ms 0.1]   (frametime parity with a PresentMon CSV)
        fa lab loop [--fps vsync|uncapped|N] [--seconds N]   (Lab render loop alone: baseline jitter header; no admin)
+       fa lab check FILE.toml   (parse a scenario and check it against the guards; runs nothing)
        fa windows [--all]   (visible windows of Java processes, or all: pid, class, title; read-only)";
 
 fn main() -> ExitCode {

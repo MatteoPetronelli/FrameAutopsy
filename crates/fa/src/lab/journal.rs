@@ -1,7 +1,13 @@
-//! Ground-truth journal, JSONL. Task 2.3 writes the header line; start and end lines come with group 3.
+//! Ground-truth journal, JSONL, in raw TSC ticks (the capture's timebase).
+//!
+//! Line 1 is the header. Every injection writes a `start` line before it begins and an `end` line after it finished,
+//! each flushed at once: a killed run still shows what was active (a `start` without its `end`).
 
 use super::render_loop::{Baseline, Fps};
+use super::scenario::Cause;
 use serde::Serialize;
+use serde_json::Value;
+use std::io::{self, Write};
 
 /// First line of a journal: what the run was made of, so a later scorer can tell a stall from the loop's own noise.
 #[derive(Serialize)]
@@ -40,25 +46,97 @@ impl<'a> Header<'a> {
     }
 }
 
+#[derive(Serialize)]
+struct Start<'a> {
+    kind: &'static str,
+    cause: Cause,
+    start_tsc: u64,
+    params: &'a Value,
+}
+
+#[derive(Serialize)]
+struct End<'a> {
+    kind: &'static str,
+    cause: Cause,
+    start_tsc: u64,
+    end_tsc: u64,
+    params: &'a Value,
+}
+
+/// The journal writer. `W` is a file in a real run.
+pub struct Journal<W: Write> {
+    out: W,
+}
+
+impl<W: Write> Journal<W> {
+    /// Writes the header line.
+    pub fn create(out: W, header: &Header) -> io::Result<Self> {
+        let mut j = Journal { out };
+        j.line(&header.line())?;
+        Ok(j)
+    }
+
+    fn line(&mut self, text: &str) -> io::Result<()> {
+        writeln!(self.out, "{text}")?;
+        self.out.flush()
+    }
+
+    fn json(&mut self, v: &impl Serialize) -> io::Result<()> {
+        let text = serde_json::to_string(v).map_err(io::Error::other)?;
+        self.line(&text)
+    }
+
+    /// To be called just before the injection starts.
+    pub fn start(&mut self, cause: Cause, start_tsc: u64, params: &Value) -> io::Result<()> {
+        self.json(&Start {
+            kind: "start",
+            cause,
+            start_tsc,
+            params,
+        })
+    }
+
+    /// To be called once the injection has stopped; repeats the start tick so the line stands alone.
+    pub fn end(
+        &mut self,
+        cause: Cause,
+        start_tsc: u64,
+        end_tsc: u64,
+        params: &Value,
+    ) -> io::Result<()> {
+        self.json(&End {
+            kind: "end",
+            cause,
+            start_tsc,
+            end_tsc,
+            params,
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
 
-    #[test]
-    fn the_header_line_is_one_json_object_with_the_baseline_and_an_escaped_adapter() {
-        let b = Baseline {
+    fn baseline() -> Baseline {
+        Baseline {
             frames: 3,
             p50_ns: 6_944_444,
             p99_ns: 7_000_000,
             max_ns: 8_000_000,
             jitter_p99_ns: 120_000,
-        };
+        }
+    }
+
+    #[test]
+    fn the_header_line_is_one_json_object_with_the_baseline_and_an_escaped_adapter() {
         let line = Header::new(
             "idle",
             Fps::Fixed(144),
             2_688_000_000,
             "NVIDIA \"RTX\" 3060",
-            &b,
+            &baseline(),
         )
         .line();
         assert!(!line.contains('\n'));
@@ -66,5 +144,44 @@ mod tests {
             line,
             r#"{"kind":"header","scenario":"idle","fps":"144","tsc_hz":2688000000,"adapter":"NVIDIA \"RTX\" 3060","baseline_frames":3,"baseline_p50_ns":6944444,"baseline_p99_ns":7000000,"baseline_max_ns":8000000,"baseline_jitter_p99_ns":120000}"#
         );
+    }
+
+    #[test]
+    fn a_whole_run_matches_the_golden_file() {
+        let header = Header::new("golden", Fps::Fixed(144), 2_688_000_000, "GPU", &baseline());
+        let mut j = Journal::create(Vec::new(), &header).unwrap();
+        let params = json!({"cpus": [2, 4], "intensity": 1.0});
+        j.start(Cause::CpuBurn, 1000, &params).unwrap();
+        j.end(Cause::CpuBurn, 1000, 2_688_001_000, &params).unwrap();
+        let written = String::from_utf8(j.out).unwrap();
+        let golden = include_str!("testdata/journal.jsonl").replace("\r\n", "\n");
+        assert_eq!(written, golden);
+    }
+
+    #[test]
+    fn a_killed_run_leaves_a_start_line_without_an_end_line() {
+        let path =
+            std::env::temp_dir().join(format!("fa-lab-journal-{}.jsonl", std::process::id()));
+        let header = Header::new("killed", Fps::Uncapped, 1, "GPU", &baseline());
+        let mut j = Journal::create(std::fs::File::create(&path).unwrap(), &header).unwrap();
+        j.start(Cause::DiskBurst, 42, &json!({"size_mib": 512}))
+            .unwrap();
+        // The journal is neither ended nor dropped: this is what a killed process leaves on disk.
+        let text = std::fs::read_to_string(&path).unwrap();
+        let kinds: Vec<&str> = text
+            .lines()
+            .map(|l| {
+                if l.contains(r#""kind":"start""#) {
+                    "start"
+                } else if l.contains(r#""kind":"end""#) {
+                    "end"
+                } else {
+                    "header"
+                }
+            })
+            .collect();
+        assert_eq!(kinds, ["header", "start"]);
+        drop(j);
+        let _ = std::fs::remove_file(&path);
     }
 }
