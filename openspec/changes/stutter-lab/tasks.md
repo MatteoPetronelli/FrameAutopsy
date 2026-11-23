@@ -11,7 +11,7 @@ Gate = `powershell -File scripts/gate.ps1`. Each group ends with it, green. Dev 
 ## 2. Render loop (`fa-win` WIN-05, `fa`)
 
 - [ ] 2.1 Implement window, D3D11 device and `FLIP_DISCARD` swap chain with a safe API and `// SAFETY:` comments; verify it opens and renders the animated scene at 60 FPS and records the adapter name.
-- [ ] 2.2 Implement pacing (swap-chain present interval for vsync; coarse timer sleep then TSC spin for 144 FPS; uncapped); verify the frame-time p99 stays within the baseline jitter budget over 60 s at 60 and 144 FPS.
+- [ ] 2.2 Implement pacing (swap-chain present interval for vsync; coarse timer sleep then TSC spin for 144 FPS; uncapped); verify the frame-time p99 stays within the baseline jitter budget over 60 s at 60 and 144 FPS (budget `(calibrate)`: measured on the idle loop in 2.3, then frozen and logged in `docs/decisions.md` section 5).
 - [ ] 2.3 Record the loop's baseline jitter in the journal header; verify with a test on the header writer and a real run.
 - [ ] 2.4 Explanation checkpoint (French) for the D3D11/COM unsafe blocks (WIN-05); verify the user answered "compris".
 - [ ] 2.5 Run the gate and verify it is green.
@@ -26,7 +26,7 @@ Gate = `powershell -File scripts/gate.ps1`. Each group ends with it, green. Dev 
 ## 4. `frame-stall` and capture check
 
 - [ ] 4.1 Implement `frame-stall` (burn N ms before `Present` at frame k); verify the journal holds the exact start and end ticks.
-- [ ] 4.2 Run `fa lab run` with the lot 5 capture from an elevated terminal; verify the captured frame time at frame k equals the injected stall within the baseline jitter.
+- [ ] 4.2 Run `fa lab run` with the lot 5 capture from an elevated terminal; verify the captured frame time at frame k equals the injected stall within the frozen baseline jitter budget (see 2.2).
 - [ ] 4.3 Replay the lot 5 PresentMon parity on the Lab loop; verify the result is recorded and matches the lot 5 criterion.
 - [ ] 4.4 Run the gate and verify it is green.
 
