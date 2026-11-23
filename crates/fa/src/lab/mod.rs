@@ -1,5 +1,6 @@
 //! The Stutter Lab (lot 6): own render loop and known-cause injectors. The scorer, `lab/score.rs`, is lot 10.
 
+mod frame_work;
 mod guards;
 mod inject;
 // Cause variants and scenario fields are consumed injector by injector (groups 5 and 6).
@@ -116,9 +117,11 @@ fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
     fa_win::console::install_ctrl_c()?;
     let fps = Fps::parse(&s.fps).ok_or_else(|| io::Error::other("fps inconnu"))?;
     let topology = fa_win::topology::read().map_err(io::Error::other)?;
-    let mut runner = Runner::open(fps)?;
+    let mut runner = Runner::open(fps, true)?;
     println!("Mesure de la gigue de base ({BASELINE_SECONDS} s)...");
-    let baseline = runner.run_for(BASELINE_SECONDS, &mut |_, _, _| Ok(()))?;
+    let baseline = runner
+        .run_for(BASELINE_SECONDS, &mut |_, _, _| Ok(()))?
+        .baseline;
     let path = match journal {
         Some(p) => p,
         None => default_journal_path(&s.name)?,
@@ -149,7 +152,7 @@ fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
         s.duration,
         path.display()
     );
-    runner.run_for(s.duration, &mut |clock, elapsed, stage| {
+    let phase = runner.run_for(s.duration, &mut |clock, elapsed, stage| {
         stalls
             .iter_mut()
             .try_for_each(|st| st.hook(&mut log, clock, elapsed, stage))?;
@@ -157,7 +160,10 @@ fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
             .iter_mut()
             .try_for_each(|w| w.hook(&mut log, clock, elapsed, stage))
     })?;
+    drop(workers); // joined already when every injection ended; this also covers a Ctrl+C
+    drop(log);
     println!("Terminé. Processus du Lab : {}.", std::process::id());
+    verify::print_effect_of(&path, &phase.frames)?;
     Ok(())
 }
 

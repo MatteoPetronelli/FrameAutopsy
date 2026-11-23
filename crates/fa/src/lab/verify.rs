@@ -12,8 +12,8 @@ pub const BUDGET_MS: f64 = 1.6;
 pub struct Journal {
     pub pid: u64,
     pub tsc_hz: f64,
-    /// `(start_tsc, end_tsc)` of every finished frame-stall.
-    pub stalls: Vec<(u64, u64)>,
+    /// `(start_tsc, end_tsc, pre_ms)` of every finished frame-stall; `pre_ms` is what the stall frame held before it.
+    pub stalls: Vec<(u64, u64, f64)>,
     /// `(cause, start_tsc, end_tsc)` of every finished injection.
     pub injections: Vec<(String, u64, u64)>,
 }
@@ -34,7 +34,7 @@ pub fn parse_journal(text: &str) -> Option<Journal> {
                 let (start, end) = (v["start_tsc"].as_u64()?, v["end_tsc"].as_u64()?);
                 injections.push((v["cause"].as_str()?.to_string(), start, end));
                 if v["cause"] == "frame-stall" {
-                    stalls.push((start, end));
+                    stalls.push((start, end, v["params"]["pre_ms"].as_f64().unwrap_or(0.0)));
                 }
             }
             _ => {}
@@ -72,8 +72,8 @@ pub struct Check {
 pub fn check(j: &Journal, frames: &[(u64, f64)], budget_ms: f64) -> Vec<Check> {
     j.stalls
         .iter()
-        .map(|&(start, end)| {
-            let injected_ms = (end - start) as f64 * 1000.0 / j.tsc_hz;
+        .map(|&(start, end, pre_ms)| {
+            let injected_ms = (end - start) as f64 * 1000.0 / j.tsc_hz + pre_ms;
             let frame_ms = frames
                 .iter()
                 .filter(|(ts, _)| *ts >= end)
@@ -103,7 +103,7 @@ pub fn run(journal: &str, frames: &str) -> std::io::Result<bool> {
     for (i, c) in results.iter().enumerate() {
         match c.frame_ms {
             Some(ft) => println!(
-                "stall {i} : injecté {:.3} ms, frame capturée {ft:.3} ms, écart {:+.3} ms ({})",
+                "stall {i} : attendu {:.3} ms (stall + travail déjà fait dans la frame), frame capturée {ft:.3} ms, écart {:+.3} ms ({})",
                 c.injected_ms,
                 ft - c.injected_ms,
                 if c.ok { "ok" } else { "HORS BUDGET" }
@@ -161,17 +161,28 @@ pub fn effect(j: &Journal, frames: &[(u64, f64)]) -> Vec<(String, Stats, Stats)>
         .collect()
 }
 
+/// The effect of each injection of a journal file on frames the Lab measured itself (no capture needed).
+pub fn print_effect_of(journal: &std::path::Path, frames: &[(u64, f64)]) -> std::io::Result<()> {
+    let j = parse_journal(&std::fs::read_to_string(journal)?)
+        .ok_or_else(|| std::io::Error::other("journal illisible ou sans en-tête"))?;
+    print_effect(&j, frames);
+    Ok(())
+}
+
 pub fn run_effect(journal: &str, frames: &str) -> std::io::Result<()> {
     let j = parse_journal(&std::fs::read_to_string(journal)?)
         .ok_or_else(|| std::io::Error::other("journal illisible ou sans en-tête"))?;
-    let frames = parse_frames(&std::fs::read_to_string(frames)?, j.pid);
-    for (cause, inn, out) in effect(&j, &frames) {
+    print_effect(&j, &parse_frames(&std::fs::read_to_string(frames)?, j.pid));
+    Ok(())
+}
+
+fn print_effect(j: &Journal, frames: &[(u64, f64)]) {
+    for (cause, inn, out) in effect(j, frames) {
         println!(
             "{cause} : pendant {} frames p50 {:.3} / p99 {:.3} / max {:.3} ms ; hors injection {} frames p50 {:.3} / p99 {:.3} / max {:.3} ms",
             inn.0, inn.1, inn.2, inn.3, out.0, out.1, out.2, out.3
         );
     }
-    Ok(())
 }
 
 #[cfg(test)]
@@ -226,6 +237,21 @@ mod tests {
         );
         assert_eq!(r[0].2 .0, 3, "three frames outside");
         assert_eq!(r[0].2 .3, 7.2);
+    }
+
+    #[test]
+    fn the_work_done_before_the_stall_in_its_frame_is_part_of_the_expected_frame_time() {
+        // 50 ms stall after 1.7 ms of per-frame work: the capture sees 51.7 ms, which is correct.
+        let text = JOURNAL.replace(
+            r#""end_tsc":51000000,"params":{}"#,
+            r#""end_tsc":51000000,"params":{"pre_ms":1.7}"#,
+        );
+        let j = parse_journal(&text).unwrap();
+        assert!(check(&j, &parse_frames(&csv("51.7000"), 4242), BUDGET_MS)[0].ok);
+        assert!(
+            !check(&j, &parse_frames(&csv("50.0000"), 4242), BUDGET_MS)[0].ok,
+            "1.7 ms short is outside the budget"
+        );
     }
 
     #[test]

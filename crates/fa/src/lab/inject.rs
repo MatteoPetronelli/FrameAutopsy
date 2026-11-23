@@ -25,6 +25,8 @@ pub struct FrameStall {
     start_s: f64,
     stall_ms: f64,
     params: Value,
+    /// Tick of the last `Present` seen: what came before the stall in its frame is `now` minus this.
+    last_present: u64,
     state: State,
 }
 
@@ -36,6 +38,7 @@ impl FrameStall {
             start_s: inj.start,
             stall_ms,
             params: json!({ "stall_ms": stall_ms }),
+            last_present: 0,
             state: State::Waiting,
         }
     }
@@ -50,6 +53,9 @@ impl FrameStall {
         let hz = clock.hz().get() as f64;
         match (&self.state, stage) {
             (State::Waiting, Stage::BeforePresent) if elapsed_ticks as f64 >= self.start_s * hz => {
+                // The frame already holds its draw and per-frame work: the captured frame time is that plus the stall.
+                let pre_ms = elapsed_ticks.saturating_sub(self.last_present) as f64 * 1000.0 / hz;
+                self.params = json!({ "stall_ms": self.stall_ms, "pre_ms": pre_ms });
                 let start_tsc = clock.now();
                 let target = start_tsc + (self.stall_ms / 1000.0 * hz) as u64;
                 // The start line is written inside the stall: its cost is part of the burn, not added to it.
@@ -67,6 +73,9 @@ impl FrameStall {
                 self.state = State::Done;
             }
             _ => {}
+        }
+        if stage == Stage::AfterPresent {
+            self.last_present = elapsed_ticks;
         }
         Ok(())
     }

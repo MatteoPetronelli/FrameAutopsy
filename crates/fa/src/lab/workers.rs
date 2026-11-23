@@ -38,6 +38,26 @@ pub fn pick_cpus(
     cpus
 }
 
+/// The SMT sibling of `cpu`, if the machine has one. It shares the core's TLB and L1/L2, which is the only place a
+/// TLB thrash can reach the render thread (a TLB belongs to one core).
+pub fn sibling_of(all: &[LogicalCpu], cpu: u32) -> Option<u32> {
+    let core = all.iter().find(|c| c.index == cpu)?.core;
+    all.iter()
+        .find(|c| c.core == core && c.index != cpu)
+        .map(|c| c.index)
+}
+
+/// Which CPUs an injector runs on.
+#[derive(Clone, Copy)]
+enum Target {
+    /// Every CPU of `intensity` that avoids the render core.
+    Wide,
+    /// One CPU that avoids the render core.
+    One,
+    /// The render CPU's SMT sibling (D-5: "unless the cause demands it").
+    Sibling,
+}
+
 /// Safe busy loop; with `fma`, the FMA power load of ASM-06 (intrinsics) instead.
 fn cpu_burn(stop: &AtomicBool, use_fma: bool) {
     if use_fma {
@@ -109,16 +129,16 @@ pub fn timed(inj: &Injection, all: &[LogicalCpu]) -> Option<Timed> {
     let intensity = inj.intensity.unwrap_or(1.0);
     let (size, fma_on) = (inj.size_mib, inj.fma.unwrap_or(false));
     // (all the CPUs of `intensity`, or a single CPU), the work, the parameters specific to the cause
-    let (wide, work, params): (bool, Work, _) = match inj.cause {
+    let (target, work, params): (Target, Work, _) = match inj.cause {
         Cause::CpuBurn => (
-            true,
+            Target::Wide,
             Arc::new(move |s: &AtomicBool| cpu_burn(s, fma_on)),
             json!({ "fma": fma_on }),
         ),
         Cause::CacheThrash => {
             let mib = size.unwrap_or(CACHE_MIB);
             (
-                false,
+                Target::One,
                 Arc::new(move |s: &AtomicBool| with_buffer(mib, s, sweep)),
                 json!({ "size_mib": mib }),
             )
@@ -126,7 +146,7 @@ pub fn timed(inj: &Injection, all: &[LogicalCpu]) -> Option<Timed> {
         Cause::TlbThrash => {
             let mib = size.unwrap_or(TLB_MIB);
             (
-                false,
+                Target::Sibling,
                 Arc::new(move |s: &AtomicBool| with_buffer(mib, s, tlb_pass)),
                 json!({ "size_mib": mib }),
             )
@@ -135,7 +155,7 @@ pub fn timed(inj: &Injection, all: &[LogicalCpu]) -> Option<Timed> {
             let mib = size.unwrap_or(BANDWIDTH_MIB);
             let kernel = best_intrinsics();
             (
-                true,
+                Target::Wide,
                 Arc::new(move |s: &AtomicBool| {
                     with_buffer(mib, s, |b| fill(b, 0x5555_5555_5555_5555, kernel))
                 }),
@@ -145,7 +165,7 @@ pub fn timed(inj: &Injection, all: &[LogicalCpu]) -> Option<Timed> {
         Cause::PageFaultStorm => {
             let mib = size.unwrap_or(FAULT_MIB);
             (
-                false,
+                Target::One,
                 Arc::new(move |s: &AtomicBool| page_fault_storm(s, mib)),
                 json!({ "size_mib": mib }),
             )
@@ -154,12 +174,11 @@ pub fn timed(inj: &Injection, all: &[LogicalCpu]) -> Option<Timed> {
     };
     let (all, explicit) = (all.to_vec(), inj.cpus.clone());
     let pick = Box::new(move |render: u32| {
-        let cpus = pick_cpus(
-            &all,
-            render,
-            explicit.as_deref(),
-            if wide { intensity } else { 0.0 },
-        );
+        let cpus = match (target, explicit.as_deref()) {
+            (Target::Sibling, None) => sibling_of(&all, render).into_iter().collect(),
+            (Target::Wide, e) => pick_cpus(&all, render, e, intensity),
+            (_, e) => pick_cpus(&all, render, e, 0.0),
+        };
         let mut params = params.clone();
         params["cpus"] = json!(cpus);
         params["render_cpu"] = json!(render);
@@ -216,6 +235,19 @@ mod tests {
             [8, 10],
             "explicit CPUs are kept as given"
         );
+    }
+
+    #[test]
+    fn the_sibling_is_the_other_logical_cpu_of_the_same_core() {
+        let all = topology();
+        assert_eq!(sibling_of(&all, 2), Some(3));
+        assert_eq!(sibling_of(&all, 7), Some(6));
+        assert_eq!(
+            sibling_of(&all[..1], 0),
+            None,
+            "no sibling when the core has one logical CPU"
+        );
+        assert_eq!(sibling_of(&all, 99), None);
     }
 
     #[test]

@@ -4,10 +4,12 @@
 //! 144 FPS frame): a high-resolution timer sleeps until about 1.5 ms before the deadline, then the loop spins on the TSC.
 //! The spinning thread burns a core, so a Lab burner must not use the render thread's CPU (design D-5).
 
+use super::frame_work::{compute, Work};
 use fa_win::clock::Clock;
 use fa_win::console::ctrl_c_requested;
 use fa_win::render::LabWindow;
 use fa_win::timer::HiResTimer;
+use std::hint::black_box;
 use std::io;
 use std::time::Duration;
 
@@ -106,11 +108,21 @@ pub struct Runner {
     timer: HiResTimer,
     fps: Fps,
     frame: u64,
+    /// Whether every frame also does the work of `frame_work` (scenarios do, the bare loop does not).
+    work: bool,
+}
+
+/// What one phase of the loop produced.
+pub struct Phase {
+    pub baseline: Baseline,
+    /// `(present tick, frame time in ms)` of every frame after the first.
+    pub frames: Vec<(u64, f64)>,
 }
 
 impl Runner {
-    pub fn open(fps: Fps) -> io::Result<Self> {
+    pub fn open(fps: Fps, work: bool) -> io::Result<Self> {
         Ok(Runner {
+            work,
             clock: Clock::new(),
             window: LabWindow::new(960, 540)?,
             timer: HiResTimer::new()?,
@@ -129,7 +141,7 @@ impl Runner {
         &mut self,
         seconds: f64,
         hook: &mut dyn FnMut(&Clock, u64, Stage) -> io::Result<()>,
-    ) -> io::Result<Baseline> {
+    ) -> io::Result<Phase> {
         let clock = &self.clock;
         let hz = clock.hz().get();
         let period = match self.fps {
@@ -140,10 +152,25 @@ impl Runner {
         let began = clock.now();
         let end = began + (hz as f64 * seconds) as u64;
         let mut frame_ns = Vec::with_capacity((seconds * 1000.0) as usize);
+        let mut frames = Vec::with_capacity(frame_ns.capacity());
+        let mut work = if self.work {
+            Some(Work::new(clock)?)
+        } else {
+            None
+        };
+        let (slots, iters) = work.as_ref().map_or((0, 0), |w| (w.slots, w.iters));
+        let ring = work.as_mut().map(Work::ring).transpose()?;
+        if let Some(r) = &ring {
+            r.timed(slots); // one lap loads the ring before the first frame
+        }
         let mut deadline = began;
         let mut last: Option<u64> = None;
         while self.window.pump() && !ctrl_c_requested() && clock.now() < end {
             self.window.draw(self.frame);
+            if let Some(r) = &ring {
+                black_box(r.chase(slots));
+                black_box(compute(iters));
+            }
             hook(clock, clock.now() - began, Stage::BeforePresent)?;
             if let Some(p) = period {
                 deadline += p;
@@ -157,21 +184,28 @@ impl Runner {
                 .present(self.fps == Fps::Vsync, self.fps == Fps::Uncapped)?;
             let now = clock.now();
             if let Some(prev) = last {
-                frame_ns.push(u64::try_from(clock.ticks_to_ns(now - prev)).unwrap_or(u64::MAX));
+                let ns = u64::try_from(clock.ticks_to_ns(now - prev)).unwrap_or(u64::MAX);
+                frame_ns.push(ns);
+                frames.push((now, ns as f64 / 1e6));
             }
             last = Some(now);
             self.frame += 1;
             hook(clock, now - began, Stage::AfterPresent)?;
         }
         let target_ns = period.map(|p| u64::try_from(clock.ticks_to_ns(p)).unwrap_or(0));
-        Ok(Baseline::from_frames(&frame_ns, target_ns))
+        Ok(Phase {
+            baseline: Baseline::from_frames(&frame_ns, target_ns),
+            frames,
+        })
     }
 }
 
 /// Runs the loop alone for `seconds` and returns the measured baseline.
 pub fn run(fps: Fps, seconds: u64) -> io::Result<LoopReport> {
-    let mut runner = Runner::open(fps)?;
-    let baseline = runner.run_for(seconds as f64, &mut |_, _, _| Ok(()))?;
+    let mut runner = Runner::open(fps, false)?;
+    let baseline = runner
+        .run_for(seconds as f64, &mut |_, _, _| Ok(()))?
+        .baseline;
     Ok(LoopReport {
         adapter: runner.adapter().to_string(),
         tsc_hz: runner.clock.hz().get(),
