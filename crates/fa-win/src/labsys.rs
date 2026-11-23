@@ -6,6 +6,7 @@ use std::ptr;
 use windows_sys::Win32::System::Memory::{
     VirtualAlloc, VirtualFree, MEM_COMMIT, MEM_RELEASE, MEM_RESERVE, PAGE_READWRITE,
 };
+use windows_sys::Win32::System::ProcessStatus::{K32GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS};
 use windows_sys::Win32::System::Threading::{GetCurrentProcess, SetProcessWorkingSetSize};
 
 const PAGE: usize = 4096;
@@ -50,6 +51,21 @@ pub fn trim_working_set() -> io::Result<()> {
     Ok(())
 }
 
+/// Page faults (hard and soft) of this process since it started: the ground truth of what `page-fault-storm` causes.
+pub fn own_page_faults() -> io::Result<u64> {
+    let mut counters = PROCESS_MEMORY_COUNTERS {
+        cb: std::mem::size_of::<PROCESS_MEMORY_COUNTERS>() as u32,
+        ..Default::default()
+    };
+    // SAFETY: `GetCurrentProcess` takes no argument and returns the pseudo handle of this process.
+    let me = unsafe { GetCurrentProcess() };
+    // SAFETY: `me` is the current-process pseudo handle; `counters` is a valid out-pointer whose `cb` holds its size.
+    if unsafe { K32GetProcessMemoryInfo(me, &mut counters, counters.cb) } == 0 {
+        return Err(io::Error::last_os_error());
+    }
+    Ok(u64::from(counters.PageFaultCount))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -66,6 +82,17 @@ mod tests {
         for _ in 0..200 {
             fault_cycle(8 << 20).unwrap();
         }
+    }
+
+    #[test]
+    fn the_own_fault_counter_rises_with_a_cycle() {
+        let before = own_page_faults().unwrap();
+        fault_cycle(8 << 20).unwrap(); // 2048 pages
+        let rise = own_page_faults().unwrap() - before;
+        assert!(
+            rise >= 1500,
+            "a cycle of 2048 first touches raised the counter by only {rise}"
+        );
     }
 
     #[test]

@@ -80,6 +80,8 @@ enum TimedState {
     Waiting,
     Running {
         start_tsc: u64,
+        /// Own page-fault counter at the start: the end line reports the rise.
+        faults: u64,
         stop: Arc<AtomicBool>,
         handles: Vec<JoinHandle<()>>,
     },
@@ -142,8 +144,10 @@ impl Timed {
                         })
                     })
                     .collect();
+                let faults = fa_win::labsys::own_page_faults().unwrap_or(0);
                 self.state = TimedState::Running {
                     start_tsc,
+                    faults,
                     stop,
                     handles,
                 };
@@ -151,6 +155,7 @@ impl Timed {
             TimedState::Running { .. } if elapsed >= self.end_s * hz => {
                 if let TimedState::Running {
                     start_tsc,
+                    faults,
                     stop,
                     handles,
                 } = std::mem::replace(&mut self.state, TimedState::Done)
@@ -159,7 +164,13 @@ impl Timed {
                     handles.into_iter().for_each(|h| {
                         let _ = h.join();
                     });
-                    journal.end(self.cause, start_tsc, clock.now(), &self.params)?;
+                    // Page faults of the whole Lab process during the window: the ground truth of the storm.
+                    let rise = fa_win::labsys::own_page_faults()
+                        .unwrap_or(0)
+                        .saturating_sub(faults);
+                    let mut params = self.params.clone();
+                    params["page_faults"] = rise.into();
+                    journal.end(self.cause, start_tsc, clock.now(), &params)?;
                 }
             }
             _ => {}
