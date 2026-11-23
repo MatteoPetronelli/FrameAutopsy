@@ -4,6 +4,7 @@
 #![deny(clippy::multiple_unsafe_ops_per_block)]
 
 pub mod bw;
+pub mod cache;
 pub mod chase;
 pub mod cpuid;
 pub mod fma;
