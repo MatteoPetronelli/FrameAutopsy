@@ -124,6 +124,26 @@ Dev commands that need an **elevated terminal** (ETW requires admin): `fa captur
   13); `rust-ffi` → `fa-win`; `property-based-testing` (proptest) → codecs and parsers (lots 8, 15); `sharp-edges` →
   pipe schema, overrides, `TargetProcess` API (lots 1, 7, 12).
 
+## dynamic-orchestrator (multi-agent loop)
+The user runs the `dynamic-orchestrator` mod: per-prompt model/effort routing and three agent roles. The mod only
+*advises* delegation; **in this project delegation is a rule**.
+- `dynamic-orchestrator:searcher` (haiku, read-only): any search or file read beyond ~30 lines. Launch several in
+  parallel, one precise question each, ask for `file:line` facts and no prose; put the graphify rule in the prompt.
+- `dynamic-orchestrator:executor` (sonnet): independent, well-specified edits (exact files, the change, the check to
+  run), several in parallel when they touch different files.
+- `dynamic-orchestrator:thinker` (opus, no edits): design trade-offs when offered in a `plan` turn; in a `code` turn the
+  mod unlocks it after two failing `cargo test` runs in a row. It does **not** count `scripts/gate.ps1`: when the gate
+  fails twice on tests, rerun `cargo test -p <crate>` directly, or launch `thinker` explicitly.
+- The main model keeps: orchestration, `unsafe`/asm code and its French checkpoints, gate runs, commits, the report to
+  the user. Do it yourself only for edits under ~10 lines in a file already in context.
+- Every subagent prompt restates the hard rules that apply: never touch a game process, `unsafe` only in
+  `fa-asm`/`fa-win`/`fa-sync`, English code and docs, no commit or push, no elevated command (ask the user).
+- Before a long group (`go groupe N`), call `mcp__dynamic-orchestrator__quota`; above 95 % of the 5 h window, stop and
+  report.
+- User-side knobs: `~deep <prompt>` / `~fast <prompt>`, `/orchestrator next heavy`, `/orchestrator profile min
+  standard`, `/orchestrator pane`, `/orchestrator loop on`, `/orchestrator subagents on`, `/orchestrator stats`.
+  `.orchestrator-rules.json` (repo root, gitignored, local) raises the routing score on this project's hard topics.
+
 ## OpenSpec
 - `openspec/config.yaml` = roadmap annex A. Workflow skills: `openspec-propose`, `-explore`, `-apply-change`,
   `-update-change`, `-sync-specs`, `-archive-change`.
