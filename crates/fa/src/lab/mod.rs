@@ -98,21 +98,8 @@ fn default_journal_path(name: &str) -> io::Result<PathBuf> {
 
 fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
     let s = load(&file)?;
-    let unimplemented = [
-        Cause::DiskBurst,
-        Cause::TimerResolution,
-        Cause::PriorityContention,
-    ];
-    if let Some(inj) = s
-        .injections
-        .iter()
-        .find(|i| unimplemented.contains(&i.cause))
-    {
-        return Err(io::Error::other(format!(
-            "l'injecteur {:?} n'est pas encore implémenté",
-            inj.cause
-        )));
-    }
+    guards::check_disk_room(&s, fa_win::labsys::free_disk_bytes(&std::env::temp_dir())?)
+        .map_err(|e| io::Error::other(e.to_string()))?;
     guards::ensure_no_game()?;
     fa_win::console::install_ctrl_c()?;
     let fps = Fps::parse(&s.fps).ok_or_else(|| io::Error::other("fps inconnu"))?;
@@ -141,6 +128,12 @@ fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
         .filter(|i| i.cause == Cause::FrameStall)
         .map(inject::FrameStall::new)
         .collect();
+    let mut timers = s
+        .injections
+        .iter()
+        .filter(|i| i.cause == Cause::TimerResolution)
+        .map(inject::TimerRes::new)
+        .collect::<io::Result<Vec<_>>>()?;
     let mut workers: Vec<inject::Timed> = s
         .injections
         .iter()
@@ -156,10 +149,14 @@ fn run_scenario(file: PathBuf, journal: Option<PathBuf>) -> io::Result<()> {
         stalls
             .iter_mut()
             .try_for_each(|st| st.hook(&mut log, clock, elapsed, stage))?;
+        timers
+            .iter_mut()
+            .try_for_each(|t| t.hook(&mut log, clock, elapsed, stage))?;
         workers
             .iter_mut()
             .try_for_each(|w| w.hook(&mut log, clock, elapsed, stage))
     })?;
+    drop(timers);
     drop(workers); // joined already when every injection ended; this also covers a Ctrl+C
     drop(log);
     println!("Terminé. Processus du Lab : {}.", std::process::id());

@@ -1,16 +1,20 @@
 //! Bodies of the CPU and memory injectors (design D-5, D-6, D-7) and the choice of the CPUs they run on.
 //! Every worker runs until `stop` is set and touches only memory it allocated itself.
 
+use super::guards::TempFile;
 use super::inject::{Timed, Work};
 use super::scenario::{Cause, Injection};
 use fa_asm::bw::{best_intrinsics, fill};
 use fa_asm::fma;
 use fa_probe::plan::load_cpus;
-use fa_win::labsys::{fault_cycle, trim_working_set};
+use fa_win::labsys::{
+    create_unbuffered, fault_cycle, raise_current_thread_priority, trim_working_set,
+};
 use fa_win::mem::PageBuf;
 use fa_win::topology::LogicalCpu;
 use serde_json::json;
 use std::hint::black_box;
+use std::io::{Seek, SeekFrom, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
@@ -48,12 +52,14 @@ pub fn sibling_of(all: &[LogicalCpu], cpu: u32) -> Option<u32> {
 }
 
 /// Which CPUs an injector runs on.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 enum Target {
     /// Every CPU of `intensity` that avoids the render core.
     Wide,
     /// One CPU that avoids the render core.
     One,
+    /// The render thread's own CPU (`priority-contention`).
+    Render,
     /// The render CPU's SMT sibling (D-5: "unless the cause demands it").
     Sibling,
 }
@@ -123,6 +129,42 @@ fn page_fault_storm(stop: &AtomicBool, mib: u64) {
     }
 }
 
+const DISK_CHUNK: usize = 1 << 20;
+
+/// Writes `mib` MiB, unbuffered and write-through, to a temporary file again and again (rewinding at the end) until
+/// `stop`. The file is deleted when the guard drops: at the end, on Ctrl+C (the loop ends and joins) or on error.
+fn disk_burst(stop: &AtomicBool, mib: u64) {
+    let path = std::env::temp_dir().join(format!("fa-lab-disk-{}.tmp", std::process::id()));
+    let _guard = TempFile(path.clone());
+    let run = || -> std::io::Result<()> {
+        let mut file = create_unbuffered(&path)?;
+        let mut buf = PageBuf::alloc(DISK_CHUNK, false)?;
+        buf.as_mut_u64().fill(0xA5A5_A5A5_A5A5_A5A5);
+        let chunks = mib.max(1);
+        let mut written = 0;
+        while !stop.load(Ordering::Relaxed) {
+            file.write_all(buf.as_bytes())?;
+            written += 1;
+            if written == chunks {
+                file.seek(SeekFrom::Start(0))?;
+                written = 0;
+            }
+        }
+        Ok(())
+    };
+    if let Err(e) = run() {
+        eprintln!("fa lab : disk-burst impossible : {e}");
+    }
+}
+
+/// A time-critical spinner: pinned on the render CPU it preempts the render thread when the scheduler leaves it there.
+fn contention(stop: &AtomicBool) {
+    if let Err(e) = raise_current_thread_priority() {
+        eprintln!("fa lab : priorité impossible : {e}");
+    }
+    cpu_burn(stop, false);
+}
+
 /// Builds the injector for `inj`, or `None` for a cause that is not a timed worker injection (frame-stall) or not
 /// implemented yet. The CPUs are chosen when the injection starts, against the CPU the render thread is on then.
 pub fn timed(inj: &Injection, all: &[LogicalCpu]) -> Option<Timed> {
@@ -170,12 +212,26 @@ pub fn timed(inj: &Injection, all: &[LogicalCpu]) -> Option<Timed> {
                 json!({ "size_mib": mib }),
             )
         }
+        Cause::DiskBurst => {
+            let mib = size.unwrap_or(1);
+            (
+                Target::One,
+                Arc::new(move |s: &AtomicBool| disk_burst(s, mib)),
+                json!({ "size_mib": mib }),
+            )
+        }
+        Cause::PriorityContention => (
+            Target::Render,
+            Arc::new(contention),
+            json!({ "priority": "time-critical" }),
+        ),
         _ => return None,
     };
     let (all, explicit) = (all.to_vec(), inj.cpus.clone());
     let pick = Box::new(move |render: u32| {
         let cpus = match (target, explicit.as_deref()) {
             (Target::Sibling, None) => sibling_of(&all, render).into_iter().collect(),
+            (Target::Render, None) => vec![render],
             (Target::Wide, e) => pick_cpus(&all, render, e, intensity),
             (_, e) => pick_cpus(&all, render, e, 0.0),
         };
@@ -185,13 +241,12 @@ pub fn timed(inj: &Injection, all: &[LogicalCpu]) -> Option<Timed> {
         params["intensity"] = json!(intensity);
         (cpus, params)
     });
-    Some(Timed::new(
-        inj.cause,
-        inj.start,
-        inj.start + inj.duration,
-        work,
-        pick,
-    ))
+    let timed = Timed::new(inj.cause, inj.start, inj.start + inj.duration, work, pick);
+    Some(if target == Target::Render {
+        timed.pinning_render()
+    } else {
+        timed
+    })
 }
 
 #[cfg(test)]
@@ -248,6 +303,23 @@ mod tests {
             "no sibling when the core has one logical CPU"
         );
         assert_eq!(sibling_of(&all, 99), None);
+    }
+
+    #[test]
+    fn a_disk_burst_writes_unbuffered_and_leaves_no_file_behind() {
+        let path = std::env::temp_dir().join(format!("fa-lab-disk-{}.tmp", std::process::id()));
+        let stop = Arc::new(AtomicBool::new(false));
+        let s2 = stop.clone();
+        let t = std::thread::spawn(move || disk_burst(&s2, 4));
+        std::thread::sleep(std::time::Duration::from_millis(500));
+        assert!(path.exists(), "the burst file exists while it runs");
+        assert!(
+            std::fs::metadata(&path).unwrap().len() > 0,
+            "something was written"
+        );
+        stop.store(true, Ordering::Relaxed);
+        t.join().unwrap();
+        assert!(!path.exists(), "the guard deleted the file");
     }
 
     #[test]

@@ -42,9 +42,10 @@ Gate = `powershell -File scripts/gate.ps1`. Each group ends with it, green. Dev 
 
 ## 6. Disk, timer and priority injectors
 
-- [ ] 6.1 Implement `disk-burst` (unbuffered write-through, 1 GB cap, 10 GB free check, temporary file deleted); verify with a test of the free-space refusal and that the file is gone after a run and after Ctrl+C.
-- [ ] 6.2 Implement `timer-resolution` (own process only) and `priority-contention` (own threads); verify the effect appears in the loop pacing and that no other process is touched.
-- [ ] 6.3 Run the gate and verify it is green.
+- [x] 6.1 Implement `disk-burst` (unbuffered write-through, 1 GB cap, 10 GB free check, temporary file deleted); verify with a test of the free-space refusal and that the file is gone after a run and after Ctrl+C.
+- [x] 6.2 Implement `timer-resolution` (own process only) and `priority-contention` (own threads); verify the effect appears in the loop pacing and that no other process is touched.
+- [ ] 6.3 Explanation checkpoint (French) for each new unsafe block of group 6 (free space, thread priority, timer period, byte view); verify the user answered "compris".
+- [x] 6.4 Run the gate and verify it is green.
 
 ## 7. Scenarios and demo
 

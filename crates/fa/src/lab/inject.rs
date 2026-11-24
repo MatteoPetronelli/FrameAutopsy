@@ -4,6 +4,7 @@ use super::journal::Journal;
 use super::render_loop::Stage;
 use super::scenario::{Cause, Injection};
 use fa_win::clock::Clock;
+use fa_win::labsys::TimerPeriod;
 use serde_json::{json, Value};
 use std::io::{self, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -81,6 +82,70 @@ impl FrameStall {
     }
 }
 
+/// `timer-resolution`: the Lab holds `timeBeginPeriod(1)` like a well-behaved game; during the injection it lets go and
+/// the pacing sleep uses the plain timer, so the sleep lasts up to a system tick (15.6 ms) instead of about 1 ms.
+pub struct TimerRes {
+    start_s: f64,
+    end_s: f64,
+    period: Option<TimerPeriod>,
+    state: Window,
+}
+
+enum Window {
+    Waiting,
+    Running(u64),
+    Done,
+}
+
+impl TimerRes {
+    pub fn new(inj: &Injection) -> io::Result<Self> {
+        Ok(TimerRes {
+            start_s: inj.start,
+            end_s: inj.start + inj.duration,
+            period: Some(TimerPeriod::begin(1)?),
+            state: Window::Waiting,
+        })
+    }
+
+    pub fn hook<W: Write>(
+        &mut self,
+        journal: &mut Journal<W>,
+        clock: &Clock,
+        elapsed_ticks: u64,
+        stage: Stage,
+    ) -> io::Result<()> {
+        if stage != Stage::AfterPresent {
+            return Ok(());
+        }
+        let hz = clock.hz().get() as f64;
+        let params = json!({ "period_ms_before": 1 });
+        match &self.state {
+            Window::Waiting if elapsed_ticks as f64 >= self.start_s * hz => {
+                self.period = None; // timeEndPeriod
+                super::render_loop::set_coarse_timer(true);
+                let start_tsc = clock.now();
+                journal.start(Cause::TimerResolution, start_tsc, &params)?;
+                self.state = Window::Running(start_tsc);
+            }
+            Window::Running(start_tsc) if elapsed_ticks as f64 >= self.end_s * hz => {
+                let start_tsc = *start_tsc;
+                super::render_loop::set_coarse_timer(false);
+                self.period = Some(TimerPeriod::begin(1)?);
+                journal.end(Cause::TimerResolution, start_tsc, clock.now(), &params)?;
+                self.state = Window::Done;
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+}
+
+impl Drop for TimerRes {
+    fn drop(&mut self) {
+        super::render_loop::set_coarse_timer(false);
+    }
+}
+
 pub type Work = Arc<dyn Fn(&AtomicBool) + Send + Sync>;
 /// Given the CPU the render thread is on, the CPUs to use and the journal parameters.
 pub type Pick = Box<dyn Fn(u32) -> (Vec<u32>, Value)>;
@@ -108,9 +173,18 @@ pub struct Timed {
     pick: Pick,
     params: Value,
     state: TimedState,
+    /// `priority-contention`: also pin the render thread to the CPU the workers use, so it cannot slip away to an idle
+    /// one (the scheduler would migrate it within microseconds and nothing would be contended).
+    pin_render: bool,
+    render_pin: Option<fa_win::thread::PinGuard>,
 }
 
 impl Timed {
+    pub fn pinning_render(mut self) -> Self {
+        self.pin_render = true;
+        self
+    }
+
     pub fn new(cause: Cause, start_s: f64, end_s: f64, work: Work, pick: Pick) -> Self {
         Timed {
             cause,
@@ -120,6 +194,8 @@ impl Timed {
             pick,
             params: Value::Null,
             state: TimedState::Waiting,
+            pin_render: false,
+            render_pin: None,
         }
     }
 
@@ -138,7 +214,11 @@ impl Timed {
         match &mut self.state {
             TimedState::Waiting if elapsed >= self.start_s * hz => {
                 // The hook runs on the render thread: this is the CPU the burners must stay away from.
-                let (cpus, params) = (self.pick)(fa_win::thread::current_cpu());
+                let render = fa_win::thread::current_cpu();
+                let (cpus, params) = (self.pick)(render);
+                if self.pin_render {
+                    self.render_pin = Some(fa_win::thread::pin_current_thread(render)?);
+                }
                 self.params = params;
                 let start_tsc = clock.now();
                 journal.start(self.cause, start_tsc, &self.params)?;
@@ -173,6 +253,7 @@ impl Timed {
                     handles.into_iter().for_each(|h| {
                         let _ = h.join();
                     });
+                    self.render_pin = None;
                     // Page faults of the whole Lab process during the window: the ground truth of the storm.
                     let rise = fa_win::labsys::own_page_faults()
                         .unwrap_or(0)

@@ -1,5 +1,4 @@
 //! Lab guards (design D-8): refuse while a matrix game runs, cap injections, clean up temporary files.
-//! The 10 GB free-space check of disk bursts arrives with the injector (task 6.1).
 
 use super::render_loop::Fps;
 use super::scenario::{Cause, Scenario};
@@ -15,6 +14,8 @@ use std::path::PathBuf;
 pub const MAX_INJECTION_SECS: f64 = 30.0;
 /// Biggest disk burst, in MiB (1 GiB).
 pub const MAX_DISK_MIB: u64 = 1024;
+/// Free space a disk burst needs on the volume of the temporary directory.
+pub const MIN_FREE_DISK_BYTES: u64 = 10 << 30;
 /// Biggest buffer of a memory injector, in MiB per thread.
 pub const MAX_MEMORY_MIB: u64 = 512;
 
@@ -28,6 +29,7 @@ pub enum GuardError {
     BadIntensity { index: usize },
     FrameStallLength { index: usize },
     MemorySize { index: usize },
+    DiskFree { free_gib: u64 },
 }
 
 impl fmt::Display for GuardError {
@@ -54,6 +56,10 @@ impl fmt::Display for GuardError {
             GuardError::MemorySize { index } => write!(
                 f,
                 "injection {index} : size_mib doit être entre 1 et {MAX_MEMORY_MIB} (par thread)"
+            ),
+            GuardError::DiskFree { free_gib } => write!(
+                f,
+                "disk-burst demande 10 Gio libres sur le disque des fichiers temporaires, il en reste {free_gib}"
             ),
             GuardError::FrameStallLength { index } => write!(
                 f,
@@ -113,6 +119,17 @@ pub fn validate(s: &Scenario) -> Result<(), GuardError> {
     Ok(())
 }
 
+/// Refuses a scenario with a disk burst when the temporary volume has fewer than 10 GiB free.
+pub fn check_disk_room(s: &Scenario, free_bytes: u64) -> Result<(), GuardError> {
+    let burst = s.injections.iter().any(|i| i.cause == Cause::DiskBurst);
+    if burst && free_bytes < MIN_FREE_DISK_BYTES {
+        return Err(GuardError::DiskFree {
+            free_gib: free_bytes >> 30,
+        });
+    }
+    Ok(())
+}
+
 /// The refusal, naming the game, when one of the matrix games is among `images` / `windows`.
 pub fn refuse_if_game(
     matrix: &Matrix,
@@ -144,7 +161,6 @@ pub fn ensure_no_game() -> io::Result<()> {
 }
 
 /// A temporary file of the Lab, deleted when this guard drops (normal end, Ctrl+C unwinding or error).
-#[allow(dead_code)] // first user: the disk-burst injector (task 6.1)
 pub struct TempFile(pub PathBuf);
 
 impl Drop for TempFile {
@@ -221,6 +237,18 @@ mod tests {
             ));
             assert!(validate(&scenario(inj(cause, 5.0, Some(0)))).is_err());
         }
+    }
+
+    #[test]
+    fn a_disk_burst_needs_10_gib_free_and_other_scenarios_do_not() {
+        let burst = scenario(inj(Cause::DiskBurst, 5.0, Some(512)));
+        assert!(check_disk_room(&burst, MIN_FREE_DISK_BYTES).is_ok());
+        assert_eq!(
+            check_disk_room(&burst, MIN_FREE_DISK_BYTES - 1),
+            Err(GuardError::DiskFree { free_gib: 9 })
+        );
+        let other = scenario(inj(Cause::CpuBurn, 5.0, None));
+        assert!(check_disk_room(&other, 0).is_ok());
     }
 
     #[test]

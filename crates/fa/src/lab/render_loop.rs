@@ -11,6 +11,7 @@ use fa_win::render::LabWindow;
 use fa_win::timer::HiResTimer;
 use std::hint::black_box;
 use std::io;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 /// How the loop is paced.
@@ -92,6 +93,13 @@ pub struct LoopReport {
     pub baseline: Baseline,
 }
 
+static COARSE: AtomicBool = AtomicBool::new(false);
+
+/// Switches the pacing sleep to the plain timer (`true`) or back to the high-resolution one.
+pub fn set_coarse_timer(on: bool) {
+    COARSE.store(on, Ordering::Relaxed);
+}
+
 /// When in a frame an injection hook is called.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Stage {
@@ -106,6 +114,8 @@ pub struct Runner {
     pub clock: Clock,
     window: LabWindow,
     timer: HiResTimer,
+    /// Used instead of `timer` while [`set_coarse_timer`] is on (the `timer-resolution` injection).
+    coarse: HiResTimer,
     fps: Fps,
     frame: u64,
     /// Whether every frame also does the work of `frame_work` (scenarios do, the bare loop does not).
@@ -126,6 +136,7 @@ impl Runner {
             clock: Clock::new(),
             window: LabWindow::new(960, 540)?,
             timer: HiResTimer::new()?,
+            coarse: HiResTimer::coarse()?,
             fps,
             frame: 0,
         })
@@ -178,7 +189,12 @@ impl Runner {
                 if now > deadline + p {
                     deadline = now; // fell more than a frame behind: resynchronise instead of catching up in a burst
                 }
-                wait_until(clock, &self.timer, deadline, margin, hz)?;
+                let timer = if COARSE.load(Ordering::Relaxed) {
+                    &self.coarse
+                } else {
+                    &self.timer
+                };
+                wait_until(clock, timer, deadline, margin, hz)?;
             }
             self.window
                 .present(self.fps == Fps::Vsync, self.fps == Fps::Uncapped)?;
