@@ -16,15 +16,20 @@ pub struct HiResTimer {
 
 impl HiResTimer {
     pub fn new() -> io::Result<HiResTimer> {
+        Self::create(CREATE_WAITABLE_TIMER_HIGH_RESOLUTION)
+    }
+
+    /// A plain (not high-resolution) timer: it fires on the system timer tick of this process, 15.6 ms unless the
+    /// process asked for better with `timeBeginPeriod`. What a game that never asked sees; used by `timer-resolution`.
+    pub fn coarse() -> io::Result<HiResTimer> {
+        Self::create(0)
+    }
+
+    fn create(flags: u32) -> io::Result<HiResTimer> {
         // SAFETY: null attributes and null name create an unnamed timer with default security; the flags and access
         // mask are the documented constants.
         let handle = unsafe {
-            CreateWaitableTimerExW(
-                std::ptr::null(),
-                std::ptr::null(),
-                CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,
-                TIMER_ALL_ACCESS,
-            )
+            CreateWaitableTimerExW(std::ptr::null(), std::ptr::null(), flags, TIMER_ALL_ACCESS)
         };
         if handle.is_null() {
             return Err(io::Error::last_os_error());

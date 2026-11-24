@@ -1,4 +1,9 @@
-## ADDED Requirements
+# stutter-lab Specification
+
+## Purpose
+A dev-only Lab that renders its own D3D11 window at a fixed frame rate and injects nine known causes of stutter (frame stall, CPU, cache, TLB, memory bandwidth, page faults, disk, timer resolution, priority contention) on itself, with a JSONL ground-truth journal. It gives later lots a source of truth to score detection and attribution against, without ever touching a game.
+
+## Requirements
 
 ### Requirement: Own render loop
 `fa lab` SHALL open a window with a D3D11 device and a flip-model swap chain (`DXGI_SWAP_EFFECT_FLIP_DISCARD`) and
@@ -19,7 +24,7 @@ They act on the Lab's own threads, memory and files only.
 
 #### Scenario: Memory injectors
 - **WHEN** `cache-thrash`, `tlb-thrash` or `mem-bandwidth` is injected
-- **THEN** `cache-thrash` sweeps an LLC-exceeding buffer with `clflushopt` and large strides, `tlb-thrash` touches one byte per 4 KiB page over a large region, and `mem-bandwidth` writes with non-temporal stores on N threads
+- **THEN** `cache-thrash` sweeps an LLC-exceeding buffer with large strides and cache-line flushes so that a latency jump is measurable, `tlb-thrash` touches one byte per 4 KiB page over a large region, and `mem-bandwidth` writes with non-temporal stores on N threads
 
 #### Scenario: System injectors
 - **WHEN** `page-fault-storm`, `disk-burst`, `timer-resolution` or `priority-contention` is injected

@@ -1,0 +1,28 @@
+name = "stutter-demo"
+fps = "144"
+duration = 30.0
+expected_causes = ["frame-stall", "mem-bandwidth", "priority-contention"]
+
+# Visible on a screen recording: two long stalls, then 6 s of memory-bandwidth stutter, then a freeze.
+[[injection]]
+cause = "frame-stall"
+start = 5.0
+duration = 1.0
+stall_ms = 200.0
+
+[[injection]]
+cause = "frame-stall"
+start = 8.0
+duration = 1.0
+stall_ms = 200.0
+
+[[injection]]
+cause = "mem-bandwidth"
+start = 12.0
+duration = 8.0
+size_mib = 64
+
+[[injection]]
+cause = "priority-contention"
+start = 23.0
+duration = 3.0

@@ -72,7 +72,7 @@ fn isa_name(isa: Isa) -> &'static str {
     }
 }
 
-fn load_block(isa: Isa) -> u64 {
+pub(crate) fn load_block(isa: Isa) -> u64 {
     // about 1 ms per block, so the stop flag is honoured within a few milliseconds
     match isa {
         Isa::Avx512 => 400_000,

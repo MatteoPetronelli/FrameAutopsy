@@ -1,0 +1,10 @@
+name = "priority-contention"
+fps = "144"
+duration = 20.0
+expected_causes = ["priority-contention"]
+
+[[injection]]
+cause = "priority-contention"
+start = 5.0
+duration = 10.0
+

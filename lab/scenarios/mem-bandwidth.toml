@@ -1,0 +1,11 @@
+name = "mem-bandwidth"
+fps = "144"
+duration = 20.0
+expected_causes = ["mem-bandwidth"]
+
+[[injection]]
+cause = "mem-bandwidth"
+start = 5.0
+duration = 10.0
+intensity = 1.0
+size_mib = 64

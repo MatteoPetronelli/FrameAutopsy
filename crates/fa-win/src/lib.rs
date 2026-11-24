@@ -6,10 +6,12 @@
 pub mod clock;
 pub mod console;
 pub mod etw;
+pub mod labsys;
 pub mod mem;
 pub mod pdh;
 pub mod power;
 pub mod procs;
+pub mod render;
 pub mod thread;
 pub mod timer;
 pub mod topology;

@@ -1,0 +1,15 @@
+name = "disk-burst-then-timer-resolution"
+fps = "144"
+duration = 30.0
+expected_causes = ["disk-burst", "timer-resolution"]
+
+[[injection]]
+cause = "disk-burst"
+start = 5.0
+duration = 8.0
+size_mib = 512
+
+[[injection]]
+cause = "timer-resolution"
+start = 16.0
+duration = 8.0

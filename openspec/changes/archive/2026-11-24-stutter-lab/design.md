@@ -39,7 +39,7 @@ killed run still shows what was active. Same timebase as the capture (raw TSC).
 
 **D-4 Scenarios.** TOML in `lab/scenarios/`: name, FPS mode, duration, `[[injection]]` entries (cause, start, duration,
 intensity, cpus) and `expected_causes`. Parsed with `deny_unknown_fields`; durations and sizes are validated against the
-guard caps before anything starts. 10 single-cause (nine injectors, plus `cpu-burn` with the FMA load) and 3 two-cause.
+guard caps before anything starts. nine injectors, 10 single-cause scenarios (`cpu-burn` appears twice, with and without the FMA load) and 3 two-cause.
 
 **D-5 CPU choice.** Burners never run on the render thread's CPU unless the cause demands it (`priority-contention`).
 The SMT bias is measured: the frequency probe reads about 9 % low when its core's SMT sibling is busy. `cpu-burn` never
@@ -55,11 +55,11 @@ if the reference cannot produce the behaviour. Gain uncertain. Parity: same line
 large-stride sweeps. A win under 5 % is a tie and the reference ships. Verdict recorded in the catalog. Buffers are sized
 well above the 12 MiB topology (the effective capacity measured is 3 to 4 MiB with 4 KiB pages, cause unknown).
 
-**D-7 Other injectors.**
+**D-7 Other injectors** (with `cpu-burn` of D-5 and `cache-thrash` of D-6, the seven below make the nine).
 - `frame-stall`: burn N ms before `Present` at frame k (safe, TSC deadline).
 - `tlb-thrash`: one touch per 4 KiB page over a large region, via `fa_win::mem::PageBuf` with 4 KiB pages (large pages
   are refused on the target).
-- `mem-bandwidth`: non-temporal stores on N threads, reusing the ASM-04 kernels if one fits, else a new intrinsics loop.
+- `mem-bandwidth`: non-temporal stores on N threads, reusing the ASM-04 intrinsics kernels (its asm was deleted after the tie) if one fits, else a new intrinsics loop.
 - `page-fault-storm`: commit/touch/decommit and working-set trims of the Lab process (WIN-12).
 - `disk-burst`: unbuffered write-through writes to a temporary file, deleted afterwards; at most 1 GB, 10 GB free needed.
 - `timer-resolution`: `timeBeginPeriod` toggles; per-process since Windows 10 2004, so it changes the Lab's own pacing only.
@@ -76,7 +76,7 @@ replayed on the Lab loop); then the other injectors one by one.
 ## Risks / Trade-offs
 
 - Spin pacing burns a core; accepted for a dev tool, and that core is excluded from burners.
-- The Lab's own loop jitter may hide small injections; hence large sizes and the recorded baseline.
+- The Lab's own loop jitter may hide small injections; hence large sizes and the recorded baseline. The jitter budget is `(calibrate)`: measured on the idle loop (task 2.3), frozen from that result, logged in `docs/decisions.md` section 5.
 - ASM-07 may tie: the intrinsics ship, no asm checkpoint needed.
 - COM/D3D11 unsafe is large; wrapped behind a small safe API in `fa-win` and explained to the user.
 - Optimus adapter unknown: recorded, not assumed.

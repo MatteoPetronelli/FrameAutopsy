@@ -1,0 +1,16 @@
+name = "frame-stall-and-page-fault-storm"
+fps = "144"
+duration = 25.0
+expected_causes = ["frame-stall", "page-fault-storm"]
+
+[[injection]]
+cause = "page-fault-storm"
+start = 5.0
+duration = 12.0
+size_mib = 64
+
+[[injection]]
+cause = "frame-stall"
+start = 10.0
+duration = 1.0
+stall_ms = 80.0

@@ -1,4 +1,4 @@
-# Handoff: session starter (written 2026-11-22, after lot 5)
+# Handoff: session starter (written 2026-11-24, after lot 6)
 
 This file starts a **new Claude Code session** on FrameAutopsy. The original brief of the project (vision, compliance
 constraints, asm leads) is kept aside in `handoff-origin.md`: read it only for context or scope doubts. Read `CLAUDE.md`
@@ -6,42 +6,41 @@ first (it is loaded automatically), then this file.
 
 The user speaks French (talk to them in French). Code, commits, OpenSpec artifacts and technical docs are in English.
 
-## Your task: lot 6 `stutter-lab`
+## Your task: lot 7 `collector-service`
 
-The OpenSpec change already exists and is valid: `openspec/changes/stutter-lab/` (`proposal.md`, `design.md`, `tasks.md`,
-`specs/stutter-lab/spec.md`, 30 tasks in 7 groups). The changes of lots 7, 8 and 9 (`collector-service`,
-`incident-store`, `dashboard`) are written too.
+The OpenSpec change exists: `openspec/changes/collector-service/` (lots 8 and 9, `incident-store` and `dashboard`, are
+written too). Follow the working agreement: present the change to the user in French, **wait for their validation**, then
+create the branch `lot-7-collector-service` and go group by group on "go groupe N" (skill `openspec-batch-executor`).
+Each group ends with the gate; each new `unsafe` block gets a French checkpoint and merges after "compris". At the end:
+archive (`openspec archive <id> -y`, fill the `Purpose`), update `CLAUDE.md` and this file, ask the user's go before the
+merge into `main` and the push. Lot 7 also holds the first anti-cheat test, which only the user runs.
 
-1. **Present the change to the user** in French, in a few lines per file, and **wait for their validation**. No
-   application code before it (working agreement: spec first). If they ask for changes, edit the change (skill
-   `openspec-update-change`), validate with `openspec validate stutter-lab --strict`, commit.
-2. Create the branch `lot-6-stutter-lab` and follow `tasks.md` group by group (skill `openspec-batch-executor`). The
-   user says "go groupe N" to start each group. Tick tasks as they are verified, not before.
-3. Each group ends with the gate (`powershell -File scripts/gate.ps1`). Each new `unsafe` block gets a French explanation
-   checkpoint (template: `docs/asm-unsafe-catalog.md` section 7); merge only after the user says "compris".
-4. At the end: archive the change (`openspec archive stutter-lab -y`, then fill the `Purpose` of the new spec: the archive
-   leaves "TBD"), update the status line of `CLAUDE.md` and this file, and **ask the user's go** before merging into
-   `main` and pushing.
+### What lot 6 `stutter-lab` delivered (archived `2026-11-24-stutter-lab`, spec `openspec/specs/stutter-lab/`)
 
-### What the lot 6 change already settles (do not re-decide)
+- The Lab: `crates/fa/src/lab/` (loop, journal, scenarios, guards, injectors) over `fa-win::render` (WIN-05, D3D11 flip
+  model window) and `fa-win::labsys` (WIN-12: own-process memory, working set, page-fault counter, free disk space, own
+  thread priority, `timeBeginPeriod`). Commands: `fa lab loop|run|verify|effect|check` (no admin for `run`; the capture
+  runs apart, elevated). `scripts/lab-verify.ps1 <run> [scenario] [-PresentMon]` (elevated) runs capture + Lab + verify,
+  outputs in `measurements/lab-runs/` (gitignored; `capture-parity/` and `demo/` beside it).
+- 9 injectors: `frame-stall` (exact cause, pre-Present burn, captured frame = stall + work already done, +0.19 to
+  +0.25 ms), `cpu-burn` (+FMA), `cache-thrash`, `tlb-thrash` (SMT sibling of the render CPU), `mem-bandwidth`,
+  `page-fault-storm`, `disk-burst` (unbuffered write-through, 10 GB free required, file deleted by a guard),
+  `timer-resolution` (own process: releases `timeBeginPeriod`, pacing sleeps on a plain timer), `priority-contention`
+  (time-critical worker on the render CPU, render thread pinned there for the injection). 13 scenarios in
+  `lab/scenarios/` (10 single cause, 3 two causes, test-checked), demo scenario in `lab/demo/`.
+- Measured effect on frame times at 144 FPS (details in `docs/decisions.md` section 5): visible stutter from
+  `frame-stall`, `mem-bandwidth` (median 20 ms), `timer-resolution` (p99 20 ms, subtle by eye), `priority-contention`
+  (freezes up to 2.6 s). `cpu-burn`, `cache-thrash`, `tlb-thrash`, `page-fault-storm` create their condition (own
+  signals: 16 M faults in 10 s) but do not move this render loop: the cause engine of lot 10 must judge on signals,
+  not on frame times alone (user decision).
+- Loop jitter: p99 0.3 to 0.5 ms (trivial loop), 1.6 ms frozen budget over 60 s, 1.56 to 2.45 ms with the per-frame work
+  (2 MiB pointer-chase ring + about 1 ms compute). The render thread is not pinned (pinning worsened jitter).
+- ASM-07 (`clflushopt`) dropped: a plain sweep beat `clflush` (numbers in the catalog); WIN-05 and WIN-12 kept (compris).
+- Known gaps: the capture still has no page-fault decoder (hard-fault flag only; the Lab's own counter is the ground
+  truth); Ctrl+C during `disk-burst` and the low-disk-space refusal were not exercised by hand; the user's Windows is
+  Italian-localised (PDH code uses English counter names, `Get-Counter` by name fails).
 
-- `scripts/gate.ps1` runs `cargo run -p fa --release -- lab score` as soon as `crates/fa/src/lab.rs` exists, but the
-  scorer is lot 10. So the Lab lives in `crates/fa/src/lab/` (`mod.rs`, no `lab.rs`) and task 1.2 moves the gate trigger to
-  `crates/fa/src/lab/score.rs`.
-- D3D11 and the window are unsafe code in `fa-win` (WIN-05) behind a safe API; the Lab in `fa` drives it. New catalog
-  lines before any code: WIN-05, ASM-07 and a new WIN-12 (Lab system calls).
-- ASM-07 (`clflushopt` for `cache-thrash`) is still to earn its place. Intrinsics reference first; asm only if the
-  reference cannot produce the behaviour. Expect a tie or a loss (see "Earn-its-place so far").
-- `fa lab` refuses to run while a matrix game runs (`fa_probe::plan::running_games`, same refusal as `fa check`).
-  Injections are capped (30 s each; disk bursts 1 GB with 10 GB free required) and cleaned up on Ctrl+C.
-- `cpu-burn` never loads the SMT sibling of a CPU something else measures (use `fa_probe::plan::load_cpus`); it may use
-  the existing `fa_asm::fma::burn` (intrinsics, nothing to earn).
-- No large pages anywhere (rejected by the user, `docs/decisions.md`): `tlb-thrash` works with 4 KiB pages.
-- Order (design D-9): render loop and `frame-stall` first, then check that the lot 5 capture sees the exact stall, then
-  the other injectors. The lot 5 PresentMon parity is to be replayed on the Lab loop (tasks of group 4).
-- Dev commands (`fa lab run`, capture) run from an **elevated terminal that the user opens**; you cannot elevate.
-
-### Lessons of lot 5 that bear on lot 6
+### Lessons of lot 5 (still useful)
 
 - The timer wake-up lateness measured on this machine is p50 about 0.5 ms, p99 1.3 to 3.3 ms, up to 4.6 ms: a
   sleep-paced loop at 144 FPS (6.9 ms) jitters by up to half a frame. Pace with the swap chain and finish the wait on a
@@ -54,21 +53,21 @@ The OpenSpec change already exists and is valid: `openspec/changes/stutter-lab/`
   `"/c/Program Files/Intel/PresentMon/PresentMonConsoleApplication/PresentMon-2.6.0-x64.exe" --process_name <exe> --output_file D:/... --timed 20 --terminate_after_timed --stop_existing_session`
   (run it in the same elevated terminal, in the background with `&`, together with `fa capture`).
 - Use forward slashes in paths given to commands from Git Bash (`D:/Matteo/...`): backslashes are eaten. Give new file
-  names to each measurement run, a reused name overwrites the previous run (this happened). `/ours*.csv` and `/pm*.csv`
-  are gitignored.
+  names to each measurement run, a reused name overwrites the previous run (this happened). `measurements/` (captures,
+  PresentMon CSVs, Lab journals) is gitignored; `scripts/lab-verify.ps1` writes in `measurements/lab-runs/`. The old probe CSVs of lot 3 are
+  in `docs/measurements/`.
 
-## Current state (main = `4e624b8`, 2026-11-22, pushed)
+## Current state (lot 6 done on branch `lot-6-stutter-lab`, 2026-11-24)
 
-Lots 0 to 5 are done, merged into `main`, archived under `openspec/changes/archive/`. `openspec/specs/` holds 9 specs
-(the 7 earlier plus `etw-capture` and `lockfree-transport`). `openspec/changes/` holds `stutter-lab`,
-`collector-service`, `incident-store`, `dashboard`. The gate is green and includes Miri (`cargo +nightly miri test -p
-fa-sync`, installed in lot 5).
+Lots 0 to 6 are done and archived under `openspec/changes/archive/`; the lot 6 branch is merged into `main` only after
+the user's go (see `git log` for the hash). `openspec/specs/` holds 10 specs (the 9 earlier plus `stutter-lab`).
+`openspec/changes/` holds `collector-service`, `incident-store`, `dashboard`. The gate is green and includes Miri.
 
 Crates: `fa-core` (matrix, `TargetProcess`, clock math), `fa-asm` (CPUID, TSC, frequency chain, pointer chase, bandwidth,
 FMA load), `fa-win` (clock, topology, pinning, timers, PDH, memory, process list, windows, power, console, **`etw`**:
 session and consumer, WIN-01), `fa-sync` (counting allocator, **`spsc`** ring, SYNC-01), `fa-probe` (probes, verdicts,
 report, baseline), **`fa-capture`** (event view, decoders, hot and cold records, rings pipeline, frame extraction, module
-map, process table; no unsafe), `fa` (CLI: `fa check`, `fa clock`, `fa probe freq|wake|domain|curve|bw`, `fa windows`,
+map, process table; no unsafe), **`fa lab`** (Lab loop, injectors, scenarios, journal; `fa-win` gained `render` and `labsys`), `fa` (CLI: `fa check`, `fa clock`, `fa probe freq|wake|domain|curve|bw`, `fa windows`,
 **`fa capture`**, **`fa capture compare`**). `fa capture` and the ETW examples of `fa-win` need an ELEVATED terminal.
 
 ### Earn-its-place so far
@@ -77,7 +76,7 @@ ASM-02 (frequency chain) asm kept. ASM-01 (TSC reads), ASM-03 (pointer chase), A
 tied with the Rust/intrinsics reference: the reference ships and the asm was deleted. **SYNC-01 (SPSC ring) beat `rtrb`**
 (throughput +23 % to +71 % over 3 runs, latency a tie): `fa-sync::spsc` ships. WIN-01 (ETW consumer) was not compared with
 `ferrisetw` (user decision: its TDH schemas make a synthetic comparison meaningless): hand-written consumer kept, recorded
-in `docs/asm-unsafe-catalog.md`. Pending: SYNC-02 (lot 7), SIMD-01 (lot 8), ASM-07 (lot 6).
+in `docs/asm-unsafe-catalog.md`. ASM-07 dropped (lot 6: plain sweep beat `clflush`); WIN-05 and WIN-12 kept. Pending: SYNC-02 (lot 7), SIMD-01 (lot 8).
 
 ### Facts measured on the target machine (i5-11400H, Windows 11 build 26300, AC power, performance mode)
 
@@ -102,7 +101,7 @@ in `docs/asm-unsafe-catalog.md`. Pending: SYNC-02 (lot 7), SIMD-01 (lot 8), ASM-
   `fa_asm::tsc::now()`. The rundown at start and stop emits about 45 000 records at once (cold ring: 65 536 slots).
 - Frametime parity with PresentMon 2.6.0: Opera 1 037 of 1 037 frames within 0.1 ms, Chrome 738 of 747 (the 9
   differences are PresentMon rows out of order).
-- **Not verified**: hard page fault events (none seen in 20 s; test with the Lab's `page-fault-storm`), frames of
+- **Not verified**: hard page fault events in the capture (no decoder yet; the Lab's `page-fault-storm` raises its own counter by 16 M in 10 s), frames of
   OpenGL/Vulkan apps (Minecraft Java) through DxgKrnl `Present_Info`, displayed time and present mode (not computed by
   us), thread to process attribution for context switches (needs a thread map; open for lots 7 and 8).
 
@@ -151,7 +150,7 @@ in `docs/asm-unsafe-catalog.md`. Pending: SYNC-02 (lot 7), SIMD-01 (lot 8), ASM-
   test that guards an allocation count, a layout offset, a bound or an ordering (lot 5 did it for the counting allocator,
   the ISR offset and the SPSC `Release` store, which Miri caught as a data race).
 - `scripts/gate.ps1`: headers, fmt, clippy `-D warnings --all-targets --all-features`, tests, Miri (while
-  `crates/fa-sync/src/spsc.rs` exists), `fa lab score` (once `crates/fa/src/lab.rs` exists: see lot 6 above), graphify.
+  `crates/fa-sync/src/spsc.rs` exists), `fa lab score` (once `crates/fa/src/lab/score.rs` exists, lot 10), graphify.
   Clippy covers examples and benches, so a throwaway example must satisfy the unsafe lints too.
 - Throwaway spikes go in `crates/<crate>/examples/`, are committed as `chore(...)` for the record and deleted once the
   verdict is in `docs/decisions.md` (the history keeps them). The TDH layout tool `etw_layout` and the session check

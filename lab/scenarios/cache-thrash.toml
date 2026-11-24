@@ -1,0 +1,10 @@
+name = "cache-thrash"
+fps = "144"
+duration = 20.0
+expected_causes = ["cache-thrash"]
+
+[[injection]]
+cause = "cache-thrash"
+start = 5.0
+duration = 10.0
+size_mib = 64

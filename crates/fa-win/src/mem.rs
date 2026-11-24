@@ -97,6 +97,13 @@ impl PageBuf {
         // the byte length is a multiple of 8.
         unsafe { std::slice::from_raw_parts_mut(self.ptr.cast::<u64>(), self.words) }
     }
+
+    /// The same memory as bytes (to write it to a file: the page-aligned base suits unbuffered I/O).
+    pub fn as_bytes(&self) -> &[u8] {
+        // SAFETY: the region is live and committed for `words * 8` bytes, and `u8` has no alignment or validity rule;
+        // the borrow keeps `self` borrowed shared, so nothing writes meanwhile.
+        unsafe { std::slice::from_raw_parts(self.ptr.cast::<u8>(), self.words * 8) }
+    }
 }
 
 impl Drop for PageBuf {

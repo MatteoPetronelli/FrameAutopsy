@@ -365,6 +365,9 @@ dependencies = [
  "fa-probe",
  "fa-sync",
  "fa-win",
+ "serde",
+ "serde_json",
+ "toml",
 ]
 
 [[package]]
@@ -422,6 +425,7 @@ version = "0.0.0"
 dependencies = [
  "fa-asm",
  "fa-core",
+ "windows",
  "windows-sys",
 ]
 

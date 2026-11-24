@@ -11,3 +11,6 @@ fa-probe = { version = "0.0.0", path = "../fa-probe" }
 fa-asm = { version = "0.0.0", path = "../fa-asm" }
 fa-capture = { version = "0.0.0", path = "../fa-capture" }
 fa-sync = { version = "0.0.0", path = "../fa-sync" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "1"

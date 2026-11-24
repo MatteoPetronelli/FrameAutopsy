@@ -1,0 +1,10 @@
+name = "timer-resolution"
+fps = "144"
+duration = 20.0
+expected_causes = ["timer-resolution"]
+
+[[injection]]
+cause = "timer-resolution"
+start = 5.0
+duration = 10.0
+
