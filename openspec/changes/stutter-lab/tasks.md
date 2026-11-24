@@ -32,13 +32,13 @@ Gate = `powershell -File scripts/gate.ps1`. Each group ends with it, green. Dev 
 
 ## 5. CPU and memory injectors
 
-- [ ] 5.1 Implement `cpu-burn` (TSC deadline, optional `fa_asm::fma::burn`) with CPUs from `fa_probe::plan::load_cpus`; verify with synthetic-topology tests that no SMT sibling of a measured CPU is loaded, and a run showing the stall.
+- [x] 5.1 Implement `cpu-burn` (TSC deadline, optional `fa_asm::fma::burn`) with CPUs from `fa_probe::plan::load_cpus`; verify with synthetic-topology tests that no SMT sibling of a measured CPU is loaded, and a run showing the stall.
 - [x] 5.2 Write the ASM-07 intrinsics reference and the behavioural latency-jump metric; write asm only if the reference cannot produce the behaviour; verify the metric, record the verdict (win under 5 % is a tie) in the catalog.
 - [x] 5.3 If an asm block exists: explanation checkpoint (French) for ASM-07; verify the user answered "compris". Skipped if intrinsics ship.
-- [ ] 5.4 Implement `cache-thrash` (buffers well above 12 MiB), `tlb-thrash` (4 KiB pages), `mem-bandwidth`; verify each against the capture or a probe showing a measurable effect.
-- [ ] 5.5 Implement `page-fault-storm` (WIN-12); verify page-fault counts rise in the capture and cleanup restores the working set.
-- [ ] 5.6 Explanation checkpoint (French) for each new unsafe block of WIN-12; verify the user answered "compris".
-- [ ] 5.7 Run the gate and verify it is green.
+- [x] 5.4 (effect on frames only for mem-bandwidth; others verified by own signals, accepted 2026-11-24) Implement `cache-thrash` (buffers well above 12 MiB), `tlb-thrash` (4 KiB pages), `mem-bandwidth`; verify each against the capture or a probe showing a measurable effect.
+- [x] 5.5 Implement `page-fault-storm` (WIN-12); verify page-fault counts rise in the capture and cleanup restores the working set.
+- [x] 5.6 Explanation checkpoint (French) for each new unsafe block of WIN-12; verify the user answered "compris".
+- [x] 5.7 Run the gate and verify it is green.
 
 ## 6. Disk, timer and priority injectors
 
