@@ -102,3 +102,29 @@ cpus = [2, 4]
         assert!(matches!(validate(&s), Err(GuardError::TooLong { .. })));
     }
 }
+
+#[cfg(test)]
+mod shipped_scenarios {
+    use super::*;
+    use crate::lab::guards::validate;
+
+    #[test]
+    fn every_shipped_scenario_parses_passes_the_guards_and_lists_its_causes() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../lab/scenarios");
+        let (mut single, mut double) = (0, 0);
+        for entry in std::fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            let s = Scenario::parse(&std::fs::read_to_string(&path).unwrap()).unwrap();
+            validate(&s).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+            for inj in &s.injections {
+                assert!(s.expected_causes.contains(&inj.cause), "{}", path.display());
+            }
+            match s.expected_causes.len() {
+                1 => single += 1,
+                2 => double += 1,
+                n => panic!("{}: {n} causes", path.display()),
+            }
+        }
+        assert_eq!((single, double), (10, 3));
+    }
+}

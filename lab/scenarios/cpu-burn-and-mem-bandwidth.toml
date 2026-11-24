@@ -1,0 +1,16 @@
+name = "cpu-burn-and-mem-bandwidth"
+fps = "144"
+duration = 25.0
+expected_causes = ["cpu-burn", "mem-bandwidth"]
+
+[[injection]]
+cause = "cpu-burn"
+start = 5.0
+duration = 10.0
+intensity = 1.0
+
+[[injection]]
+cause = "mem-bandwidth"
+start = 10.0
+duration = 10.0
+size_mib = 64

@@ -49,10 +49,10 @@ Gate = `powershell -File scripts/gate.ps1`. Each group ends with it, green. Dev 
 
 ## 7. Scenarios and demo
 
-- [ ] 7.1 Write 10 single-cause and 3 two-cause scenarios in `lab/scenarios/*.toml`; verify each parses and each run produces a journal with the expected causes.
+- [x] 7.1 Write 10 single-cause and 3 two-cause scenarios in `lab/scenarios/*.toml`; verify each parses and each run produces a journal with the expected causes.
 - [ ] 7.2 Ask the user to record the demo video (inject a cause, see the stutter); verify the user confirmed it.
-- [ ] 7.3 Log measured loop jitter and any recalibrated value in `docs/decisions.md` section 5; verify the entries exist.
-- [ ] 7.4 Run `openspec validate stutter-lab --strict` and the gate; verify both are green.
+- [x] 7.3 Log measured loop jitter and any recalibrated value in `docs/decisions.md` section 5; verify the entries exist.
+- [x] 7.4 Run `openspec validate stutter-lab --strict` and the gate; verify both are green.
 
 ## Workflow follow-up
 
