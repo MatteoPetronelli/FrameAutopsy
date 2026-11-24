@@ -6,13 +6,13 @@ triggered by a stutter) → act (reversible actions on *other* processes and the
 A/B blocks, exact sign-flip test on 1 % lows). Rust workspace (edition 2021), elevated headless collector + non-elevated
 egui UI. Target games: LoL, VALORANT, Fortnite, Overwatch 2, Minecraft Java (client); any other game is observe-only.
 
-**Status (2026-11-22): lots 0 to 5 done** (workspace, gate, counting allocator, compliance matrix, `TargetProcess`,
+**Status (2026-11-24): lots 0 to 6 done** (workspace, gate, counting allocator, compliance matrix, `TargetProcess`,
 `OpenProcess` source test, TSC clock, topology, pinning, driverless probes, `fa check`; lot 5: ETW session in
 `fa-win::etw`, SPSC ring in `fa-sync`, decoders and frame extraction in `fa-capture`, `fa capture`, PresentMon parity
-100 % on Opera). ASM-01, ASM-03, ASM-04, ASM-06 tied so intrinsics/Rust ship, ASM-02 asm kept; SYNC-01 beat `rtrb`
-(ring kept, Miri in the gate). OpenSpec changes of lots 6 to 9 are written and wait for the user's validation at the
+100 % on Opera; lot 6: the Lab, `fa lab`, 9 injectors with ground-truth journal, `fa-win::render` and `labsys`). ASM-01, ASM-03, ASM-04, ASM-06 tied so intrinsics/Rust ship, ASM-02 asm kept; SYNC-01 beat `rtrb`
+(ring kept, Miri in the gate). OpenSpec changes of lots 7 to 9 are written and wait for the user's validation at the
 start of each lot. Product registered on the Riot Developer Portal as a personal project (`docs/compliance.md` 2.1);
-Riot technical questions (stack walks) wait for lot 11. Next: lot 6 `stutter-lab`.
+Riot technical questions (stack walks) wait for lot 11. ASM-07 dropped (plain sweep beat `clflush`). Next: lot 7 `collector-service`.
 
 ## Working agreement
 - Talk to the user in **French**. Code, identifiers, commits, OpenSpec artifacts and technical docs in **English**.
