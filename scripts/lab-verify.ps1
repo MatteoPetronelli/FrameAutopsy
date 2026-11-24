@@ -14,10 +14,10 @@ $admin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 if (-not $admin) { Write-Error 'Terminal non eleve : relancez dans un PowerShell ouvert en administrateur.'; exit 2 }
 Set-Location (Split-Path $PSScriptRoot)
 $root = (Get-Location).Path -replace '\\', '/'
-New-Item -ItemType Directory -Force 'measurements' | Out-Null
-$csv = "$root/measurements/ours-$Run.csv"
-$journal = "$root/measurements/ours-$Run.jsonl"
-$pmCsv = "$root/measurements/pm-$Run.csv"
+New-Item -ItemType Directory -Force "$root/measurements/lab-runs" | Out-Null
+$csv = "$root/measurements/lab-runs/ours-$Run.csv"
+$journal = "$root/measurements/lab-runs/ours-$Run.jsonl"
+$pmCsv = "$root/measurements/lab-runs/pm-$Run.csv"
 $pmExe = 'C:\Program Files\Intel\PresentMon\PresentMonConsoleApplication\PresentMon-2.6.0-x64.exe'
 $fa = 'target\release\fa.exe'
 if (-not (Test-Path $fa)) { Write-Error 'Compilez d abord : cargo build -p fa --release'; exit 2 }
